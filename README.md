@@ -51,4 +51,3 @@ https://arxiv.org/pdf/2601.19924
 12. 全球规模最大、影响力最深远的合成生物学赛事：iGEM 的核心理念在于“设计-构建-测试-学习”（Design-Build-Test-Learn）的工程循环，要求参赛者利用标准化的生物元件（BioBricks）构建具有实际功能的生物系统。https://competition.igem.org/
 13. Bio-based Innovation Student Challenge Europe。比赛要求学生团队开发基于生物质（Biomass）的创新产品或工艺。这通常涉及化学工程、材料科学与工业生物技术的交叉 
 14. Hello Tomorrow Global Challenge https://ufukavrupa.org.tr/sites/default/files/2025-11/2026%20Hello%20Tomorrow%20Challenge%20Brochure.pdf 涉及多个领域
-
