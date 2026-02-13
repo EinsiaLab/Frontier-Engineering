@@ -1,60 +1,98 @@
-# Background
+# Frontier-Eng: Large-Scale Engineering Optimization Benchmark for AI Agents
 
-Current correctness evaluations for benchmarks in the AI4Research field are mostly in a binary (0/1) format. Even rubric-based evaluation methods result in a closed interval, limiting the assessment of an agent's capability in optimization problems. Recent benchmarks like ALE-Bench, MLE-Bench, and FrontierCS focus on testing open-ended answers to maximally assess an Agent's ability to perform iterative optimization on open questions in an interactive manner. However, existing benchmarks mostly focus on the CS domain, which is narrow in scope and has limited practical application value; or they highly abstract simple practical problems into mathematical problems, where agents cannot fully utilize their own knowledge and the internet; existing benchmark calculation metrics focus on average model performance, but open-ended optimization problems should encourage model performance on the mechanisms of a single problem.
+**Frontier-Eng** is a benchmark designed to evaluate the ability of AI Agents to solve **open-ended optimization problems** in real-world **engineering domains**.
 
-# Solutions
+Unlike existing benchmarks that focus on Computer Science (CS) or purely abstract mathematical problems, Frontier-Eng focuses on engineering challenges with actual **economic benefits** and **physical constraints**. It is expected to cover multiple fields such as aerospace, civil engineering, EDA, bioengineering, and more.
 
-1. Addressing the limitation of practical application value: Shift the focus domain from CS to broader Engineering (Eng), explore within real-world scenarios, and increase the number of problems.
-2. Addressing highly abstract problems: Provide rich context for the agent, allowing the agent to invoke external tools to assist in problem-solving.
-3. Addressing the issue of evaluation metrics: Propose a new metric for assessment during the exploration process.
+## 🎯 Motivation
 
-# Expected Goals
+Current AI4Research evaluation systems have the following limitations:
 
-1. Propose a large-scale benchmark (hundreds of problems) covering most fields of engineering, becoming an industry standard, with problems holding economic value.
+1. **Limited Evaluation Methods**: Most adopt 0/1 binary evaluation or closed-interval rubrics, failing to effectively measure an Agent's ability to perform **iterative optimization** through interaction in an open world.
+2. **Domain Limitations**: Existing benchmarks are mostly confined to the CS domain (e.g., code generation) or highly abstract real problems into math problems, stripping away real-world complexity and preventing Agents from utilizing rich external knowledge and tools.
+3. **Metric Bias**: Traditional computational metrics focus on model average performance, whereas for engineering optimization problems, we should focus more on the **Peak Performance** a model can achieve on a single problem through exploration mechanisms.
 
-# Example Samples
+**Frontier-Eng** aims to evaluate the ability of Agents to solve problems with practical value across a wide range of engineering disciplines by providing rich context and tool support.
 
-1. **Aerospace Dynamics Optimization Problems:** Easy to verify, have a real-world background, large search space, require complex reference documentation, and are highly difficult.
-2. **Truss Construction:** Can reference many classic bridge structures, etc.
-Similar to the game "Poly Bridge".
-3. **Non-CUDA Kernel Optimization:** Few reference materials, but an important computing scenario.
+## 🤝 Contribution Guidelines
 
-# Sample Requirements
+We need the power of the community to expand the coverage of the Benchmark. We welcome the submission of new engineering problems via Pull Requests (PR). If you wish to contribute, please follow the standards and processes below:
 
-1. Small gap with real-world problems; must consider influencing factors that may exist in reality.
-2. Engineering problems with certain economic benefits.
-3. Must be able to write a corresponding verification program for the sample, and evaluation must be possible within an acceptable time frame.
-4. Prioritize problems in fields you are familiar with to ensure the rationality of the sample settings as much as possible.
-5. Samples must include the following content:
-    1. **Problem Background:** Find corresponding real-world examples as a basis.
-    2. **Problem Description:** Includes the task flow, requires explanation of detailed information, involved data should reference real cases as much as possible, can design basic tasks as well as Bonuses, while stipulating scoring standards and explaining them in detail.
-    3. **Reference Information:** Basic information needed for solving (e.g., parameter constants and equations) or constraints.
-    4. **Data Format:** Clear input/output data formats; reference examples should be provided for explanation.
-    5. **Verification Program:** Provide corresponding verification code and the environment configuration needed for evaluation; provide Docker if possible.
-    6. **(Optional)** Provide a basic solution to the problem and provide evaluation results as a reference.
+### Sample Requirements
+
+1. **Reality Gap**: Must be close to reality, considering real-world influencing factors, not purely abstract mathematics.
+2. **Economic Value**: The problem should have clear engineering or economic value upon solution.
+3. **Verifiability**: Must provide an executable verification program (Docker preferred) capable of completing the evaluation within an acceptable time.
+
+### Submission Format
+
+Each Task should contain the following file structure:
+
+```text
+<Domain_Name>/                       # Level 1 Directory: Domain Name (e.g., Astrodynamics)
+├── README.md                        # [Required] Domain Overview: Intro to background & sub-task index
+├── <Task_Name_A>/                   # Level 2 Directory: Specific Task Name (e.g., MannedLunarLanding)
+│   ├── README.md                    # [Required] Task Detailed Doc (Default entry, English or Chinese)
+│   ├── README_zh-CN.md              # [Optional] Chinese Doc (Use only when README.md is in English & CN version is needed)
+│   ├── references/                  # Reference Materials Directory
+│   │   ├── constants.json           # Physical constants, simulation parameters, etc.
+│   │   └── manuals.pdf              # Domain knowledge manuals, physical equations, or constraint docs
+│   ├── verification/                # Verification & Scoring System
+│   │   ├── evaluator.py             # [Core] Scoring script entry point
+│   │   ├── requirements.txt         # Dependencies for running the scoring environment
+│   │   └── docker/                  # Containerization Config
+│   │       └── Dockerfile           # Ensure evaluation environment consistency
+│   └── baseline/                    # [Optional] Basic solution/example code
+│       ├── solution.py              # Reference code implementation
+│       └── result_log.txt           # Run logs or scoring results of reference code
+└── <Task_Name_B>/                   # Another task under this domain
+    └── ...
+
+```
+
+> The above directory structure serves only as a reference template. Contributors may adjust the file organization based on specific circumstances, provided that all core elements (e.g., background, input/output, evaluation metrics) are included. Additionally, there are no restrictions on the programming language and format of the verification code.
+
+### Contribution Process
+
+We adopt the standard GitHub collaboration flow:
+
+1. **Fork this Repository**: Click the "Fork" button in the top right corner to copy the project to your GitHub account.
+2. **Create Branch**:
+* Clone your Fork locally.
+* Create a new branch for development, recommended naming format: `feat/<Domain>/<TaskName>` (e.g., `feat/Astrodynamics/MarsLanding`).
+
+
+3. **Add/Modify Content**:
+* Add your engineering problem files following the submission format above.
+* Ensure all necessary explanatory documentation and verification code are included.
+
+
+4. **Local Test**: Run `evaluator.py` or build the Docker image to ensure the evaluation logic is correct and runs normally.
+5. **Submit Pull Request (PR)**:
+* Push changes to your remote Fork.
+* Initiate a Pull Request to the `main` branch of this repository.
+* **PR Description**: Please briefly explain the background, source, and how to run the verification code for the Task.
+
+
+6. **Code Review**:
+* **Agent Review**: After submitting the PR, an **AI Agent** will first conduct an automated preliminary review (including code standards, basic logic verification, etc.) and may propose modifications directly in the PR.
+* **Maintainer Review**: After the Agent review passes, **maintainers** will conduct a final re-check. Once confirmed correct, your contribution will be merged.
 
 
 
-# Related Work
+---
 
-1. **FrontierCS: Evolving Challenges for Evolving Intelligences**
-Problems where the optimal solution is unknown, but the quality of the solution can be evaluated. However, it focuses on TCS (Theoretical Computer Science).
-2. **CYBERGYM: EVALUATING AI AGENTS’ REAL-WORLD CYBERSECURITY CAPABILITIES AT SCALE**
-[https://arxiv.org/abs/2506.02548](https://arxiv.org/abs/2506.02548) A very small domain, not necessarily having economic value.
-3. **ALE-Bench: A Benchmark for Long-Horizon Objective-Driven Algorithm Engineering**
-40 problems, few in number, small scale; economic viability is not guaranteed; lacks practical significance, cannot verify the Agent's ability to use tools.
-4. **PT-Engine: Benchmarking the Limits of LLMs in Optimization Modeling via Complexity Scaling**
-Highly abstract mathematical optimization problems.
-[https://arxiv.org/pdf/2601.19924](https://arxiv.org/pdf/2601.19924)
-5. **MLE-Bench: MLE-BENCH: EVALUATING MACHINE LEARNING AGENTS ON MACHINE LEARNING ENGINEERING**
-75 ML problems, scraped from Kaggle, limits the resources the agent can use; the analysis of this resource part is very valuable for reference.
-6. **LLM Swiss Round: Aggregating Multi-Benchmark Performance via Competitive Swiss-System Dynamics**
-An evaluation method suitable for reference.
-7. **ICCAD CAD Contest** (International Conference on Computer-Aided Design Contest), utilizing modern HPC technologies (such as GPU acceleration, differentiable programming) to perform multi-objective optimization on discrete combinatorial systems containing millions of nodes at nanometer process nodes. [https://research.nvidia.com/labs/electronic-design-automation/papers/yichen_iccad25_contest.pdf](https://research.nvidia.com/labs/electronic-design-automation/papers/yichen_iccad25_contest.pdf)
-8. **Review of Data-Driven Process Monitoring and Fault Diagnosis** [https://www.mdpi.com/2227-9717/12/2/251](https://www.mdpi.com/2227-9717/12/2/251)
-9. **ISCSO 2025** is an international student structural optimization competition. Its main goal is to encourage undergraduate and graduate students to solve engineering optimization problems. [https://www.brightoptimizer.com/](https://www.brightoptimizer.com/)
-10. **ISPD24 Contest: GPU/ML-Enhanced Large Scale Global Routing** [https://liangrj2014.github.io/ISPD24_contest/](https://liangrj2014.github.io/ISPD24_contest/)
-11. **The America’s cup of rocket science** Interplanetary trajectory design [https://sophia.estec.esa.int/gtoc_portal/](https://sophia.estec.esa.int/gtoc_portal/)
-12. **The world's largest and most influential synthetic biology competition:** iGEM's core philosophy lies in the engineering cycle of "Design-Build-Test-Learn", requiring participants to use standardized biological parts (BioBricks) to construct biological systems with actual functions. [https://competition.igem.org/](https://competition.igem.org/)
-13. **Bio-based Innovation Student Challenge Europe.** The competition requires student teams to develop innovative products or processes based on Biomass. This usually involves the intersection of chemical engineering, materials science, and industrial biotechnology.
-14. **Hello Tomorrow Global Challenge** [https://ufukavrupa.org.tr/sites/default/files/2025-11/2026%20Hello%20Tomorrow%20Challenge%20Brochure.pdf](https://ufukavrupa.org.tr/sites/default/files/2025-11/2026%20Hello%20Tomorrow%20Challenge%20Brochure.pdf) Involves multiple fields.
+> 💡 If this is your first contribution or you have questions about the directory structure, feel free to submit an Issue for discussion first.
+
+## 📊 Task Progress & Planning
+
+The table below lists the current coverage of domain tasks in the Benchmark. We welcome not only code contributions but also ideas for challenging new engineering problems from the community.
+
+| Domain | Task Name | Status | Maintainer/Contributor | Remarks |
+| --- | --- | --- | --- | --- |
+| **Astrodynamics** | `MannedLunarLanding` | Completed | @jdp22 | Lunar soft landing trajectory optimization |
+| **ElectronicDesignAutomation** | `IntegrationPhysicalDesignOptimization` | In Development | @ahydchh | Chip macro placement optimization |
+
+> 💡 **Have an idea for a new engineering problem?**
+> Even if you cannot provide complete verification code for now, we highly welcome you to share good **Task concepts**!
+> Please create an Issue detailing the **real-world background** and **engineering value** of the problem. After discussion and confirmation, we will add it to the table above to rally community power to solve it together.
