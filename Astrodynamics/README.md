@@ -1,3 +1,3 @@
-# Celestial Dynamics
+# Astrodynamics
 
 Currently, it includes a relatively challenging example: manned lunar landing, which is relatively well-developed.

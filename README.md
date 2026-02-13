@@ -1,5 +1,7 @@
 # Frontier-Eng: Large-Scale Engineering Optimization Benchmark for AI Agents
 
+English | [简体中文](README_zh-CN.md)
+
 **Frontier-Eng** is a benchmark designed to evaluate the ability of AI Agents to solve **open-ended optimization problems** in real-world **engineering domains**.
 
 Unlike existing benchmarks that focus on Computer Science (CS) or purely abstract mathematical problems, Frontier-Eng focuses on engineering challenges with actual **economic benefits** and **physical constraints**. It is expected to cover multiple fields such as aerospace, civil engineering, EDA, bioengineering, and more.
@@ -30,24 +32,26 @@ Each Task should contain the following file structure:
 
 ```text
 <Domain_Name>/                       # Level 1 Directory: Domain Name (e.g., Astrodynamics)
-├── README.md                        # [Required] Domain Overview: Intro to background & sub-task index
+├── README.md                        # [Required] Domain Overview (Default entry, EN or CN): Background & sub-task index
+├── README_zh-CN.md                  # [Optional] Domain Overview (Chinese version. Used only if README.md is in English)
 ├── <Task_Name_A>/                   # Level 2 Directory: Specific Task Name (e.g., MannedLunarLanding)
-│   ├── README.md                    # [Required] Task Detailed Doc (Default entry, English or Chinese)
-│   ├── README_zh-CN.md              # [Optional] Chinese Doc (Use only when README.md is in English & CN version is needed)
-│   ├── references/                  # Reference Materials Directory
+│   ├── README.md                    # [Required] Navigation Doc: File structure, how to run & quick start
+│   ├── README_zh-CN.md              # [Optional] Navigation Doc (Chinese version)
+│   ├── Task.md                      # [Required] Task Detail Doc: Core doc including background, physical model, I/O definitions
+│   ├── Task_zh-CN.md                # [Optional] Task Detail Doc (Chinese version)
+│   ├── references/                  # References Directory
 │   │   ├── constants.json           # Physical constants, simulation parameters, etc.
-│   │   └── manuals.pdf              # Domain knowledge manuals, physical equations, or constraint docs
+│   │   └── manuals.pdf              # Domain knowledge manual, physical equations, or constraints docs
 │   ├── verification/                # Verification & Scoring System
 │   │   ├── evaluator.py             # [Core] Scoring script entry point
-│   │   ├── requirements.txt         # Dependencies for running the scoring environment
-│   │   └── docker/                  # Containerization Config
-│   │       └── Dockerfile           # Ensure evaluation environment consistency
-│   └── baseline/                    # [Optional] Basic solution/example code
+│   │   ├── requirements.txt         # Dependencies required for the scoring environment
+│   │   └── docker/                  # Environment containerization configuration
+│   │       └── Dockerfile           # Ensures consistency of the evaluation environment
+│   └── baseline/                    # [Optional] Baseline Solution / Example Code
 │       ├── solution.py              # Reference code implementation
-│       └── result_log.txt           # Run logs or scoring results of reference code
+│       └── result_log.txt           # Execution log or scoring result of the reference code
 └── <Task_Name_B>/                   # Another task under this domain
     └── ...
-
 ```
 
 > The above directory structure serves only as a reference template. Contributors may adjust the file organization based on specific circumstances, provided that all core elements (e.g., background, input/output, evaluation metrics) are included. Additionally, there are no restrictions on the programming language and format of the verification code.

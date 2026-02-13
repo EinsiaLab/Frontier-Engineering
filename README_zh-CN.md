@@ -1,5 +1,7 @@
 # Frontier-Eng: 人工智能代理的大规模工程优化基准
 
+[English](README.md) | 简体中文
+
 **Frontier-Eng** 是一个旨在评估 AI Agent 在**真实工程领域**中解决**开放式优化问题**能力的Benchmark。
 
 不同于现有的关注计算机科学（CS）或纯数学抽象问题的 Benchmark，Frontier-Eng 聚焦于具有实际**经济效益**和**物理约束**的工程难题，预期涵盖航天、土木、EDA、生物工程等多个领域。
@@ -28,24 +30,27 @@
 每一个 Task 应当包含以下文件结构：
 
 ```text
-<Domain_Name>/                       # 一级目录：领域名称 (e.g., Astrodynamics)
-├── README.md                        # [Required] 领域综述：介绍该领域背景及子任务索引
-├── <Task_Name_A>/                   # 二级目录：具体任务名称 (e.g., MannedLunarLanding)
-│   ├── README.md                    # [Required] 任务详解文档 (默认入口，中英文均可)
-│   ├── README_zh-CN.md              # [Optional] 中文文档 (仅当 README.md 为英文且需提供中文版时使用)
-│   ├── references/                  # 参考资料目录
-│   │   ├── constants.json           # 物理常数、仿真参数等
-│   │   └── manuals.pdf              # 领域知识手册、物理方程或约束条件文档
-│   ├── verification/                # 验证与评分系统
-│   │   ├── evaluator.py             # [Core] 评分脚本入口 (Entry point)
-│   │   ├── requirements.txt         # 运行评分环境所需的依赖
-│   │   └── docker/                  # 环境容器化配置
-│   │       └── Dockerfile           # 确保评测环境一致性
-│   └── baseline/                    # [Optional] 基础解法/示例代码
-│       ├── solution.py              # 参考代码实现
-│       └── result_log.txt           # 参考代码的运行日志或评分结果
-└── <Task_Name_B>/                   # 该领域下的另一个任务
-    └── ...
+<Domain_Name>/                       # 一级目录：领域名称 (e.g., Astrodynamics)
+├── README.md                        # [必选] 领域综述 (默认入口，中英文均可)：介绍背景及子任务索引
+├── README_zh-CN.md                  # [可选] 领域综述 (中文版。仅当 README.md 为英文且提供了中文版时使用)
+├── <Task_Name_A>/                   # 二级目录：具体任务名称 (e.g., MannedLunarLanding)
+│   ├── README.md                    # [必选] 导航文档：说明文件结构、如何运行及快速开始
+│   ├── README_zh-CN.md              # [可选] 导航文档
+│   ├── Task.md                      # [必选] 任务详情文档：核心文档，包含背景、物理模型、输入输出定义
+│   ├── Task_zh-CN.md                # [可选] 任务详情文档
+│   ├── references/                  # 参考资料目录
+│   │   ├── constants.json           # 物理常数、仿真参数等
+│   │   └── manuals.pdf              # 领域知识手册、物理方程或约束条件文档
+│   ├── verification/                # 验证与评分系统
+│   │   ├── evaluator.py             # [核心] 评分脚本入口
+│   │   ├── requirements.txt         # 运行评分环境所需的依赖
+│   │   └── docker/                  # 环境容器化配置
+│   │       └── Dockerfile           # 确保评测环境一致性
+│   └── baseline/                    # [可选] 基础解法/示例代码
+│       ├── solution.py              # 参考代码实现
+│       └── result_log.txt           # 参考代码的运行日志或评分结果
+└── <Task_Name_B>/                   # 该领域下的另一个任务
+    └── ...
 ```
 > 上述目录结构仅作为参考模板。在确保包含所有核心要素（如背景、输入输出、评测指标）的前提下，贡献者可根据具体情况调整文件组织方式。同时，验证代码的编程语言与格式均不作限制。
 
