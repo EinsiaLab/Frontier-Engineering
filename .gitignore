@@ -2,3 +2,12 @@ ElectronicDesignAutomation/IntegrationPhysicalDesignOptimization/data/
 ElectronicDesignAutomation/IntegrationPhysicalDesignOptimization/env/
 ElectronicDesignAutomation/install
 *.zip
+AGENTS.md
+third_party/openevolve/
+.env
+.venv/
+__pycache__/
+.pytest_cache/
+runs/
+Astrodynamics/MannedLunarLanding/results.txt
+Astrodynamics/MannedLunarLanding/outputlog.txt

@@ -1,0 +1,18 @@
+defaults:
+  - task: manned_lunar_landing
+  - algorithm: openevolve
+  - llm: openai_compatible
+  - _self_
+
+paths:
+  repo_root: null
+
+run:
+  output_dir: runs/${task.name}/${algorithm.name}/${now:%Y%m%d_%H%M%S}
+
+hydra:
+  job:
+    chdir: false
+  run:
+    dir: ${run.output_dir}
+

@@ -1,0 +1,14 @@
+name: openevolve
+iterations: 0
+checkpoint_interval: 25
+max_code_length: 20000
+
+# Logging / export
+save_db: true
+export_history: true
+trace:
+  enabled: true
+  format: jsonl
+  include_code: true
+  include_prompts: true
+  buffer_size: 1
