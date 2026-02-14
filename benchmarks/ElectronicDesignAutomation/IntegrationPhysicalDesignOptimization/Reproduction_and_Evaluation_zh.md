@@ -4,8 +4,8 @@
 
 本文聚焦目录：
 
-- `ElectronicDesignAutomation/IntegrationPhysicalDesignOptimization/data/ICCAD25_test_case`
-- `ElectronicDesignAutomation/IntegrationPhysicalDesignOptimization/data/ICCAD_problem_C_top-3_result`
+- `benchmarks/ElectronicDesignAutomation/IntegrationPhysicalDesignOptimization/data/ICCAD25_test_case`
+- `benchmarks/ElectronicDesignAutomation/IntegrationPhysicalDesignOptimization/data/ICCAD_problem_C_top-3_result`
 
 给出两件事：
 
@@ -134,7 +134,7 @@ openroad -version
 
 仓库里有：
 
-- `ElectronicDesignAutomation/install/OpenROAD/bin/openroad`
+- `benchmarks/ElectronicDesignAutomation/install/OpenROAD/bin/openroad`
 
 该二进制在本机可输出版本，但脚本执行时可能遇到 Tcl runfiles/版本问题。建议优先用你已正确安装并可跑 Tcl 的 OpenROAD。
 
@@ -147,7 +147,7 @@ openroad -version
 新建 `eval_any.tcl`（放哪都可以）：
 
 ```tcl
-set base "/DATA_EDS2/haohan.chi.2311/Frontier-Engineering/ElectronicDesignAutomation/IntegrationPhysicalDesignOptimization/data/ICCAD25_test_case"
+set base "/DATA_EDS2/haohan.chi.2311/Frontier-Engineering/benchmarks/ElectronicDesignAutomation/IntegrationPhysicalDesignOptimization/data/ICCAD25_test_case"
 set design $::env(DESIGN)
 set def_path $::env(DEF_PATH)
 set tcdir "$base/ICCAD25_testcases/$design"
@@ -174,7 +174,7 @@ report_power
 
 ```bash
 DESIGN=aes \
-DEF_PATH=/DATA_EDS2/haohan.chi.2311/Frontier-Engineering/ElectronicDesignAutomation/IntegrationPhysicalDesignOptimization/data/ICCAD25_test_case/ICCAD25_testcases/aes/aes.def \
+DEF_PATH=/DATA_EDS2/haohan.chi.2311/Frontier-Engineering/benchmarks/ElectronicDesignAutomation/IntegrationPhysicalDesignOptimization/data/ICCAD25_test_case/ICCAD25_testcases/aes/aes.def \
 openroad eval_any.tcl | tee logs/aes.baseline.log
 ```
 
@@ -182,7 +182,7 @@ openroad eval_any.tcl | tee logs/aes.baseline.log
 
 ```bash
 DESIGN=aes \
-DEF_PATH=/DATA_EDS2/haohan.chi.2311/Frontier-Engineering/ElectronicDesignAutomation/IntegrationPhysicalDesignOptimization/data/ICCAD_problem_C_top-3_result/cadc1007/aes.sol.def \
+DEF_PATH=/DATA_EDS2/haohan.chi.2311/Frontier-Engineering/benchmarks/ElectronicDesignAutomation/IntegrationPhysicalDesignOptimization/data/ICCAD_problem_C_top-3_result/cadc1007/aes.sol.def \
 openroad eval_any.tcl | tee logs/aes.cadc1007.log
 ```
 
@@ -204,7 +204,7 @@ rg -n "tns|wns|leakage|power" logs/aes.*.log -i
 mkdir -p logs
 DESIGNS="ac97_top aes aes_cipher_top ariane des pci_bridge32"
 TEAMS="cadc1001 cadc1007 cadc1051"
-BASE=/DATA_EDS2/haohan.chi.2311/Frontier-Engineering/ElectronicDesignAutomation/IntegrationPhysicalDesignOptimization/data
+BASE=/DATA_EDS2/haohan.chi.2311/Frontier-Engineering/benchmarks/ElectronicDesignAutomation/IntegrationPhysicalDesignOptimization/data
 
 for d in $DESIGNS; do
   DESIGN=$d \
