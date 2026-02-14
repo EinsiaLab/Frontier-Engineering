@@ -1,0 +1,36 @@
+version: 1
+
+# Cartesian product: tasks × algorithms × llms
+tasks:
+  - manned_lunar_landing
+
+algorithms:
+  - name: openevolve
+    overrides:
+      - algorithm.iterations=5
+
+# All llms are treated as OpenAI-compatible (api_base + api_key + model).
+# Tip: keep keys in `.env` and reference them via `api_key_env`.
+llms:
+  - name: openai__gpt-4o-mini
+    api_base: https://api.openai.com/v1
+    model: gpt-4o-mini
+    api_key_env: OPENAI_API_KEY
+
+  - name: openrouter__qwen3-coder-next
+    api_base: https://openrouter.ai/api/v1
+    model: qwen/qwen3-coder-next
+    api_key_env: OPENROUTER_API_KEY
+
+llm_config: openai_compatible
+
+common_overrides:
+  - llm.temperature=0.7
+  - llm.timeout=60
+
+run:
+  name: demo
+  base_dir: runs/batch
+  max_parallel: 1
+  fail_fast: false
+

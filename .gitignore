@@ -1,4 +1,13 @@
-ElectronicDesignAutomation/IntegrationPhysicalDesignOptimization/data/
-ElectronicDesignAutomation/IntegrationPhysicalDesignOptimization/env/
-ElectronicDesignAutomation/install
+benchmarks/ElectronicDesignAutomation/IntegrationPhysicalDesignOptimization/data/
+benchmarks/ElectronicDesignAutomation/IntegrationPhysicalDesignOptimization/env/
+benchmarks/ElectronicDesignAutomation/install
 *.zip
+third_party/openevolve/
+.env
+.venv/
+__pycache__/
+.pytest_cache/
+runs/
+benchmarks/Astrodynamics/MannedLunarLanding/results.txt
+benchmarks/Astrodynamics/MannedLunarLanding/outputlog.txt
+.vscode
