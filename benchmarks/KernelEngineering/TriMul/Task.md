@@ -1,30 +1,25 @@
 # Description
 
-You will implement the Triangle Multiplicative Update (TriMul) module, which is a core operation in AlphaFold3, Chai, Protenix, and other protein structure prediction models in BioML.
+For a more complete description, see: https://tinyurl.com/gpumode-trimul You will be implementing a Triangle Multiplicative Update (TriMul) module that is a core operation for AlphaFold3, Chai, Protenix, and other protein structure prediction models in BioML.
 
-The TriMul operator acts on a 4D tensor of shape `[B, N, N, C]`.
+The TriMul operator operates over a 4D tensor of shape [B, N, N, C].
 
-**Your Task:**
+Your task:
 
-* Implement the "outgoing" version of the TriMul operator from the [AlphaFold3](references/Accurate%20structure%20prediction%20of%20biomolecular%20interactions%20with%20AlphaFold%203.pdf) paper.
-* In this version, you do not need to compute or store gradients. You only need to implement the forward pass.
+- Implement the "outgoing" version of the TriMul operator from the AlphaFold3 paper.
+- You will not have to compute or store gradients for this version. You will only need to implement the forward pass.
+Input:
 
-**Input:**
+- data: Tuple of (input: torch.Tensor, weights: Dict[str, torch.Tensor], config: Dict)
+    - input: Input tensor of shape [bs, seq_len, seq_len, dim]
+    - mask: Mask tensor of shape [bs, seq_len, seq_len]
+    - weights: Dictionary containing model weights
+    - config: Dictionary containing model configuration parameters
 
-* `data`: Tuple (`input`: `torch.Tensor`, `weights`: `Dict[str, torch.Tensor]`, `config`: `Dict`)
-* `input`: Input tensor of shape `[bs, seq_len, seq_len, dim]`
-* `mask`: Mask tensor of shape `[bs, seq_len, seq_len]`
-* `weights`: Dictionary containing model weights
-* `config`: Dictionary containing model configuration parameters
+Output:
 
-
-
-**Output:**
-
-* A tuple containing:
-* `output`: The processed tensor of shape `[bs, seq_len, seq_len, dim]`
-
-
+- Tuple containing:
+    - output: Processed tensor [bs, seq_len, seq_len, dim]
 
 Here is a more detailed description 
 
