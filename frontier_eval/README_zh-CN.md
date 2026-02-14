@@ -1,55 +1,61 @@
 # Frontier Eval Framework
 
-Evaluation framework for `Frontier-Engineering`.
+`Frontier-Engineering` 的评测框架。
 
-## Structure
+## 结构
 
-- `frontier_eval/cli.py`: Main entry point (`python -m frontier_eval`)
-- `frontier_eval/tasks/`: All evaluation tasks
-- `frontier_eval/algorithms/`: All algorithms (currently supports integrating `openevolve`)
-- `frontier_eval/conf/`: Hydra configs (task / algorithm / llm)
+- `frontier_eval/cli.py`: 主程序入口（`python -m frontier_eval`）
+- `frontier_eval/tasks/`: 所有评测任务
+- `frontier_eval/algorithms/`: 所有算法（目前支持接入 `openevolve`）
+- `frontier_eval/conf/`: Hydra 配置（task / algorithm / llm）
 
-## Environment Setup
+## 环境准备
 
-Conda is recommended.
+推荐使用 conda。
 
-The simplest way is to run this at the repository root:
+最简单的方式是在仓库根目录执行：
 
-  bash init.sh
-  conda activate frontier-eval
+```bash
+bash init.sh
+conda activate frontier-eval
+```
 
-Manual installation:
+手动安装方式：
 
-  conda create -n frontier-eval python=3.12 -y
-  conda activate frontier-eval
+```bash
+conda create -n frontier-eval python=3.12 -y
+conda activate frontier-eval
 
-  # Octave + signal/control
-  conda install -c conda-forge octave octave-signal octave-control -y
+# Octave + signal/control
+conda install -c conda-forge octave octave-signal octave-control -y
 
-  pip install -r frontier_eval/requirements.txt
+pip install -r frontier_eval/requirements.txt
+```
 
-Environment variables (recommended via `.env`):
+环境变量（推荐用 `.env`）：
 
-  cp .env.example .env
-  # Edit .env and fill in OPENAI_API_KEY / OPENAI_API_BASE, etc.
+```bash
+cp .env.example .env
+# 编辑 .env，写入 OPENAI_API_KEY / OPENAI_API_BASE 等
+```
 
-When running `python -m frontier_eval ...`, it will automatically search upward from the current directory and load the nearest `.env`.
+运行 `python -m frontier_eval ...` 时会自动从当前目录向上查找并加载最近的 `.env`。
 
-## Run
+## 运行
 
-  python -m frontier_eval algorithm.iterations=10
+```bash
+python -m frontier_eval algorithm.iterations=10
+```
 
-## Batch Evaluation
+## 批量评测
 
-Use the batch runner (it will write each combination into an independent `run.output_dir`, and aggregate results into `summary.jsonl`):
+使用 batch runner（会为每个组合写入独立的 `run.output_dir`，并汇总到 `summary.jsonl`）：
 
-  python -m frontier_eval.batch --matrix frontier_eval/conf/batch/example_matrix.yaml
+```bash
+python -m frontier_eval.batch --matrix frontier_eval/conf/batch/example_matrix.yaml
+```
 
-## Extending (Adding a Task / Algorithm)
+## 扩展方式（新增 task / algorithm）
 
-- Add a task: implement a `Task` subclass in `frontier_eval/tasks/base.py`
-  (initial_program_path() + evaluate_program()), and register it in
-  `frontier_eval/registry_tasks.py` (or keep using `get_task` in `frontier_eval/registry.py`).
-
-- Add an algorithm: implement an `Algorithm` subclass in `frontier_eval/algorithms/base.py`,
-  and register it in `frontier_eval/registry_algorithms.py`.
+- 新增任务：实现 `frontier_eval/tasks/base.py` 的 `Task` 子类（`initial_program_path()` + `evaluate_program()`），并在 `frontier_eval/registry_tasks.py` 注册（或继续用 `frontier_eval/registry.py` 的 `get_task`）。
+- 新增算法：实现 `frontier_eval/algorithms/base.py` 的 `Algorithm` 子类，并在 `frontier_eval/registry_algorithms.py` 注册。

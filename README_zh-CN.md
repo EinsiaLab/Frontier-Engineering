@@ -91,8 +91,8 @@
 > 即使你暂时无法提供完整的验证代码，我们也非常欢迎你分享好的**Task 构想**！
 > 请创建一个 Issue 详细描述该问题的**现实背景**与**工程价值**。经讨论确认后，我们会将其加入上表，集结社区力量共同攻克。
 
-## 🧪 评测框架
-初步实现部分评测算法与 benchmark 的对接。实现的核心部分见 `./frontier_eval`，使用方法详见[评测 README](frontier_eval/README_zh-CN.md)。
+## 🧪 Evaluation Framework
+An initial integration between some evaluation algorithms and benchmarks has been implemented. The core implementation is located in `./frontier_eval`. For usage instructions, see the [Evaluation README](frontier_eval/README.md).
 
 ## 💬 加入社区
 
