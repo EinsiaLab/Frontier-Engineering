@@ -100,3 +100,10 @@ The table below lists the current coverage of domain tasks in the Benchmark. We 
 > 💡 **Have an idea for a new engineering problem?**
 > Even if you cannot provide complete verification code for now, we highly welcome you to share good **Task concepts**!
 > Please create an Issue detailing the **real-world background** and **engineering value** of the problem. After discussion and confirmation, we will add it to the table above to rally community power to solve it together.
+
+## 💬 Join the Community
+Welcome to our developer community! Whether you want to discuss new engineering problem concepts, find task collaborators, or encounter technical issues during your contribution, you can always communicate with us in the group.
+
+* 🟢 **Feishu (Lark)**: [Click here to join our Feishu discussion group](https://applink.feishu.cn/client/chat/chatter/add_by_link?link_token=a1cuff9f-347a-43ce-8825-79c2a38038c6)
+
+* 🔜 **Discord / Slack**: (Preparing, coming soon...)
