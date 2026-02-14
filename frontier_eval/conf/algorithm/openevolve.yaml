@@ -3,6 +3,13 @@ iterations: 0
 checkpoint_interval: 25
 max_code_length: 20000
 
+# Optional: load a native OpenEvolve YAML config first (path relative to repo root).
+oe_config_path: null
+
+# Extra OpenEvolve Config overrides (merged after `oe_config_path`).
+# You can put any OpenEvolve keys here, e.g. `prompt`, `database`, `evaluator`, `diff_based_evolution`, ...
+oe: {}
+
 # Logging / export
 save_db: true
 export_history: true

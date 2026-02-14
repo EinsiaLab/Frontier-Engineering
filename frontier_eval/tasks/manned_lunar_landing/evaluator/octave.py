@@ -10,13 +10,21 @@ import time
 from pathlib import Path
 
 
+def _is_repo_root(path: Path) -> bool:
+    if not (path / "frontier_eval").is_dir():
+        return False
+    if (path / "benchmarks").is_dir():
+        return True
+    return (path / "Astrodynamics").is_dir() and (path / "ElectronicDesignAutomation").is_dir()
+
+
 def _find_repo_root() -> Path:
     if "FRONTIER_ENGINEERING_ROOT" in os.environ:
         return Path(os.environ["FRONTIER_ENGINEERING_ROOT"]).expanduser().resolve()
 
     here = Path(__file__).resolve()
     for parent in [here.parent, *here.parents]:
-        if (parent / "Astrodynamics").is_dir() and (parent / "ElectronicDesignAutomation").is_dir():
+        if _is_repo_root(parent):
             return parent
     return Path.cwd().resolve()
 
@@ -35,16 +43,16 @@ def _truncate_middle(text: str, limit: int = 200_000) -> str:
     return text[:keep] + f"\n\n[... truncated {omitted} chars ...]\n\n" + text[-keep:]
 
 
-def evaluate(program_path: str):
+def evaluate(program_path: str, *, repo_root: Path | None = None):
     """
-    OpenEvolve evaluator for Astrodynamics/MannedLunarLanding.
+    OpenEvolve Evaluator for benchmarks/Astrodynamics/MannedLunarLanding.
 
     - Runs the candidate program to generate `results.txt`
     - Runs Octave validator `aerodynamics_check_octave_full.m`
     - Parses `outputlog.txt` for pass/fail and payload
     """
     start = time.time()
-    repo_root = _find_repo_root()
+    repo_root = _find_repo_root() if repo_root is None else repo_root.expanduser().resolve()
     program_path = str(Path(program_path).expanduser().resolve())
 
     work_dir = Path(tempfile.mkdtemp(prefix="fe_mll_")).resolve()
@@ -95,7 +103,9 @@ def evaluate(program_path: str):
             pass
 
         # 2) Run Octave validator
-        eval_dir = (repo_root / "Astrodynamics" / "MannedLunarLanding" / "eval").resolve()
+        eval_dir = (repo_root / "benchmarks" / "Astrodynamics" / "MannedLunarLanding" / "eval").resolve()
+        if not eval_dir.is_dir():
+            eval_dir = (repo_root / "Astrodynamics" / "MannedLunarLanding" / "eval").resolve()
         if not eval_dir.is_dir():
             artifacts["error_message"] = f"eval dir not found: {eval_dir}"
             metrics["runtime_s"] = float(time.time() - start)

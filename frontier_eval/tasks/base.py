@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from pathlib import Path
+from typing import Any
 
 from omegaconf import DictConfig
 
@@ -17,5 +18,4 @@ class Task(ABC):
     def initial_program_path(self) -> Path: ...
 
     @abstractmethod
-    def openevolve_evaluator_path(self) -> Path: ...
-
+    def evaluate_program(self, program_path: Path) -> Any: ...
