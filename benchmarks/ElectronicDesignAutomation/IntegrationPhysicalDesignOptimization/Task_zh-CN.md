@@ -1,140 +1,127 @@
-# Engineering Bench Case 2
+# 增量布局优化：超越详细布局的门级尺寸调整、缓冲器插入与单元重定位同步优化
 
-## 问题背景
+**作者：** Yi-Chen Lu, Rongjian Liang, Wen-Hao Liu, and Haoxing (Mark) Ren  
+**所属机构：** NVIDIA
 
-2025 集成电路计算机辅助设计(EDA)——物理设计优化
+## 0. 修订历史
+* 2025-09-03：更新运行时间评分标准
+* 2025-07-30：修正少量拼写错误
+* 2025-07-23：更新提交及输出格式要求
+* 2025-06-21：更新环境配置；评分细则说明
+* 2025-05-06：环境配置更新
+* 2025-05-05：完善评分细则说明
 
-## 1. 题目背景
+## 1. 引言
+增量布局优化是现代物理设计（PD）中的关键阶段，其目标是精炼初始布局后的功耗、性能和面积（PPA）指标。然而，传统的增量布局流程本质上是迭代式的，依赖于多轮物理优化（包括门级尺寸调整、缓冲器插入和单元重定位），且每轮之后都需进行静态时序分析（STA）来验证 PPA 的改进。这一过程不仅耗时，而且由于每项新的变换都必须兼顾先前的修改和约束，导致其本质上是次优的。例如，解决一条关键路径的优化可能会恶化另一条路径或违反合法性约束。因此，迫切需要一种更具整体性、系统性的全局 PPA 优化方法。
 
-随着半导体工艺迈入纳米级（如7nm及以下），超大规模集成电路（VLSI）的设计复杂度呈指数级增长。在物理设计的后期阶段（Late-stage Placement Optimization），时序（Timing）、功耗（Power）和面积（Area）的权衡变得极为严苛。传统的基于CPU的启发式算法在处理包含数百万个节点的离散组合系统时，往往陷入局部最优，难以在有限时间内找到全局最优解。
-为了突破这一瓶颈，利用现代高性能计算（HPC）技术（如GPU加速、可微编程）进行电路优化成为工业界和学术界的研究热点。本任务“增量布局优化”为背景，要求在地月级（Million-gate）规模的芯片网表上，利用逻辑门尺寸调整、缓冲器插入和单元移动等手段，在严格的物理约束下修复时序违例并降低静态功耗。
+本次竞赛专门针对这些挑战，鼓励参赛者超越局部的、临时的调整。竞赛邀请参赛者采用整合了门级尺寸调整（Gate Sizing）、缓冲器插入（Buffering）和单元重定位（Cell Relocation）的统一方法，而非局限于孤立的物理调整。通过集成这些技术，本次竞赛旨在释放比传统增量流程更高的设计质量，从而在时序、功耗和线长之间实现更好的权衡。重要的是，最终的布局方案必须在实现全局改进的同时，严格遵守布局合法性和设计规则。
 
-## 2. 题目描述
+为了应对现实世界设计的规模并进行大规模全局 PPA 优化，强烈建议（但不强制）参赛者探索现代机器学习（ML）基础设施（如 PyTorch [1]），利用其通过 GPU 加速反向传播提供的梯度优化能力。近年来，此类技术在处理大规模 PD 优化问题中展现了巨大潜力 [2][3][4][5]。虽然 GPU 或 ML 的使用是可选的，但参赛者应意识到，创造性地应用这些技术可能在方案质量和运行时间上获得显著优势。然而，核心重点依然在于通过任何高效手段实现超越传统工具的最佳 PPA 改进。
 
-为了模拟真实的工业场景，任务给定一个已经完成布局布线（Place & Route）但处于时序不满足或功耗过高状态的芯片设计。参赛者需要开发一个优化程序，对电路进行“微创手术”。
+## 2. 竞赛目标
+本次竞赛的目标是通过协调以下方法来增强初始种子布局的 PPA：
+1. **单元重定位：** 实现有效且干扰最小（即位移最小）的全局单元移动（包括标准单元和宏单元）。
+2. **门级尺寸调整：** 选择备选的库单元变体（例如不同的驱动强度、面积或阈值电压（VT）类型）以实现最佳的时序-功耗平衡。
+3. **缓冲器插入：** 在必要位置引入缓冲器（包括反相器对），以最小的面积开销降低关键路径或高扇出净线的延迟。
 
-### 2.1 任务主要流程
+请注意，对种子布局的所有修改必须产生合法的物理设计。即：单元必须位于有效位点上，不得重叠，且 IO 端口位置必须保持不变。此外还将进行网表功能性检查。
 
-- 加载设计：读取基于工业标准格式（Verilog, DEF, LEF, Liberty）的电路网表和物理库。
-- 增量优化：在保持电路逻辑功能不变的前提下，通过调整门尺寸、插入缓冲器或移动单元位置，优化电路的PPA（Power, Performance, Area）指标。
-- 合法化与输出：确保所有修改在物理上是合法的（无重叠、对齐网格），并输出最终的布局文件（DEF）及工程变更单（ECO）。
+## 3. 问题定义
+### 3.1 输入格式
+参赛者将获得解决增量布局优化挑战所需的所有文件。设计数据采用标准 EDA 文件格式：
+* **Verilog 网表 (.v)：** 定义逻辑连接性的门级网表。
+* **DEF 文件 (.def)：** 初始布局的完整设计交换格式文件。
+* **Bookshelf 文件 [6]：**
+    * `.nodes`：设计实例列表及其尺寸。
+    * `.nets`：引脚间的连接信息。
+    * `.pl`：种子布局的单元坐标。
+    * `.scl`：定义版图规划（如核心区域和布局栅格）。
+* **ASAP7 库文件：** 本次竞赛使用 ASAP7 库，提供：
+    * `.lib`：包含转换时间/延迟/功耗查找表的时序和功耗库。
+    * `.lef`：描述物理尺寸的技术和单元 LEF 文件。
 
-### 2.2 流程细节补充说明
+竞赛将提供一个示例设计集（包括完整的 Bookshelf 格式设计和相应的 ASAP7 库文件）作为参考。
 
-- A. 逻辑门尺寸调整 (Gate Sizing)：
-  可以将网表中的实例（Instance）替换为库中功能相同但驱动能力不同（如从 X1 变为 X4）的单元。限制：新旧单元必须功能兼容（Footprint Compatible），且来自同一个逻辑库。
-- B. 缓冲器插入 (Buffer Insertion)：
-  允许在连线上插入缓冲器以解耦长导线的电容负载或修复时序。限制：插入的缓冲器必须有物理空间放置，且不能引起严重的局部拥塞。
-- C. 单元重定位 (Cell Relocation)：
-  允许在局部范围内微调单元的坐标 $(x, y)$。注意：尺寸调整通常会引起面积变化，进而导致周围单元重叠。必须通过移动周围单元（多米诺骨牌效应）来消除重叠，即实现“合法化”（Legalization）。
+### 3.2 输出格式
+参赛者需提交更新后的 DEF 格式布局文件。主要输出包括：
+1. 更新后的 **.def 文件**，反映应用单元重定位、尺寸调整和缓冲后的最终方案。
+2. 一份 **ECO 变更列表 (Changelist)**，按顺序详述尺寸调整和缓冲变换：
+    * **a. 尺寸调整命令：**
+        * `size_cell <cellName> <libCellName>`
+        * *说明：* `<cellName>` 必须存在于原始网表中；`<libCellName>` 必须存在于库中；新单元必须与原单元功能相同。
+    * **b. 缓冲命令：**
+        * `insert_buffer <{一个或多个负载引脚名称}> <库缓冲器名称> <新缓冲器实例名> <新缓冲净线名>`
+        * `insert_buffer -inverter_pairs {一个或多个负载引脚名称} <库反相器名称> {<新反相器实例名列表>} {<新净线名列表>}`
+        * *说明：* 遵循 Synopsys PrimeTime 格式 [7]。缓冲包括插入缓冲器和反相器对。新实例名必须与更新后的 .pl 文件匹配。对于反相器对，需指定每个反相器的名称及新创建的净线名称。
 
-## 3. 设计环境与输入定义
+参赛者必须提交一份变更列表文件（可以为空）。命令将自上而下处理，后执行的变换会覆盖之前的。任何无效的 ECO 命令将被跳过。
 
-工艺节点：采用 ASAP7 PDK（7nm 预测工艺库），包含真实的多阈值电压（RVT, LVT, SLVT）单元。
+输出必须满足以下标准：
+* **合法布局：** 单元必须位于有效位点且无重叠。
+* **固定 IO 端口：** IO 端口及任何固定的宏单元/单元位置不得改变。
+* **库一致性：** 输出文件应与输入网表及库约束完全一致。
 
-输入文件：
+### 3.3 评分与评估指标
+提交的作品将根据 PPA 改进情况进行综合评分，同时对过度的单元位移和低效的运行时间进行惩罚。总分 $S$ 的计算组件如下：
 
-- Verilog Netlist (.v)：电路的逻辑连接关系（骨架）。
-- DEF (.def)：电路的物理布局信息，包含所有单元的坐标、方向和放置状态（肉体）。
-- Liberty Library (.lib)：标准单元的时序和功耗模型（物理法则）。
-- Parasitics (.spef)：互连线的寄生电阻电容参数。
+**PPA 改进 (P)：**
+* **时序改进 ($TNS_{norm}$):**
+  $$TNS_{norm}=\frac{TNS_{solution}-TNS_{seed}}{|TNS_{seed}|}$$
+* **功耗降低 ($Power_{norm}$):**
+  $$Power_{norm} = \frac{Power_{solution} - Power_{seed}}{Power_{seed}}$$
+* **线长减少 ($WL_{norm}$):**
+  $$WL_{norm}=\frac{WL_{solution}-WL_{seed}}{WL_{seed}}$$
 
-## 4. 物理模型与计算公式
+综合 PPA 改进得分 $P$ 计算如下：
+$$P=\alpha \cdot TNS_{norm} + \beta \cdot Power_{norm} + \gamma \cdot WL_{norm}$$
+其中权重因子 $\alpha, \beta, \gamma$ 将根据具体测试用例而定。PPA 指标将由 OpenROAD [8] 验证。
 
-本任务涉及静态时序分析（STA）和功耗计算，需遵循以下物理模型。
+**平均位移惩罚 (D)：**
+为防止过度的设计扰动，计算每个单元的平均曼哈顿位移（以有效位点为单位）。
+* $D$ = 每个单元的平均曼哈顿位移（相对于种子布局进行归一化）。
 
-### 4.1 延迟模型 (Delay Model)
+**运行时间效率 (R)：**
+算法的总运行时间将针对每个测试用例的预定义参考值进行归一化。
 
-电路延迟由门延迟和互连线延迟组成。
+### 3.4 每个设计的最终得分计算 (S)
+最终综合得分 $S$ 定义为：
+$$S=1000 \times P - 50 \times D - 30 \times R$$
 
-互连线延迟：使用 Elmore 延迟模型。对于电阻为 $R$、电容为 $C$ 的导线，驱动负载 $C_{load}$ 的延迟近似为：
+所有 $P, D, R$ 均可视为相对于种子指标的“改进百分比”。如前所述，GPU 加速技术是竞赛鼓励的方向，因此运行时间表现是最终评估的关键因素。
 
-$$
-\tau = R \cdot (\frac{C}{2} + C_{load})
-$$
+## 4. 评估环境
+所有提交将在基于提供的 Dockerfile 构建的容器中运行（Ubuntu 20.04）：
+* **CPU:** 8x Intel Xeon vCPUs
+* **RAM:** 32 GB
+* **GPU:** 1 NVIDIA A100 (40 GB HBM2)
+* **CUDA:** 11.8
+* **环境:** 通过 `lagrange_env.yaml` 安装的 Python 3.9 (Mambaforge)
 
-门延迟 (NLDM)：基于非线性延迟模型（NLDM），通过二维查找表计算。门延迟 $D_{gate}$ 和输出转换时间 $S_{out}$ 为输入转换时间 $S_{in}$ 和负载电容 $C_{out}$ 的函数：
+## 5. 提交与输出格式
+提交名为 `solution.tar.gz` 的压缩包，解压后目录结构如下：
+```text
+solution/ 
+├── setup_environment.sh  <-- 首先执行（安装依赖）
+├── run.sh                 <-- 其次执行（运行方案）
+├── <其他文件夹/文件/二进制等>
+└── testcases/            <-- (由主办方提供)
 
-$$
-D_{gate} = f(C_{out}, S_{in})
-$$
+```
 
-$$
-S_{out} = g(C_{out}, S_{in})
-$$
+`run.sh` 需接受四个参数：
+`./run.sh <design_name> <TNS_weight, α> <power_weight, β> <WL_weight, γ>`
 
-### 4.2 功耗模型 (Power Model)
+脚本需在 `solution/` 目录下生成：
 
-重点关注静态漏功耗（Leakage Power），计算公式如下：
+* `<design_name>.sol.def`
+* `<design_name>.sol.changelist`
 
-$$
-P_{total} \approx P_{leakage} = \sum_{i \in Cells} I_{leak}(Cell_i, State_i) \cdot V_{DD}
-$$
+## 6. 参考文献
 
-其中 $I_{leak}$ 与晶体管阈值电压 $V_{th}$ 呈指数关系。优化目标是用高 $V_{th}$（低功耗、慢）的门替换低 $V_{th}$（高功耗、快）的门。
-
-### 4.3 物理位移 (Displacement)
-
-增量优化带来的平均位移量定义为：
-
-$$
-D = \sum_{i \in MovedCells} (|x_i - x_{i,initial}| + |y_i - y_{i,initial}|)
-$$
-
-## 5. 评分标准 (Cost Function)
-
-基准测试的评分由收益项 (Reward) 和 惩罚项 (Penalty) 组成。
-
-$$
-Score = Reward - Penalty
-$$
-
-### 5.1 收益计算
-
-收益基于相对于初始基准线（Baseline）的优化幅度。
-
-$$
-Reward = 1000 \cdot (0.6 \cdot \frac{\Delta TNS}{|TNS_{base}|} + 0.3 \cdot \frac{\Delta Lkg}{P_{base}} + 0.1 \cdot \frac{\Delta Area}{A_{base}})
-$$
-
-TNS (Total Negative Slack)：总负时序裕量，代表电路时序违例的总和（主要优化目标）。
-Lkg (Leakage)：总漏功耗。
-Area：芯片总面积。
-
-### 5.2 修正评分公式 (ICCAD 2025)
-
-为了限制过度的布局变动，实际评分引入了位移惩罚项：
-
-$$
-S_{final} = S_{reward} - \lambda_{disp} \cdot \sum Dist(cell_i)
-$$
-
-## 6. 约束条件
-
-- 时序约束：建立时间 (Setup Time)：$AT_{data} + T_{setup} \le T_{clk} + T_{skew}$。优化后的 WNS (Worst Negative Slack) 和 TNS 必须得到改善或至少不恶化。
-- 物理合法性 (Legalization)：所有标准单元必须放置在预定义的行（Row）上。单元坐标必须是 Site 宽度的整数倍。单元之间严禁重叠。
-- 设计规则检查 (DRC)：Max Capacitance：节点的负载电容不能超过库定义的上限。Max Slew：信号转换时间不能超过上限。惩罚：每发生一次 DRC 违例，扣除 50分。
-- 运行时间限制：优化过程必须在规定的时间预算内完成（例如对应规模电路需在1小时内完成），超时将导致无法获得完整分数。
-
-## 7. 结果文件格式
-
-为了验证计算结果的正确性，参赛程序需输出以下标准格式文件。
-
-### 7.1 输出文件
-
-- Solution DEF (.def)：包含优化后所有单元最终位置和连接关系的完整布局文件。
-- ECO Changelist：记录所有网表变更（Resize, Insert Buffer, Move）的文本列表，用于重放验证。
-
-### 7.2 验证指标说明
-
-评分脚本将基于 OpenROAD/OpenSTA 工具产生的报告进行解析，主要关注以下指标：
-
-| 指标 (Metric) | 单位 | 说明 | 期望目标 |
-| --- | --- | --- | --- |
-| WNS | ns | 最差负时序裕量 | $> -0.100$ ns |
-| TNS | ns | 总负时序裕量 | 消除 98% 以上 |
-| Leakage Power | mW | 静态漏功耗 | 降低 8-10% |
-| Avg Displacement | $\mu m$ | 平均单元位移 | 尽可能小 (< 5 $\mu m$) |
-| DRC Violations | Count | 设计规则违例数 | 0 |
-
-注意：如果输出的 DEF 文件无法被 OpenROAD 正确解析，或存在未修复的物理重叠（Illegal Placement），该测试用例得分将直接记为 0分。
+[1] Imambi, Sagar, Kolla Bhanu Prakash, and G. R. Kanagachidambaresan. "PyTorch." Programming with TensorFlow: solution for edge computing applications (2021): 87-104. 
+[2] Du, Yufan, et al. "Fusion of Global Placement and Gate Sizing with Differentiable Optimization." ICCAD. 2024. 
+[3] Guo, Zizheng, and Yibo Lin. "Differentiable-timing-driven global placement." Proceedings of the 59th ACM/IEEE Design Automation Conference. 2022. 
+[4] Lin, Yibo, et al. "Dreamplace: Deep learning toolkit-enabled gpu acceleration for modern visi placement." Proceedings of the 56th ACM/IEEE Annual Design Automation Conference 2019. 
+[5] Lu, Yi-Chen, et al. "INSTA: An Ultra-Fast, Differentiable, Statistical Static Timing Analysis Engine for Industrial Physical Design Applications" Proceedings of the 62th ACM/IEEE Annual Design Automation Conference 2025. [6] Bookshelf format reference: http://vlsicad.eecs.umich.edu/BK/ISPD06bench/BookshelfFormat.txt 
+[7] PrimeTime User Guide, Advanced Timing Analysis. V-2018.03, Synopsys Online Documentation 
+[8] Ajayi, Tutu, and David Blaauw. "OpenROAD: Toward a self-driving, open-source digital layout implementation tool chain." Proceedings of Government Microcircuit Applications and Critical Technology Conference. 2019. 
