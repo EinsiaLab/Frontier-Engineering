@@ -95,7 +95,10 @@ The table below lists the current coverage of domain tasks in the Benchmark. We 
 | Domain | Task Name | Status | Maintainer/Contributor | Remarks |
 | --- | --- | --- | --- | --- |
 | **Astrodynamics** | `MannedLunarLanding` | Completed | @jdp22 | Lunar soft landing trajectory optimization |
-| **ElectronicDesignAutomation** | `IntegrationPhysicalDesignOptimization` | In Development | @ahydchh | Chip macro placement optimization |
+| **Electronic Design Automation** | `Integration Physical Design Optimization` | Under Development | @ahydchh | Chip Macrocell Layout Optimization |
+| **Kernel Engineering** | `MLA` | Basically Completed, Awaiting Verification | @ahydchh | Kernel Engineering |
+| **Kernel Engineering** | `TriMul` | Basically Completed, Awaiting Verification | @ahydchh | Kernel Engineering |
+| **Single Cell Analysis** | `denoising` | Basically Completed, Awaiting Verification | @ahydchh | Single Cell Analysis |
 
 > 💡 **Have an idea for a new engineering problem?**
 > Even if you cannot provide complete verification code for now, we highly welcome you to share good **Task concepts**!

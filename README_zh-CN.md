@@ -86,6 +86,9 @@
 | :--- | :--- | :---: | :--- | :--- |
 | **Astrodynamics** | `MannedLunarLanding` | 已完成 | @jdp22 | 登月软着陆轨迹优化 |
 | **ElectronicDesignAutomation** | `IntegrationPhysicalDesignOptimization` | 开发中 | @ahydchh | 芯片宏单元布局优化 |
+| **KernelEngineering** | `MLA` | 已基本完成，待验证 | @ahydchh | 内核工程 |
+| **KernelEngineering** | `TriMul` | 已基本完成，待验证 | @ahydchh | 内核工程 |
+| **SingleCellAnalysis** | `denoising` | 已基本完成，待验证 | @ahydchh | 单细胞分析 |
 
 > 💡 **有新的工程问题想法？**
 > 即使你暂时无法提供完整的验证代码，我们也非常欢迎你分享好的**Task 构想**！
