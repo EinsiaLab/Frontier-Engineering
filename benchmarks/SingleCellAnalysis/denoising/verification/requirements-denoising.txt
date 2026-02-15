@@ -1,0 +1,56 @@
+# Core scientific
+numpy==2.3.5
+scipy==1.17.0
+scikit-learn==1.8.0
+pandas==2.3.3
+matplotlib==3.10.8
+
+# Single-cell (openproblems/denoising)
+scanpy==1.11.5
+anndata==0.12.7
+scprep==1.1.0
+graphtools==2.1.0
+numba==0.63.1
+magic-impute==3.0.0
+
+# ML/DL
+torch==2.9.1
+transformers==4.57.5
+datasets==4.4.2
+tokenizers==0.22.2
+safetensors==0.7.0
+huggingface-hub==0.36.0
+
+# Distributed/Training
+ray==2.53.0
+submitit==1.5.4
+wandb==0.23.1
+
+# Config
+hydra-core==1.3.2
+omegaconf==2.3.0
+pydantic==2.12.5
+
+# LLM APIs
+openai==2.15.0
+anthropic==0.76.0
+tiktoken
+litellm
+
+# Utils
+tqdm==4.67.1
+termcolor==3.3.0
+rich==14.2.0
+polars
+
+# Tinker
+tinker==0.7.0
+
+# Jupyter
+ipykernel==7.1.0
+jupyter
+
+# Git dependencies (install separately):
+# uv pip install git+https://github.com/czbiohub/simscity.git
+# uv pip install --no-deps git+https://github.com/czbiohub/molecular-cross-validation.git
+# uv pip install -e /local/openproblems

@@ -1,0 +1,33 @@
+diff --git a/openproblems/data/tabula_muris_senis.py b/openproblems/data/tabula_muris_senis.py
+index fd871744..ede2257f 100644
+--- a/openproblems/data/tabula_muris_senis.py
++++ b/openproblems/data/tabula_muris_senis.py
+@@ -60,24 +60,18 @@ def matching_dataset(dataset, method_list, organ_list):
+ def load_raw_counts(dataset):
+     import scanpy as sc
+ 
+-    dataset_id = dataset["id"]
+-    assets_path = (
+-        f"/curation/v1/collections/{COLLECTION_ID}/datasets/{dataset_id}/assets"
+-    )
+-    url = f"{API_BASE}{assets_path}"
+-    assets = _get_json(url)
+-    assets = [asset for asset in assets if asset["filetype"] == "H5AD"]
++    dataset_id = dataset["dataset_id"]
++    assets = [asset for asset in dataset["assets"] if asset["filetype"] == "H5AD"]
+     assert len(assets) == 1
+     asset = assets[0]
+ 
+-    filename = f"{COLLECTION_ID}_{dataset_id}_{asset['filename']}"
++    filename = f"{COLLECTION_ID}_{dataset_id}.h5ad"
+     with tempfile.TemporaryDirectory() as tempdir:
+         filepath = os.path.join(tempdir, filename)
+-        scprep.io.download.download_url(asset["presigned_url"], filepath)
++        scprep.io.download.download_url(asset["url"], filepath)
+         adata = sc.read_h5ad(filepath)
+ 
+     utils.filter_genes_cells(adata)
+-    # If `raw` exists, raw counts are there
+     if getattr(adata, "raw", None) is not None:
+         return adata.raw.to_adata()
+     return adata
