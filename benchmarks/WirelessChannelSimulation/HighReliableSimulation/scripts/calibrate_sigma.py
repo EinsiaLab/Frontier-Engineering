@@ -6,10 +6,8 @@ from __future__ import annotations
 import argparse
 import json
 import math
-import os
 import sys
 import time
-from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
 
@@ -17,27 +15,16 @@ import numpy as np
 from numpy.random import Generator, Philox
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
-RELIABLE_SIM_ROOT = REPO_ROOT / "reliable_sim"
-sys.path.insert(0, str(RELIABLE_SIM_ROOT))
+TASK_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(TASK_ROOT / "runtime"))
 
 from chase import ChaseDecoder
 from code_linear import HammingCode
 from sampler import BesselSampler, NaiveSampler
 
 
-@contextmanager
-def _pushd(path: Path):
-    old = Path.cwd()
-    os.chdir(path)
-    try:
-        yield
-    finally:
-        os.chdir(old)
-
-
 def build_code(seed: int = 0) -> HammingCode:
-    with _pushd(RELIABLE_SIM_ROOT):
-        code = HammingCode(r=7, decoder="binary")
+    code = HammingCode(r=7, decoder="binary")
     code.rng = Generator(Philox(seed))
     code.set_decoder(ChaseDecoder(code=code, t=3))
     return code
