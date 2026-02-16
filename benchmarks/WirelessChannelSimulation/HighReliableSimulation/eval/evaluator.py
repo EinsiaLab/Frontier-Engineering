@@ -5,8 +5,6 @@ import json
 import math
 import time
 import traceback
-import os
-from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
 
@@ -28,7 +26,7 @@ T0_DEV = 0.18551087379455566
 
 
 def _is_repo_root(path: Path) -> bool:
-    return (path / "reliable_sim").is_dir() and (path / "frontier_eval").is_dir()
+    return (path / "benchmarks").is_dir() and (path / "frontier_eval").is_dir()
 
 
 def _find_repo_root() -> Path:
@@ -54,16 +52,6 @@ def _load_program_module(program_path: Path):
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
-
-
-@contextmanager
-def _pushd(path: Path):
-    old = Path.cwd()
-    os.chdir(path)
-    try:
-        yield
-    finally:
-        os.chdir(old)
 
 
 def _normalize_result(result: Any) -> tuple[float, float, float, float, float, float]:
@@ -97,12 +85,18 @@ def _normalize_result(result: Any) -> tuple[float, float, float, float, float, f
 def _build_code(repo_root: Path, seed: int):
     import sys
 
-    sys.path.insert(0, str(repo_root / "reliable_sim"))
+    runtime_dir = (
+        repo_root
+        / "benchmarks"
+        / "WirelessChannelSimulation"
+        / "HighReliableSimulation"
+        / "runtime"
+    )
+    sys.path.insert(0, str(runtime_dir))
     from chase import ChaseDecoder
     from code_linear import HammingCode
 
-    with _pushd(repo_root / "reliable_sim"):
-        code = HammingCode(r=7, decoder="binary")
+    code = HammingCode(r=7, decoder="binary")
     code.rng = Generator(Philox(seed))
     code.set_decoder(ChaseDecoder(code=code, t=3))
     return code
@@ -125,7 +119,14 @@ def evaluate(program_path: str, *, repo_root: Path | None = None):
     try:
         import sys
 
-        sys.path.insert(0, str(repo_root / "reliable_sim"))
+        runtime_dir = (
+            repo_root
+            / "benchmarks"
+            / "WirelessChannelSimulation"
+            / "HighReliableSimulation"
+            / "runtime"
+        )
+        sys.path.insert(0, str(runtime_dir))
         from sampler import SamplerBase
 
         module = _load_program_module(program)

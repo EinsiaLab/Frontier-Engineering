@@ -14,6 +14,9 @@ pip install numpy scipy
 pip install omegaconf hydra-core
 ```
 
+说明：
+- 本任务核心运行依赖已内置到 `runtime/`，不需要从 `reliable_sim` 导入模块。
+
 ## 2. 快速验证任务代码
 
 运行初始提交（`NaiveSampler`）：
@@ -139,4 +142,3 @@ python -m frontier_eval task=high_reliable_simulation algorithm.iterations=0
 ```
 
 `iterations=0` 仅用于验证任务加载与评测入口，不进行演化。
-

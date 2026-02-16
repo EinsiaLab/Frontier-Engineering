@@ -18,6 +18,10 @@ HighReliableSimulation/
 │   └── calibrate_sigma.py
 ├── baseline/
 │   └── solution.py
+├── runtime/
+│   ├── code_linear.py
+│   ├── sampler.py
+│   └── chase.py
 └── eval/
     └── evaluator.py
 ```
@@ -45,6 +49,7 @@ PY
 - 当前评测常量已冻结为 `sigma=0.268`（见 `Task.md` 与 `calibration.md`）。
 - 标定脚本：`scripts/calibrate_sigma.py`
 - 标定记录：`calibration.md`、`calibration_final.json`
+- 运行依赖已内置在 `runtime/`，不依赖仓库根目录 `reliable_sim`。
 
 ## 详细用法
 

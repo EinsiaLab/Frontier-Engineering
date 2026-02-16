@@ -4,30 +4,17 @@
 from __future__ import annotations
 
 import sys
-import os
-from contextlib import contextmanager
 from pathlib import Path
 
 import numpy as np
 from numpy.random import Generator, Philox
 
-# 将 reliable_sim 加入路径
-REPO_ROOT = Path(__file__).resolve().parents[4]
-sys.path.insert(0, str(REPO_ROOT / "reliable_sim"))
+TASK_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(TASK_ROOT / "runtime"))
 
 from chase import ChaseDecoder
 from code_linear import HammingCode
 from sampler import NaiveSampler
-
-
-@contextmanager
-def _pushd(path: Path):
-    old = Path.cwd()
-    os.chdir(path)
-    try:
-        yield
-    finally:
-        os.chdir(old)
 
 
 class MySampler(NaiveSampler):
@@ -63,8 +50,7 @@ class MySampler(NaiveSampler):
 
 
 def build_code() -> HammingCode:
-    with _pushd(REPO_ROOT / "reliable_sim"):
-        code = HammingCode(r=7, decoder="binary")
+    code = HammingCode(r=7, decoder="binary")
     code.set_decoder(ChaseDecoder(code=code, t=3))
     return code
 
