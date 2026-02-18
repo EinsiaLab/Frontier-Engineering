@@ -89,6 +89,7 @@
 | **KernelEngineering** | `MLA` | 已基本完成，待验证 | @ahydchh | 内核工程 |
 | **KernelEngineering** | `TriMul` | 已基本完成，待验证 | @ahydchh | 内核工程 |
 | **SingleCellAnalysis** | `denoising` | 已基本完成，待验证 | @ahydchh | 单细胞分析 |
+| **SingleCellAnalysis** | `perturbation_prediction` | 已完成 | — | OpenProblems 扰动响应预测（NeurIPS 2023 scPerturb） |
 
 > 💡 **有新的工程问题想法？**
 > 即使你暂时无法提供完整的验证代码，我们也非常欢迎你分享好的**Task 构想**！
