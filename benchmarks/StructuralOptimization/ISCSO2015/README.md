@@ -22,17 +22,27 @@ This folder contains the task specification, a Python-based FEM evaluator, and a
 - `verification/docker/Dockerfile`
   - Containerized evaluation environment for reproducibility.
 
+- `baseline/random_search.py`
+  - Simple random search baseline. Fast and straightforward approach for quick results.
+  
 - `baseline/differential_evolution.py`
-  - Reference optimization script using `scipy.optimize.differential_evolution`. Produces `submission.json`.
+  - Advanced optimization script using `scipy.optimize.differential_evolution`. More sophisticated but slower.
 
 ## Baseline Performance
 
-The baseline solution using `scipy.optimize.differential_evolution` achieves:
-- **Weight**: 342.59 kg
+### Simple Baseline (Random Search)
+- **Weight**: 3820.19 kg
 - **Feasible**: Yes (all constraints satisfied)
-- **Algorithm**: Differential Evolution (maxiter=200, popsize=30, seed=42)
+- **Algorithm**: Random Search (1000 evaluations, seed=42)
+- **Runtime**: ~4 seconds
 
-This provides a reference point for comparison. Better results can be achieved with more sophisticated algorithms, larger optimization budgets, or problem-specific heuristics.
+### Advanced Baseline (Differential Evolution)
+- **Weight**: 2902.88 kg
+- **Feasible**: Yes (all constraints satisfied)
+- **Algorithm**: Differential Evolution (maxiter=10, popsize=30, seed=42)
+- **Runtime**: ~105 seconds
+
+The simple baseline provides a quick reference point, while the advanced baseline demonstrates better performance with more computational effort. Better results can be achieved with more iterations, larger optimization budgets, or problem-specific heuristics.
 
 ## Quick Start
 
