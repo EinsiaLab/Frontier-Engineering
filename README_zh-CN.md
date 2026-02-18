@@ -88,8 +88,7 @@
 | **ElectronicDesignAutomation** | `IntegrationPhysicalDesignOptimization` | 开发中 | @ahydchh | 芯片宏单元布局优化 |
 | **KernelEngineering** | `MLA` | 已完成 | @ahydchh | 内核工程 |
 | **KernelEngineering** | `TriMul` | 已完成 | @ahydchh | 内核工程 |
-| **SingleCellAnalysis** | `denoising` | 已基本完成，但验证程序源自 test-time-training
-discover 并不完整 | @ahydchh | 单细胞分析 |
+| **SingleCellAnalysis** | `denoising` | 已基本完成，但验证程序源自 test-time-training discover 并不完整 | @ahydchh | 单细胞分析 |
 | **SingleCellAnalysis** | `perturbation_prediction` | 已完成 | — | OpenProblems 扰动响应预测（NeurIPS 2023 scPerturb） |
 
 > 💡 **有新的工程问题想法？**
