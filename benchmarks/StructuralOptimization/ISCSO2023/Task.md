@@ -97,51 +97,14 @@ For **each** load case `k = 0, 1, 2`:
 
 A solution is **feasible** if and only if ALL constraints are satisfied across ALL load cases.
 
-## 4. Physical Model — Finite Element Analysis
+## 4. Physical Model
 
-The structural response is computed using the **Direct Stiffness Method** for 3D truss structures.
+The structure is a **3D space truss** structure. The structural response (nodal displacements and member stresses) must be computed using appropriate structural analysis methods (e.g., finite element analysis) to evaluate constraint satisfaction.
 
-### 4.1 Element Stiffness Matrix
-
-For a 3D truss element connecting nodes `i` and `j` with cross-sectional area `A`, elastic modulus `E`, and length `L`:
-
-```
-Direction cosines:
-  l = (x_j - x_i) / L
-  m = (y_j - y_i) / L
-  n = (z_j - z_i) / L
-
-k_e = (E * A / L) * T^T * [1, -1; -1, 1] * T
-
-where T is the 2x6 transformation matrix:
-  T = [l  m  n  0  0  0]
-      [0  0  0  l  m  n]
-
-Expanded 6x6 element stiffness matrix:
-  k_e = (EA/L) * [ l²   lm   ln  -l²  -lm  -ln ]
-                  [ lm   m²   mn  -lm  -m²  -mn ]
-                  [ ln   mn   n²  -ln  -mn  -n² ]
-                  [-l²  -lm  -ln   l²   lm   ln ]
-                  [-lm  -m²  -mn   lm   m²   mn ]
-                  [-ln  -mn  -n²   ln   mn   n² ]
-```
-
-### 4.2 Global Assembly and Solution
-
-1. Assemble global stiffness matrix: `K = sum(k_e)` for all elements
-2. Apply boundary conditions (fix all 3 DOFs for bottom 4 nodes)
-3. Solve: `K * u = F` for nodal displacement vector `u`
-4. Extract element displacements from global `u`
-
-### 4.3 Stress Computation
-
-For each 3D truss element:
-
-```
-sigma_i = (E / L_i) * [-l, -m, -n, l, m, n] * u_element
-```
-
-where `l, m, n` are the direction cosines and `u_element` is the 6-component element displacement vector.
+Key physical relationships:
+- Member stress depends on the applied loads, member cross-sectional areas, and structural geometry
+- Nodal displacements depend on the structural stiffness, which is a function of member areas
+- Both stress and displacement constraints must be satisfied simultaneously under all load cases
 
 ## 5. Problem Data
 
