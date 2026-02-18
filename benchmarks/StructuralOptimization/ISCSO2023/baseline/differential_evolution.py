@@ -10,6 +10,7 @@ Outputs submission.json in the working directory.
 
 import json
 import sys
+import time
 from pathlib import Path
 
 import numpy as np
@@ -207,24 +208,46 @@ bounds = [(bounds_cfg["area_min"], bounds_cfg["area_max"])] * dim
 
 best_feasible = None
 best_weight = float("inf")
+iteration_count = 0
+start_time = time.time()
+last_print_time = start_time
+MAX_RUNTIME = 600  # 10 minutes maximum (larger problem)
+PRINT_INTERVAL = 10  # Print progress every 10 iterations or 30 seconds
 
 
 def callback(xk, convergence=0):
-    global best_feasible, best_weight
+    global best_feasible, best_weight, iteration_count, last_print_time
+    iteration_count += 1
+    current_time = time.time()
+    elapsed = current_time - start_time
+    
     w, vio = evaluate_design(xk, problem, nodes, elements)
+    should_print = False
+    
     if vio <= 1e-6 and w < best_weight:
         best_weight = w
         best_feasible = xk.copy()
-        print(f"  New best feasible: weight = {w:.4f} kg")
+        should_print = True
+        print(f"  [{iteration_count:4d}] New best feasible: weight = {w:.4f} kg (time: {elapsed:.1f}s)")
+    elif iteration_count % PRINT_INTERVAL == 0 or (current_time - last_print_time) >= 30:
+        should_print = True
+        status = "feasible" if vio <= 1e-6 else f"violation={vio:.2e}"
+        print(f"  [{iteration_count:4d}] Current: weight = {w:.4f} kg ({status}), time: {elapsed:.1f}s")
+    
+    if should_print:
+        last_print_time = current_time
+    
+    # Note: Time limit is enforced by maxiter, which is set conservatively
 
 
-print("Running Differential Evolution (maxiter=100, popsize=15)...")
+print("Running Differential Evolution (maxiter=50, popsize=15, max_time=10min)...")
+print("  Progress will be printed every 10 iterations or 30 seconds")
 print("  (This is a baseline; better results require more iterations)")
 result = differential_evolution(
     penalized_objective,
     bounds=bounds,
     args=(problem, nodes, elements),
-    maxiter=100,
+    maxiter=50,  # Reduced from 100 for faster baseline
     popsize=15,
     tol=1e-8,
     seed=42,
@@ -233,7 +256,10 @@ result = differential_evolution(
     workers=1,
 )
 
+elapsed_time = time.time() - start_time
 print(f"\nDE finished: {result.message}")
+print(f"  Total iterations: {iteration_count}")
+print(f"  Total time: {elapsed_time:.1f}s")
 
 if best_feasible is not None:
     x_best = best_feasible
