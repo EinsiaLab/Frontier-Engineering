@@ -1,3 +1,8 @@
 # 单细胞分析
 
-包含一项**去除稀疏单细胞RNA测序计数数据中的噪声**的子任务，该任务源自 OpenProblems，参见 https://openproblems.bio/benchmarks
+该领域包含多个由 OpenProblems Bio 改编的 benchmark（真实公开数据 + 任务定义 + 评测脚本）：
+
+- `denoising`：去除稀疏 scRNA-seq 计数数据中的噪声
+- `perturbation_prediction`：化学扰动响应（差异表达）预测
+
+参见 https://openproblems.bio/benchmarks
