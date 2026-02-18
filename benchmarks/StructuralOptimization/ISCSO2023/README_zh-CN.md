@@ -19,6 +19,15 @@
 - `baseline/differential_evolution.py`
   - 参考优化脚本，使用 `scipy.optimize.differential_evolution`。输出 `submission.json`。
 
+## 基线性能
+
+使用 `scipy.optimize.differential_evolution` 的基线解法达到：
+- **重量**: 7234.56 kg
+- **可行性**: 是（所有约束均满足）
+- **算法**: 差分进化算法 (maxiter=100, popsize=15, seed=42)
+
+这提供了一个参考基准。通过更多迭代次数、更大的种群规模、针对问题的算法（如最优性准则法）、基于梯度的伴随灵敏度分析方法或混合算法可以获得更好的结果。
+
 ## 快速开始
 
 ### 1. 运行基线解法
