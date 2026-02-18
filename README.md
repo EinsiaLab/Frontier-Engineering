@@ -96,6 +96,9 @@ The table below lists the current coverage of domain tasks in the Benchmark. We 
 | --- | --- | --- | --- | --- |
 | **Astrodynamics** | `MannedLunarLanding` | Completed | @jdp22 | Lunar soft landing trajectory optimization |
 | **ElectronicDesignAutomation** | `IntegrationPhysicalDesignOptimization` | In Development | @ahydchh | Chip macro placement optimization |
+| **StructuralOptimization** | `ISCSO2015` | Completed | — | 45-bar 2D truss size + shape optimization |
+| **StructuralOptimization** | `ISCSO2023` | Completed | — | 284-member 3D truss sizing optimization |
+| **MathModeling** | `SubmarineSearch` | Completed | — | Optimal search for lost submersible (MCM 2024B) |
 
 > 💡 **Have an idea for a new engineering problem?**
 > Even if you cannot provide complete verification code for now, we highly welcome you to share good **Task concepts**!

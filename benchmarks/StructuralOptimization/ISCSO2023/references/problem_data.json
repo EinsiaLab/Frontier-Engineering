@@ -1,0 +1,77 @@
+{
+  "problem_name": "ISCSO 2023 - 284 Member 3D Truss Sizing Optimization",
+  "source": "International Student Competition in Structural Optimization (ISCSO) 2023",
+  "dimension": 284,
+  "num_bars": 284,
+  "num_nodes": 92,
+  "num_load_cases": 3,
+  "spatial_dimension": 3,
+  "units": {
+    "length": "mm",
+    "area": "mm^2",
+    "force": "N",
+    "stress": "MPa",
+    "density": "kg/mm^3",
+    "weight": "kg"
+  },
+  "material": {
+    "E": 200000.0,
+    "rho": 7.86e-6
+  },
+  "tower_parameters": {
+    "num_levels": 23,
+    "total_height_mm": 40000.0,
+    "bottom_half_width_mm": 2000.0,
+    "top_half_width_mm": 500.0,
+    "cross_bracing_levels": [1, 4, 7, 10, 13, 16, 19, 22],
+    "description": "Nodes and bars are generated from these parameters. At each level i (0..22), 4 nodes form a square at height z = i * 40000/22. Half-width at level i: hw = 2000 - i * (2000-500)/22. Node 4i at (+hw, +hw, z), 4i+1 at (-hw, +hw, z), 4i+2 at (-hw, -hw, z), 4i+3 at (+hw, -hw, z)."
+  },
+  "supports": [
+    {"node": 0, "fix_x": true, "fix_y": true, "fix_z": true},
+    {"node": 1, "fix_x": true, "fix_y": true, "fix_z": true},
+    {"node": 2, "fix_x": true, "fix_y": true, "fix_z": true},
+    {"node": 3, "fix_x": true, "fix_y": true, "fix_z": true}
+  ],
+  "load_cases": [
+    {
+      "id": 0,
+      "name": "Lateral X-direction wind load",
+      "loads": [
+        {"node": 88, "fx": 3000.0, "fy": 0.0, "fz": 0.0},
+        {"node": 89, "fx": 3000.0, "fy": 0.0, "fz": 0.0},
+        {"node": 90, "fx": 3000.0, "fy": 0.0, "fz": 0.0},
+        {"node": 91, "fx": 3000.0, "fy": 0.0, "fz": 0.0}
+      ]
+    },
+    {
+      "id": 1,
+      "name": "Lateral Y-direction wind load",
+      "loads": [
+        {"node": 88, "fx": 0.0, "fy": 3000.0, "fz": 0.0},
+        {"node": 89, "fx": 0.0, "fy": 3000.0, "fz": 0.0},
+        {"node": 90, "fx": 0.0, "fy": 3000.0, "fz": 0.0},
+        {"node": 91, "fx": 0.0, "fy": 3000.0, "fz": 0.0}
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Vertical gravity load",
+      "loads": [
+        {"node": 88, "fx": 0.0, "fy": 0.0, "fz": -3750.0},
+        {"node": 89, "fx": 0.0, "fy": 0.0, "fz": -3750.0},
+        {"node": 90, "fx": 0.0, "fy": 0.0, "fz": -3750.0},
+        {"node": 91, "fx": 0.0, "fy": 0.0, "fz": -3750.0}
+      ]
+    }
+  ],
+  "constraints": {
+    "stress_limit": 248.2,
+    "displacement_limit": 10.0,
+    "tolerance": 1e-6
+  },
+  "variable_bounds": {
+    "area_min": 10.0,
+    "area_max": 20000.0
+  }
+}
+

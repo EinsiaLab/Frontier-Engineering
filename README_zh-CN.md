@@ -86,6 +86,9 @@
 | :--- | :--- | :---: | :--- | :--- |
 | **Astrodynamics** | `MannedLunarLanding` | 已完成 | @jdp22 | 登月软着陆轨迹优化 |
 | **ElectronicDesignAutomation** | `IntegrationPhysicalDesignOptimization` | 开发中 | @ahydchh | 芯片宏单元布局优化 |
+| **StructuralOptimization** | `ISCSO2015` | 已完成 | — | 45 杆 2D 桁架尺寸+形状优化 |
+| **StructuralOptimization** | `ISCSO2023` | 已完成 | — | 284 杆 3D 桁架尺寸优化 |
+| **MathModeling** | `SubmarineSearch` | 已完成 | — | 深海潜水器最优搜索 (MCM 2024B) |
 
 > 💡 **有新的工程问题想法？**
 > 即使你暂时无法提供完整的验证代码，我们也非常欢迎你分享好的**Task 构想**！
