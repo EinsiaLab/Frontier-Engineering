@@ -91,48 +91,14 @@ For **each** load case `k = 0, 1`:
 
 A solution is **feasible** if and only if ALL constraints are satisfied across ALL load cases.
 
-## 4. Physical Model — Finite Element Analysis
+## 4. Physical Model
 
-The structural response is computed using the **Direct Stiffness Method** for 2D truss structures.
+The structure is a **2D planar truss** structure. The structural response (nodal displacements and member stresses) must be computed using appropriate structural analysis methods (e.g., finite element analysis) to evaluate constraint satisfaction.
 
-### 4.1 Element Stiffness Matrix
-
-For a 2D truss element connecting nodes `i` and `j` with cross-sectional area `A`, elastic modulus `E`, and length `L`:
-
-```
-cos(theta) = (x_j - x_i) / L
-sin(theta) = (y_j - y_i) / L
-
-c = cos(theta), s = sin(theta)
-
-k_e = (E * A / L) * [ c²   cs  -c²  -cs ]
-                     [ cs   s²  -cs  -s² ]
-                     [-c²  -cs   c²   cs ]
-                     [-cs  -s²   cs   s² ]
-```
-
-### 4.2 Global Assembly and Solution
-
-1. Assemble global stiffness matrix: `K = sum(k_e)` for all elements
-2. Apply boundary conditions (fix specified DOFs)
-3. Solve: `K * u = F` for nodal displacement vector `u`
-4. Extract element displacements from global `u`
-
-### 4.3 Stress Computation
-
-For each element:
-
-```
-sigma_i = E * (u_j - u_i) . e_i / L_i
-```
-
-where `e_i` is the unit vector along the member direction and `(u_j - u_i)` is the relative displacement of the member endpoints.
-
-Equivalently:
-
-```
-sigma_i = (E / L_i) * [-c, -s, c, s] * [u_{ix}, u_{iy}, u_{jx}, u_{jy}]^T
-```
+Key physical relationships:
+- Member stress depends on the applied loads, member cross-sectional areas, and structural geometry
+- Nodal displacements depend on the structural stiffness, which is a function of member areas and geometry
+- Both stress and displacement constraints must be satisfied simultaneously under all load cases
 
 ## 5. Problem Data
 
