@@ -1,6 +1,6 @@
 import torch
 from torch import nn, einsum
-from task import input_t, output_t
+from .task import input_t, output_t
 
 class TriMul(nn.Module):
     def __init__(

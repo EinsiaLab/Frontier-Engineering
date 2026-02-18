@@ -7,17 +7,20 @@ import math
 from pathlib import Path
 from typing import Any
 from collections import OrderedDict
-
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+if parent_dir not in sys.path:
+    sys.path.insert(0, parent_dir)
 import torch.cuda
 
-from ..baseline.utils import set_seed
+from baseline.utils import set_seed
 try:
-    from ..baseline.task import TestSpec
+    from baseline.task import TestSpec
 except ImportError:
     TestSpec = dict
 
-from ..baseline.submission import custom_kernel
-from ..baseline.reference import check_implementation, generate_input
+from baseline.submission import custom_kernel
+from baseline.reference import check_implementation, generate_input
 
 WARMUP_RUNS = 10
 TIMED_RUNS = 100

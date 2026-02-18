@@ -1,12 +1,12 @@
 # Triangle Multiplication
 
-This task originates from https://www.gpumode.com/leaderboard/496?tab=rankings. The file organization conforms to the standard format. Validation code is not yet implemented and will be added later. @ahydchh
+This task originates from https://www.gpumode.com/leaderboard/496?tab=rankings
 
-The TriMul reference implementation is located in `baseline/reference.py`, which is the basic implementation and also the standard for numerical correctness.
+The TriMul reference implementation is located in `baseline/reference.py`. This is the basic implementation and also the standard for numerical correctness.
 
 `baseline/solution.py` is the implementation provided by `test-time-training`.
 
-The agent can be modified based on `baseline/submission.py`; this is a template version to be optimized.
+The agent can be modified based on `baseline/submission.py`, which is a template version to be optimized.
 
 `baseline/util.py` provides common tools.
 
@@ -15,3 +15,21 @@ The evaluation entry point is located in `verification/eval.py`.
 `verification/eval-profile.py` is a version with fine-grained timing diagnostics, used to locate where time is spent.
 
 `verification/requirements-gpumode.txt` provides the required dependencies.
+
+## Running Method
+
+``` 
+cd benchmarks/KernelEngineering/TriMul/verification
+
+# Only check correctness
+exec 3>tri_test.log POPCORN_FD=3 python eval.py test tri_test.txt
+
+# Each test case is timed, with only one initial correctness check performed; subsequent tests primarily focus on speed.
+exec 3>tri_bench.log POPCORN_FD=3 python eval.py benchmark tri_bench.txt
+
+# Each test case is timed, and the seed is repeatedly changed and correctness checks are performed again within the loop for a more rigorous test.
+exec 3>tri_leaderboard.log POPCORN_FD=3 python eval.py benchmark tri_bench.txt
+
+```
+
+The code above will use `submission.custom_kernel` for evaluation. You can choose to replace `benchmarks/KernelEngineering/TriMul/baseline/submission.py` with your own code, or replace all `from baseline.submission import custom_kernel` lines in `benchmarks/KernelEngineering/TriMul/verification/eval.py` with importing from your specified code.

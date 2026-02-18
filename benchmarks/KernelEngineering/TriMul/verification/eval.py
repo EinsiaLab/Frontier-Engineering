@@ -8,16 +8,19 @@ import sys
 import math
 from pathlib import Path
 from typing import Any, Optional
-
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+if parent_dir not in sys.path:
+    sys.path.insert(0, parent_dir)
 import torch.cuda
 
-from ..baseline.utils import set_seed
+from baseline.utils import set_seed
 try:
-    from ..baseline.task import TestSpec
+    from baseline.task import TestSpec
 except ImportError:
     TestSpec = dict
 
-from ..baseline.reference import check_implementation, generate_input
+from baseline.reference import check_implementation, generate_input
 
 
 class PopcornOutput:
@@ -153,7 +156,7 @@ def _run_single_test(test: TestCase):
     """
     Runs a single test case. Do not call directly
     """
-    from submission import custom_kernel
+    from baseline.submission import custom_kernel
     data = generate_input(**test.args)
     torch.cuda.synchronize()
     submission_output = custom_kernel(_clone_data(data))
@@ -202,7 +205,7 @@ def _run_single_benchmark(test: TestCase, recheck: bool, max_repeats: int, max_t
     """
     Runs one benchmark. Do not call directly.
     """
-    from submission import custom_kernel
+    from baseline.submission import custom_kernel
 
     durations = []
     # generate input data once
@@ -310,7 +313,7 @@ def run_single_profile(test: TestCase) -> str:
     """
     Runs a single test case. Do not call directly
     """
-    from submission import custom_kernel
+    from baseline.submission import custom_kernel
     from torch.profiler import profile, record_function, ProfilerActivity
     data = generate_input(**test.args)
     torch.cuda.synchronize()

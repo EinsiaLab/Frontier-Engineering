@@ -1,5 +1,5 @@
-from utils import make_match_reference, DisableCuDNNTF32
-from task import input_t, output_t
+from .utils import make_match_reference, DisableCuDNNTF32
+from .task import input_t, output_t
 
 import torch
 from torch import nn, einsum
