@@ -98,8 +98,7 @@ The table below lists the current coverage of domain tasks in the Benchmark. We 
 | **Electronic Design Automation** | `Integration Physical Design Optimization` | Under Development | @ahydchh | Chip Macrocell Layout Optimization |
 | **Kernel Engineering** | `MLA` | Completed | @ahydchh | Kernel Engineering |
 | **Kernel Engineering** | `TriMul` | Completed | @ahydchh | Kernel Engineering |
-| **Single Cell Analysis** | `denoising` | It's mostly complete, but the verification procedure, derived from test-time-training
-discover, is incomplete. | @ahydchh | Single Cell Analysis |
+| **Single Cell Analysis** | `denoising` | It's mostly complete, but the verification procedure, derived from test-time-training discover, is incomplete. | @ahydchh | Single Cell Analysis |
 | **Single Cell Analysis** | `perturbation_prediction` | Completed | — | OpenProblems perturbation response prediction (NeurIPS 2023 scPerturb) |
 
 > 💡 **Have an idea for a new engineering problem?**
