@@ -90,6 +90,8 @@
 | **KernelEngineering** | `TriMul` | 已完成 | @ahydchh | 内核工程 |
 | **SingleCellAnalysis** | `denoising` | 已基本完成，但验证程序源自 test-time-training discover 并不完整 | @ahydchh | 单细胞分析 |
 | **SingleCellAnalysis** | `perturbation_prediction` | 已完成 | — | OpenProblems 扰动响应预测（NeurIPS 2023 scPerturb） |
+| **StructuralOptimization** | `ISCSO2015` | 已基本完成，具体衡量指标还需要细化 | @yks23 | 45 杆 2D 桁架尺寸+形状优化 |
+| **StructuralOptimization** | `ISCSO2023` | 已基本完成，具体衡量指标还需要细化 | @yks23 | 284 杆 3D 桁架尺寸优化 |
 
 > 💡 **有新的工程问题想法？**
 > 即使你暂时无法提供完整的验证代码，我们也非常欢迎你分享好的**Task 构想**！

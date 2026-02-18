@@ -100,6 +100,8 @@ The table below lists the current coverage of domain tasks in the Benchmark. We 
 | **Kernel Engineering** | `TriMul` | Completed | @ahydchh | Kernel Engineering |
 | **Single Cell Analysis** | `denoising` | It's mostly complete, but the verification procedure, derived from test-time-training discover, is incomplete. | @ahydchh | Single Cell Analysis |
 | **Single Cell Analysis** | `perturbation_prediction` | Completed | — | OpenProblems perturbation response prediction (NeurIPS 2023 scPerturb) |
+| **StructuralOptimization** | `ISCSO2015` | Completed | — | 45-bar 2D truss size + shape optimization |
+| **StructuralOptimization** | `ISCSO2023` | Completed | — | 284-member 3D truss sizing optimization |
 
 > 💡 **Have an idea for a new engineering problem?**
 > Even if you cannot provide complete verification code for now, we highly welcome you to share good **Task concepts**!

@@ -1,0 +1,288 @@
+# EVOLVE-BLOCK-START
+"""
+ISCSO 2023 — 284-Member 3D Truss Sizing Optimization
+
+Objective: Minimize structural weight subject to stress and displacement constraints.
+Design variables: 284 cross-sectional areas.
+
+Outputs submission.json in the working directory.
+"""
+
+import json
+import sys
+import time
+from pathlib import Path
+
+import numpy as np
+from scipy import sparse
+from scipy.sparse.linalg import spsolve
+from scipy.optimize import differential_evolution
+
+
+# ===================== Inline 3D Tower Generator =====================
+
+def generate_tower(problem):
+    """Generate tower topology from problem data."""
+    tp = problem["tower_parameters"]
+    num_levels = tp["num_levels"]
+    total_height = tp["total_height_mm"]
+    bottom_hw = tp["bottom_half_width_mm"]
+    top_hw = tp["top_half_width_mm"]
+    cb_levels = tp["cross_bracing_levels"]
+
+    n_nodes = num_levels * 4
+    nodes = np.zeros((n_nodes, 3))
+    for i in range(num_levels):
+        t = i / (num_levels - 1)
+        hw = bottom_hw + t * (top_hw - bottom_hw)
+        z = t * total_height
+        base = 4 * i
+        nodes[base + 0] = [+hw, +hw, z]
+        nodes[base + 1] = [-hw, +hw, z]
+        nodes[base + 2] = [-hw, -hw, z]
+        nodes[base + 3] = [+hw, -hw, z]
+
+    elems = []
+    # Verticals
+    for i in range(num_levels - 1):
+        for j in range(4):
+            elems.append((4*i + j, 4*(i+1) + j))
+    # Horizontal perimeter
+    for i in range(num_levels):
+        b = 4 * i
+        elems.extend([(b, b+1), (b+1, b+2), (b+2, b+3), (b+3, b)])
+    # Face diagonals
+    for i in range(num_levels - 1):
+        elems.append((4*i, 4*(i+1)+1))
+        elems.append((4*i+1, 4*(i+1)+2))
+        elems.append((4*i+2, 4*(i+1)+3))
+        elems.append((4*i+3, 4*(i+1)))
+    # Floor cross-bracing
+    for i in cb_levels:
+        if i < num_levels:
+            b = 4 * i
+            elems.extend([(b, b+2), (b+1, b+3)])
+
+    return nodes, np.array(elems, dtype=int)
+
+
+# ===================== Inline 3D FEM =====================
+
+def fem_solve_3d(nodes, elements, areas, E, supports, force_vec):
+    """Solve 3D truss FEM. Returns (displacements, stresses, lengths)."""
+    n_nodes = len(nodes)
+    n_elems = len(elements)
+    n_dofs = 3 * n_nodes
+
+    fixed = set()
+    for sup in supports:
+        nid = sup["node"]
+        if sup.get("fix_x", False): fixed.add(3*nid)
+        if sup.get("fix_y", False): fixed.add(3*nid + 1)
+        if sup.get("fix_z", False): fixed.add(3*nid + 2)
+
+    free = sorted(set(range(n_dofs)) - fixed)
+    free_map = {d: i for i, d in enumerate(free)}
+    n_free = len(free)
+
+    rows, cols, vals = [], [], []
+    lengths = np.zeros(n_elems)
+
+    for e in range(n_elems):
+        ni, nj = elements[e]
+        d = nodes[nj] - nodes[ni]
+        L = np.linalg.norm(d)
+        lengths[e] = L
+        dc = d / L
+        B = np.outer(dc, dc)
+        coeff = E * areas[e] / L
+        ke = coeff * np.block([[B, -B], [-B, B]])
+
+        dofs_e = [3*ni, 3*ni+1, 3*ni+2, 3*nj, 3*nj+1, 3*nj+2]
+        for il in range(6):
+            di = dofs_e[il]
+            if di not in free_map: continue
+            ii = free_map[di]
+            for jl in range(6):
+                dj = dofs_e[jl]
+                if dj not in free_map: continue
+                jj = free_map[dj]
+                rows.append(ii); cols.append(jj); vals.append(ke[il, jl])
+
+    K = sparse.coo_matrix((vals, (rows, cols)), shape=(n_free, n_free)).tocsc()
+    F = force_vec[free]
+    u_red = spsolve(K, F)
+
+    disp = np.zeros(n_dofs)
+    for idx, dof in enumerate(free):
+        disp[dof] = u_red[idx]
+
+    stresses = np.zeros(n_elems)
+    for e in range(n_elems):
+        ni, nj = elements[e]
+        d = nodes[nj] - nodes[ni]
+        L = lengths[e]
+        dc = d / L
+        T = np.array([-dc[0], -dc[1], -dc[2], dc[0], dc[1], dc[2]])
+        u_e = np.array([disp[3*ni], disp[3*ni+1], disp[3*ni+2],
+                        disp[3*nj], disp[3*nj+1], disp[3*nj+2]])
+        stresses[e] = (E / L) * T.dot(u_e)
+
+    return disp, stresses, lengths
+
+
+# ===================== Load Problem Data =====================
+
+def load_problem():
+    candidates = [
+        Path("references/problem_data.json"),
+        Path(__file__).resolve().parent.parent / "references" / "problem_data.json",
+    ]
+    for p in candidates:
+        if p.is_file():
+            with open(p, "r", encoding="utf-8") as f:
+                return json.load(f)
+    raise FileNotFoundError("problem_data.json not found")
+
+
+# ===================== Evaluation =====================
+
+def evaluate_design(areas, problem, nodes, elements):
+    E = problem["material"]["E"]
+    rho = problem["material"]["rho"]
+    sigma_limit = problem["constraints"]["stress_limit"]
+    disp_limit = problem["constraints"]["displacement_limit"]
+    supports = problem["supports"]
+
+    max_vio = 0.0
+    for lc in problem["load_cases"]:
+        fvec = np.zeros(3 * len(nodes))
+        for load in lc["loads"]:
+            nid = load["node"]
+            fvec[3*nid] += load["fx"]
+            fvec[3*nid+1] += load["fy"]
+            fvec[3*nid+2] += load["fz"]
+
+        try:
+            disp, stresses, lengths = fem_solve_3d(
+                nodes, elements, areas, E, supports, fvec
+            )
+        except Exception:
+            return 1e18, 1e18
+
+        stress_vio = float(np.max(np.abs(stresses) - sigma_limit))
+        disp_vio = float(np.max(np.abs(disp) - disp_limit))
+        max_vio = max(max_vio, stress_vio, disp_vio)
+
+    weight = 0.0
+    for e in range(len(elements)):
+        ni, nj = elements[e]
+        L = np.linalg.norm(nodes[nj] - nodes[ni])
+        weight += rho * L * areas[e]
+
+    return weight, max(max_vio, 0.0)
+
+
+def penalized_objective(x, problem, nodes, elements):
+    weight, max_vio = evaluate_design(x, problem, nodes, elements)
+    return weight + 1e6 * max(max_vio, 0.0) ** 2
+
+
+# ===================== Main (top-level execution) =====================
+
+problem = load_problem()
+nodes, elements = generate_tower(problem)
+bounds_cfg = problem["variable_bounds"]
+dim = problem["dimension"]
+
+print(f"ISCSO 2023 Baseline Optimization")
+print(f"  Nodes: {len(nodes)}, Elements: {len(elements)}")
+print(f"  Design variables: {dim}")
+print(f"  Area bounds: [{bounds_cfg['area_min']}, {bounds_cfg['area_max']}] mm^2")
+print(f"  Stress limit: {problem['constraints']['stress_limit']} MPa")
+print(f"  Displacement limit: {problem['constraints']['displacement_limit']} mm")
+print(f"  Load cases: {len(problem['load_cases'])}")
+print()
+
+bounds = [(bounds_cfg["area_min"], bounds_cfg["area_max"])] * dim
+
+best_feasible = None
+best_weight = float("inf")
+iteration_count = 0
+start_time = time.time()
+last_print_time = start_time
+MAX_RUNTIME = 600  # 10 minutes maximum (larger problem)
+PRINT_INTERVAL = 10  # Print progress every 10 iterations or 30 seconds
+
+
+def callback(xk, convergence=0):
+    global best_feasible, best_weight, iteration_count, last_print_time
+    iteration_count += 1
+    current_time = time.time()
+    elapsed = current_time - start_time
+    
+    w, vio = evaluate_design(xk, problem, nodes, elements)
+    should_print = False
+    
+    if vio <= 1e-6 and w < best_weight:
+        best_weight = w
+        best_feasible = xk.copy()
+        should_print = True
+        print(f"  [{iteration_count:4d}] New best feasible: weight = {w:.4f} kg (time: {elapsed:.1f}s)")
+    elif iteration_count % PRINT_INTERVAL == 0 or (current_time - last_print_time) >= 30:
+        should_print = True
+        status = "feasible" if vio <= 1e-6 else f"violation={vio:.2e}"
+        print(f"  [{iteration_count:4d}] Current: weight = {w:.4f} kg ({status}), time: {elapsed:.1f}s")
+    
+    if should_print:
+        last_print_time = current_time
+    
+    # Note: Time limit is enforced by maxiter, which is set conservatively
+
+
+print("Running Differential Evolution (maxiter=10, popsize=15)...")
+print("  Progress will be printed every 10 iterations or 30 seconds")
+print("  (This is a baseline; better results require more iterations)")
+result = differential_evolution(
+    penalized_objective,
+    bounds=bounds,
+    args=(problem, nodes, elements),
+    maxiter=10,  # Reduced for faster baseline
+    popsize=15,
+    tol=1e-8,
+    seed=42,
+    callback=callback,
+    disp=False,
+    workers=1,
+)
+
+elapsed_time = time.time() - start_time
+print(f"\nDE finished: {result.message}")
+print(f"  Total iterations: {iteration_count}")
+print(f"  Total time: {elapsed_time:.1f}s")
+
+if best_feasible is not None:
+    x_best = best_feasible
+    w, vio = evaluate_design(x_best, problem, nodes, elements)
+    print(f"  Best feasible weight: {w:.4f} kg")
+else:
+    x_best = result.x
+    w, vio = evaluate_design(x_best, problem, nodes, elements)
+    print(f"  WARNING: No feasible solution found!")
+    print(f"  Best weight: {w:.4f} kg, violation: {vio:.6e}")
+
+submission = {
+    "benchmark_id": "iscso_2023",
+    "solution_vector": x_best.tolist(),
+    "algorithm": "DifferentialEvolution",
+    "num_evaluations": int(result.nfev),
+}
+
+with open("submission.json", "w", encoding="utf-8") as f:
+    json.dump(submission, f, indent=2)
+
+print(f"\n✓ submission.json written")
+print(f"  Dimension: {len(x_best)}")
+print(f"  Weight: {w:.4f} kg")
+print(f"  Feasible: {vio <= 1e-6}")
+# EVOLVE-BLOCK-END
