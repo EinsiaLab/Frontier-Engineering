@@ -11,3 +11,4 @@ runs/
 benchmarks/Astrodynamics/MannedLunarLanding/results.txt
 benchmarks/Astrodynamics/MannedLunarLanding/outputlog.txt
 .vscode
+benchmarks/**/resources_cache/
