@@ -4,10 +4,13 @@ from typing import Type
 
 from frontier_eval.tasks.base import Task
 from frontier_eval.tasks.manned_lunar_landing import MannedLunarLandingTask
+from frontier_eval.tasks.perturbation_prediction import PerturbationPredictionTask
 from frontier_eval.tasks.predict_modality import PredictModalityTask
+
 
 _TASKS: dict[str, Type[Task]] = {
     MannedLunarLandingTask.NAME: MannedLunarLandingTask,
+    PerturbationPredictionTask.NAME: PerturbationPredictionTask,
     PredictModalityTask.NAME: PredictModalityTask,
 }
 

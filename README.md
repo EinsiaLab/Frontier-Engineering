@@ -99,6 +99,7 @@ The table below lists the current coverage of domain tasks in the Benchmark. We 
 | **Kernel Engineering** | `MLA` | Basically Completed, Awaiting Verification | @ahydchh | Kernel Engineering |
 | **Kernel Engineering** | `TriMul` | Basically Completed, Awaiting Verification | @ahydchh | Kernel Engineering |
 | **Single Cell Analysis** | `denoising` | Basically Completed, Awaiting Verification | @ahydchh | Single Cell Analysis |
+| **Single Cell Analysis** | `perturbation_prediction` | Completed | — | OpenProblems perturbation response prediction (NeurIPS 2023 scPerturb) |
 
 > 💡 **Have an idea for a new engineering problem?**
 > Even if you cannot provide complete verification code for now, we highly welcome you to share good **Task concepts**!

@@ -8,7 +8,9 @@ oe_config_path: null
 
 # Extra OpenEvolve Config overrides (merged after `oe_config_path`).
 # You can put any OpenEvolve keys here, e.g. `prompt`, `database`, `evaluator`, `diff_based_evolution`, ...
-oe: {}
+oe:
+  evaluator:
+    timeout: 300
 
 # Logging / export
 save_db: true
