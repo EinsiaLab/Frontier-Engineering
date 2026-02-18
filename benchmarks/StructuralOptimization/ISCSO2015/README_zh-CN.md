@@ -22,11 +22,8 @@
 - `verification/docker/Dockerfile`
   - 容器化评测环境，确保可复现性。
 
-- `baseline/solution.py`
+- `baseline/differential_evolution.py`
   - 参考优化脚本，使用 `scipy.optimize.differential_evolution`。输出 `submission.json`。
-
-- `baseline/result_log.txt`
-  - 基线方案的执行日志。
 
 ## 快速开始
 
@@ -34,7 +31,7 @@
 
 ```bash
 cd benchmarks/StructuralOptimization/ISCSO2015
-python baseline/solution.py
+python baseline/differential_evolution.py
 ```
 
 在当前目录生成 `submission.json`。
@@ -42,7 +39,7 @@ python baseline/solution.py
 ### 2. 评估提交
 
 ```bash
-python verification/evaluator.py baseline/solution.py
+python verification/evaluator.py baseline/differential_evolution.py
 ```
 
 或直接评估已有的 `submission.json`：
@@ -56,7 +53,7 @@ python verification/evaluator.py --test submission.json
 ```bash
 cd verification/docker
 docker build -t iscso2015-eval .
-docker run -v $(pwd)/../../:/workspace iscso2015-eval python /workspace/baseline/solution.py
+docker run -v $(pwd)/../../:/workspace iscso2015-eval python /workspace/baseline/differential_evolution.py
 ```
 
 ## 常见流程
