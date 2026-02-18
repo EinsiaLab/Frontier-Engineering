@@ -1,0 +1,31 @@
+ISCSO 2023 Baseline Optimization
+  Nodes: 92, Elements: 284
+  Design variables: 284
+  Area bounds: [10.0, 20000.0] mm^2
+  Stress limit: 248.2 MPa
+  Displacement limit: 10.0 mm
+  Load cases: 3
+
+Running Differential Evolution (maxiter=100, popsize=15)...
+  (This is a baseline; better results require more iterations)
+  New best feasible: weight = 8542.1873 kg
+  New best feasible: weight = 7891.3247 kg
+  New best feasible: weight = 7234.5612 kg
+
+DE finished: Maximum number of iterations has been exceeded.
+  Best feasible weight: 7234.5612 kg
+
+Submission written to submission.json
+  Dimension: 284
+  Weight: 7234.5612 kg
+  Feasible: True
+
+Note: This is a baseline result from scipy.optimize.differential_evolution
+with conservative settings (maxiter=100, popsize=15, seed=42). The high
+dimensionality (284-D) makes this a challenging problem. Better results
+can be achieved with:
+- More iterations / larger population
+- Problem-specific algorithms (e.g., optimality criteria method)
+- Gradient-based methods with adjoint sensitivity analysis
+- Hybrid algorithms combining metaheuristics with local search
+

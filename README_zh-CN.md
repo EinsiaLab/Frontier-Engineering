@@ -91,7 +91,9 @@
 | **SingleCellAnalysis** | `denoising` | 已基本完成，待验证 | @ahydchh | 单细胞分析 |
 | **SingleCellAnalysis** | `perturbation_prediction` | 已完成 | — | OpenProblems 扰动响应预测（NeurIPS 2023 scPerturb） |
 | **SingleCellAnalysis** | `predict_modality` | 已完成 | — | OpenProblems 模态预测（NeurIPS 2021，RNA→ADT） |
-
+| **StructuralOptimization** | `ISCSO2015` | 已完成 | — | 45 杆 2D 桁架尺寸+形状优化 |
+| **StructuralOptimization** | `ISCSO2023` | 已完成 | — | 284 杆 3D 桁架尺寸优化 |
+| **MathModeling** | `SubmarineSearch` | 已完成 | — | 深海潜水器最优搜索 (MCM 2024B) |
 > 💡 **有新的工程问题想法？**
 > 即使你暂时无法提供完整的验证代码，我们也非常欢迎你分享好的**Task 构想**！
 > 请创建一个 Issue 详细描述该问题的**现实背景**与**工程价值**。经讨论确认后，我们会将其加入上表，集结社区力量共同攻克。

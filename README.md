@@ -95,11 +95,14 @@ The table below lists the current coverage of domain tasks in the Benchmark. We 
 | Domain | Task Name | Status | Maintainer/Contributor | Remarks |
 | --- | --- | --- | --- | --- |
 | **Astrodynamics** | `MannedLunarLanding` | Completed | @jdp22 | Lunar soft landing trajectory optimization |
-| **Electronic Design Automation** | `Integration Physical Design Optimization` | Under Development | @ahydchh | Chip Macrocell Layout Optimization |
+| **ElectronicDesignAutomation** | `IntegrationPhysicalDesignOptimization` | In Development | @ahydchh | Chip macro placement optimization |
 | **Kernel Engineering** | `MLA` | Basically Completed, Awaiting Verification | @ahydchh | Kernel Engineering |
 | **Kernel Engineering** | `TriMul` | Basically Completed, Awaiting Verification | @ahydchh | Kernel Engineering |
 | **Single Cell Analysis** | `denoising` | Basically Completed, Awaiting Verification | @ahydchh | Single Cell Analysis |
 | **Single Cell Analysis** | `perturbation_prediction` | Completed | — | OpenProblems perturbation response prediction (NeurIPS 2023 scPerturb) |
+| **StructuralOptimization** | `ISCSO2015` | Completed | — | 45-bar 2D truss size + shape optimization |
+| **StructuralOptimization** | `ISCSO2023` | Completed | — | 284-member 3D truss sizing optimization |
+| **MathModeling** | `SubmarineSearch` | Completed | — | Optimal search for lost submersible (MCM 2024B) |
 
 > 💡 **Have an idea for a new engineering problem?**
 > Even if you cannot provide complete verification code for now, we highly welcome you to share good **Task concepts**!

@@ -15,3 +15,4 @@ benchmarks/**/resources_cache/
 
 *.csv
 *.h5ad
+rawdata/

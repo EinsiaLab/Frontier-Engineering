@@ -1,0 +1,394 @@
+下面是一份**可直接作为仓库文档（例如 `docs/iscso_structural_benchmarks.md`）的完整说明文档**，详细描述如何建立两个基于
+
+**International Student Competition in Structural Optimization (ISCSO)**
+
+历史题目的工程类 benchmark，并对评测程序、数据组织方式、可复现性与自动评估架构进行系统规划。
+
+（题目资料来源于官方竞赛发布页面与验证程序下载页，维护方为 Bright Optimizer）
+
+---
+
+# Structural Optimization Benchmarks based on ISCSO
+
+## Overview
+
+本文档定义两个结构工程优化 benchmark：
+
+1. **ISCSO 2015 – Size + Shape Optimization**
+2. **ISCSO 2023 – 3D Truss Sizing Optimization**
+
+这两个 benchmark 的特点：
+
+* 真实工业级结构工程问题
+* 有官方验证函数
+* 有明确物理模型与约束
+* 可自动评估
+* 连续非凸优化
+* 多工况约束问题
+
+适合作为 Frontier-Engineering 中的：
+
+* 工程优化类 benchmark
+* Agent + 仿真系统 benchmark
+* 自动优化算法 benchmark
+* 黑盒约束优化 benchmark
+
+---
+
+# Benchmark 1
+
+## ISCSO 2015 – 45 Bar Size + Shape Optimization
+
+---
+
+## 1. 问题来源
+
+该问题来自 ISCSO 2015 年竞赛题目。
+
+原问题提供：
+
+* 完整结构拓扑
+* 材料参数
+* 多载荷工况
+* MATLAB 验证函数
+
+---
+
+## 2. 工程背景
+
+这是一个二维桁架结构优化问题。
+
+任务：
+
+* 优化杆件截面面积（size optimization）
+* 同时优化部分节点位置（shape optimization）
+
+在满足应力与位移约束的情况下，使结构重量最小。
+
+这是典型的：
+
+* 结构尺寸优化 + 形状优化
+* 有限元分析 (FEM) 驱动的约束优化问题
+* 多约束连续非线性规划问题
+
+---
+
+## 3. 数学问题定义
+
+### 3.1 设计变量
+
+总维度：54
+
+* 45 个杆件截面面积
+* 9 个节点 y 坐标
+
+定义：
+
+x = [A1 ... A45, Y1 ... Y9]
+
+变量类型：连续实数
+
+---
+
+### 3.2 目标函数
+
+Minimize:
+
+W(x) = 总结构重量
+
+结构重量由：
+
+W = Σ (ρ × Li × Ai)
+
+其中：
+
+* ρ 为材料密度
+* Li 为杆件长度
+* Ai 为截面面积
+
+---
+
+### 3.3 约束条件
+
+1. 杆件应力约束
+
+|σ_i(x)| ≤ σ_allow
+
+2. 节点位移约束
+
+|δ_j(x)| ≤ δ_allow
+
+3. 变量范围约束
+
+Ai > 0
+Yj 在给定范围内
+
+---
+
+## 4. 如何建立该 Benchmark
+
+### Step 1 — 获取官方验证函数
+
+从官方页面下载：
+
+ISCSO_2015.m 或 ISCSO_2015.p
+
+该函数内部已经实现：
+
+* 有限元分析
+* 应力计算
+* 位移计算
+* 约束检查
+* 重量计算
+
+---
+
+### Step 2 — 构建评估接口封装
+
+推荐建立统一评估接口：
+
+```python
+def evaluate(x):
+    weight, stress_vio, disp_vio = matlab_engine.ISCSO_2015(
+        x[:45], x[45:], 0
+    )
+
+    feasible = (stress_vio == 0) and (disp_vio == 0)
+
+    return {
+        "objective": weight,
+        "feasible": feasible,
+        "constraint_violation": stress_vio + disp_vio
+    }
+```
+
+---
+
+### Step 3 — 定义标准输入输出格式
+
+推荐提交格式：
+
+submission.json
+
+```
+{
+  "benchmark_id": "iscso_2015",
+  "solution_vector": [x1, x2, ..., x54],
+  "algorithm": "CMA-ES",
+  "seed": 42
+}
+```
+
+---
+
+### Step 4 — 自动评分规则
+
+1. 先检查可行性
+2. 若不可行 → score = +∞
+3. 若可行 → score = weight
+4. 排序依据：objective 最小
+
+---
+
+### Step 5 — 计算预算限制（可选）
+
+为了做 agent benchmark，可以增加：
+
+* 最大函数调用次数
+* 最大运行时间
+* 最大 FEM 计算次数
+
+例如：
+
+```
+max_evaluations = 5000
+```
+
+---
+
+# Benchmark 2
+
+## ISCSO 2023 – 3D Truss Sizing Optimization
+
+---
+
+## 1. 工程背景
+
+三维空间桁架结构。
+
+特点：
+
+* 284 个杆件
+* 92 个节点
+* 三种载荷工况
+* 纯尺寸优化
+
+这是一个高维约束结构优化问题。
+
+---
+
+## 2. 数学定义
+
+### 2.1 设计变量
+
+x ∈ R^284
+
+x = [A1 ... A284]
+
+Ai > 0
+
+---
+
+### 2.2 目标函数
+
+Minimize:
+
+W(x) = Σ (ρ × Li × Ai)
+
+---
+
+### 2.3 约束
+
+1. 应力约束
+
+|σ_i(x)| ≤ 248.2 MPa
+
+2. 位移约束
+
+|δ_j(x)| ≤ 5 mm
+
+3. 三个载荷工况：
+
+* 12 kN X方向
+* 12 kN Y方向
+* 15 kN Z方向
+
+---
+
+## 3. 建立该 Benchmark 的步骤
+
+### Step 1 — 获取官方 MATLAB 验证函数
+
+ISCSO_2023.m
+
+---
+
+### Step 2 — 封装统一评估函数
+
+```python
+def evaluate(x):
+    weight, stress_vio, disp_vio = matlab_engine.ISCSO_2023(x, 0)
+
+    feasible = (stress_vio == 0) and (disp_vio == 0)
+
+    return {
+        "objective": weight,
+        "feasible": feasible,
+        "constraint_violation": stress_vio + disp_vio
+    }
+```
+
+---
+
+### Step 3 — 统一评估协议
+
+和 ISCSO 2015 一样：
+
+* 先检查 feasibility
+* 再比较 objective
+* 排序取最优
+
+---
+
+## 4. Benchmark 结构组织建议
+
+```
+benchmarks/
+├── structural_optimization/
+│   ├── iscso_2015/
+│   │   ├── evaluator.m
+│   │   ├── wrapper.py
+│   │   ├── metadata.yaml
+│   │   └── README.md
+│   ├── iscso_2023/
+│   │   ├── evaluator.m
+│   │   ├── wrapper.py
+│   │   ├── metadata.yaml
+│   │   └── README.md
+```
+
+---
+
+## 5. 元数据定义模板
+
+metadata.yaml 示例：
+
+```
+name: ISCSO 2023
+dimension: 284
+objective: minimize_weight
+constraints:
+  - stress
+  - displacement
+evaluation_type: deterministic
+difficulty: hard
+domain: structural_engineering
+```
+
+---
+
+# 6. 为什么这两个问题适合 Frontier-Engineering
+
+| 特性     | ISCSO 2015 | ISCSO 2023 |
+| ------ | ---------- | ---------- |
+| 高维连续变量 | 中等         | 高          |
+| 真实物理模型 | 是          | 是          |
+| 官方验证函数 | 是          | 是          |
+| 多工况约束  | 是          | 是          |
+| 非凸问题   | 是          | 是          |
+
+适合作为：
+
+* 黑盒优化 benchmark
+* Agent 调度 FEM benchmark
+* 自动算法设计 benchmark
+* LLM + 数值仿真交互 benchmark
+
+---
+
+# 7. 建议的扩展方向
+
+1. 增加随机扰动材料参数
+2. 增加多目标版本（重量 + 刚度）
+3. 限制 FEM 调用次数
+4. 增加 noisy evaluation
+
+---
+
+# 总结
+
+通过：
+
+* 使用官方验证函数
+* 明确定义变量维度
+* 明确目标函数
+* 明确约束检测
+* 统一评分协议
+
+即可建立两个：
+
+* 工业级
+* 可复现
+* 自动评估
+* 高难度
+
+结构工程优化 benchmark。
+
+---
+
+如果你愿意，我可以继续为你写：
+
+* 完整 Python-MATLAB 自动评估系统
+* 无 MATLAB 依赖的纯 Python FEM 替代实现
+* 加入计算预算的 agent 评测框架设计
+* 将其扩展为 multi-objective benchmark 版本

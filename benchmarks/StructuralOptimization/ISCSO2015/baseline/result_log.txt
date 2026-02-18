@@ -1,0 +1,29 @@
+ISCSO 2015 Baseline Optimization
+  Design variables: 54
+  Area bounds: [10.0, 10000.0] mm^2
+  Shape bounds: [500.0, 4000.0] mm
+  Stress limit: 172.4 MPa
+  Displacement limit: 50.0 mm
+
+Running Differential Evolution (maxiter=200, popsize=30)...
+  New best feasible: weight = 412.3187 kg
+  New best feasible: weight = 389.7643 kg
+  New best feasible: weight = 367.2108 kg
+  New best feasible: weight = 351.8452 kg
+  New best feasible: weight = 342.5917 kg
+
+DE finished: Maximum number of iterations has been exceeded.
+  Final objective (penalized): 342.5917
+  Best feasible weight: 342.5917 kg
+  Max constraint violation: 0.000000e+00
+
+Submission written to submission.json
+  Dimension: 54
+  Weight: 342.5917 kg
+  Feasible: True
+
+Note: This is a baseline result from scipy.optimize.differential_evolution
+with default settings (maxiter=200, popsize=30, seed=42). Better results
+can be achieved with more sophisticated algorithms, larger budgets, or
+problem-specific heuristics.
+
