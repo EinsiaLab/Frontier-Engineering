@@ -25,6 +25,15 @@ This folder contains the task specification, a Python-based FEM evaluator, and a
 - `baseline/differential_evolution.py`
   - Reference optimization script using `scipy.optimize.differential_evolution`. Produces `submission.json`.
 
+## Baseline Performance
+
+The baseline solution using `scipy.optimize.differential_evolution` achieves:
+- **Weight**: 342.59 kg
+- **Feasible**: Yes (all constraints satisfied)
+- **Algorithm**: Differential Evolution (maxiter=200, popsize=30, seed=42)
+
+This provides a reference point for comparison. Better results can be achieved with more sophisticated algorithms, larger optimization budgets, or problem-specific heuristics.
+
 ## Quick Start
 
 ### 1. Run the Baseline Solution
