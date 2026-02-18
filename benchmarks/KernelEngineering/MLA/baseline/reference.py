@@ -3,8 +3,8 @@ from dataclasses import dataclass
 import torch
 from torch import nn
 import torch.nn.functional as F
-from task import input_t, output_t
-from utils import make_match_reference
+from .task import input_t, output_t
+from .utils import make_match_reference
 
 class RoPE(nn.Module):
     def __init__(self, d_model: int):
