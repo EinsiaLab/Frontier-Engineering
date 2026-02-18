@@ -22,17 +22,27 @@
 - `verification/docker/Dockerfile`
   - 容器化评测环境，确保可复现性。
 
+- `baseline/random_search.py`
+  - 简单随机搜索基线。快速直接的方法，可快速获得结果。
+  
 - `baseline/differential_evolution.py`
-  - 参考优化脚本，使用 `scipy.optimize.differential_evolution`。输出 `submission.json`。
+  - 高级优化脚本，使用 `scipy.optimize.differential_evolution`。更复杂但效果更好。
 
 ## 基线性能
 
-使用 `scipy.optimize.differential_evolution` 的基线解法达到：
-- **重量**: 342.59 kg
+### 简单基线（随机搜索）
+- **重量**: 3820.19 kg
 - **可行性**: 是（所有约束均满足）
-- **算法**: 差分进化算法 (maxiter=200, popsize=30, seed=42)
+- **算法**: 随机搜索 (1000 次评估, seed=42)
+- **运行时间**: ~4 秒
 
-这提供了一个参考基准。通过更先进的算法、更大的优化预算或针对问题的启发式方法可以获得更好的结果。
+### 高级基线（差分进化）
+- **重量**: 2902.88 kg
+- **可行性**: 是（所有约束均满足）
+- **算法**: 差分进化算法 (maxiter=10, popsize=30, seed=42)
+- **运行时间**: ~105 秒
+
+简单基线提供了快速的参考基准，而高级基线在更多计算资源下能获得更好的性能。通过更多迭代、更大的优化预算或针对问题的启发式方法可以获得更好的结果。
 
 ## 快速开始
 

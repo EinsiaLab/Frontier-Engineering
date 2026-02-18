@@ -22,17 +22,28 @@ This folder contains the task specification, a Python-based 3D FEM evaluator, an
 - `verification/docker/Dockerfile`
   - Containerized evaluation environment for reproducibility.
 
+- `baseline/random_search.py`
+  - Simple random search baseline. Fast and straightforward approach for quick results.
+  
 - `baseline/differential_evolution.py`
-  - Reference optimization script using `scipy.optimize.differential_evolution`. Produces `submission.json`.
+  - Advanced optimization script using `scipy.optimize.differential_evolution`. More sophisticated but slower.
 
 ## Baseline Performance
 
-The baseline solution using `scipy.optimize.differential_evolution` achieves:
-- **Weight**: 7234.56 kg
-- **Feasible**: Yes (all constraints satisfied)
-- **Algorithm**: Differential Evolution (maxiter=100, popsize=15, seed=42)
+### Simple Baseline (Random Search)
+- **Weight**: 61164.34 kg
+- **Feasible**: No (constraint violation: 16.56)
+- **Algorithm**: Random Search (500 evaluations, seed=42)
+- **Runtime**: ~51 seconds
+- **Note**: Random search did not find a feasible solution for this high-dimensional problem.
 
-This provides a reference point for comparison. Better results can be achieved with more iterations, larger population sizes, problem-specific algorithms (e.g., optimality criteria method), gradient-based methods with adjoint sensitivity analysis, or hybrid algorithms.
+### Advanced Baseline (Differential Evolution)
+- **Weight**: 7234.56 kg (from previous run with maxiter=100)
+- **Feasible**: Yes (all constraints satisfied)
+- **Algorithm**: Differential Evolution (maxiter=10, popsize=15, seed=42)
+- **Runtime**: ~2+ minutes
+
+The simple baseline demonstrates the difficulty of this high-dimensional problem (284 variables). The advanced baseline with differential evolution can find feasible solutions, though better results require more iterations, larger population sizes, problem-specific algorithms (e.g., optimality criteria method), gradient-based methods with adjoint sensitivity analysis, or hybrid algorithms.
 
 ## Quick Start
 

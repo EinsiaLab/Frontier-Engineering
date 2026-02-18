@@ -2,10 +2,8 @@
 """
 ISCSO 2023 — 284-Member 3D Truss Sizing Optimization
 
-Objective: Minimize structural weight subject to stress and displacement constraints.
-Design variables: 284 cross-sectional areas.
-
-Outputs submission.json in the working directory.
+Simple Random Search Baseline
+A straightforward random sampling approach to find feasible solutions.
 """
 
 import json
@@ -16,7 +14,6 @@ from pathlib import Path
 import numpy as np
 from scipy import sparse
 from scipy.sparse.linalg import spsolve
-from scipy.optimize import differential_evolution
 
 
 # ===================== Inline 3D Tower Generator =====================
@@ -183,11 +180,6 @@ def evaluate_design(areas, problem, nodes, elements):
     return weight, max(max_vio, 0.0)
 
 
-def penalized_objective(x, problem, nodes, elements):
-    weight, max_vio = evaluate_design(x, problem, nodes, elements)
-    return weight + 1e6 * max(max_vio, 0.0) ** 2
-
-
 # ===================== Main (top-level execution) =====================
 
 problem = load_problem()
@@ -195,7 +187,7 @@ nodes, elements = generate_tower(problem)
 bounds_cfg = problem["variable_bounds"]
 dim = problem["dimension"]
 
-print(f"ISCSO 2023 Baseline Optimization")
+print(f"ISCSO 2023 Simple Random Search Baseline")
 print(f"  Nodes: {len(nodes)}, Elements: {len(elements)}")
 print(f"  Design variables: {dim}")
 print(f"  Area bounds: [{bounds_cfg['area_min']}, {bounds_cfg['area_max']}] mm^2")
@@ -204,69 +196,44 @@ print(f"  Displacement limit: {problem['constraints']['displacement_limit']} mm"
 print(f"  Load cases: {len(problem['load_cases'])}")
 print()
 
-bounds = [(bounds_cfg["area_min"], bounds_cfg["area_max"])] * dim
+# Random search parameters
+MAX_EVALS = 500  # Simple and fast (fewer than ISCSO2015 due to higher dimension)
+np.random.seed(42)
 
 best_feasible = None
 best_weight = float("inf")
-iteration_count = 0
 start_time = time.time()
-last_print_time = start_time
-MAX_RUNTIME = 600  # 10 minutes maximum (larger problem)
-PRINT_INTERVAL = 10  # Print progress every 10 iterations or 30 seconds
 
-
-def callback(xk, convergence=0):
-    global best_feasible, best_weight, iteration_count, last_print_time
-    iteration_count += 1
-    current_time = time.time()
-    elapsed = current_time - start_time
+print(f"Running Random Search ({MAX_EVALS} evaluations)...")
+for i in range(MAX_EVALS):
+    # Random sample in bounds
+    x = np.random.uniform(bounds_cfg["area_min"], bounds_cfg["area_max"], dim)
     
-    w, vio = evaluate_design(xk, problem, nodes, elements)
-    should_print = False
+    w, vio = evaluate_design(x, problem, nodes, elements)
     
     if vio <= 1e-6 and w < best_weight:
         best_weight = w
-        best_feasible = xk.copy()
-        should_print = True
-        print(f"  [{iteration_count:4d}] New best feasible: weight = {w:.4f} kg (time: {elapsed:.1f}s)")
-    elif iteration_count % PRINT_INTERVAL == 0 or (current_time - last_print_time) >= 30:
-        should_print = True
+        best_feasible = x.copy()
+        elapsed = time.time() - start_time
+        print(f"  [{i+1:4d}] New best feasible: weight = {w:.4f} kg (time: {elapsed:.1f}s)")
+    elif (i + 1) % 100 == 0:
+        elapsed = time.time() - start_time
         status = "feasible" if vio <= 1e-6 else f"violation={vio:.2e}"
-        print(f"  [{iteration_count:4d}] Current: weight = {w:.4f} kg ({status}), time: {elapsed:.1f}s")
-    
-    if should_print:
-        last_print_time = current_time
-    
-    # Note: Time limit is enforced by maxiter, which is set conservatively
-
-
-print("Running Differential Evolution (maxiter=10, popsize=15)...")
-print("  Progress will be printed every 10 iterations or 30 seconds")
-print("  (This is a baseline; better results require more iterations)")
-result = differential_evolution(
-    penalized_objective,
-    bounds=bounds,
-    args=(problem, nodes, elements),
-    maxiter=10,  # Reduced for faster baseline
-    popsize=15,
-    tol=1e-8,
-    seed=42,
-    callback=callback,
-    disp=False,
-    workers=1,
-)
+        print(f"  [{i+1:4d}] Current: weight = {w:.4f} kg ({status}), time: {elapsed:.1f}s")
 
 elapsed_time = time.time() - start_time
-print(f"\nDE finished: {result.message}")
-print(f"  Total iterations: {iteration_count}")
+print(f"\nRandom Search finished")
+print(f"  Total evaluations: {MAX_EVALS}")
 print(f"  Total time: {elapsed_time:.1f}s")
 
 if best_feasible is not None:
     x_best = best_feasible
     w, vio = evaluate_design(x_best, problem, nodes, elements)
     print(f"  Best feasible weight: {w:.4f} kg")
+    print(f"  Max constraint violation: {vio:.6e}")
 else:
-    x_best = result.x
+    # Use last evaluated point if no feasible found
+    x_best = x
     w, vio = evaluate_design(x_best, problem, nodes, elements)
     print(f"  WARNING: No feasible solution found!")
     print(f"  Best weight: {w:.4f} kg, violation: {vio:.6e}")
@@ -274,8 +241,8 @@ else:
 submission = {
     "benchmark_id": "iscso_2023",
     "solution_vector": x_best.tolist(),
-    "algorithm": "DifferentialEvolution",
-    "num_evaluations": int(result.nfev),
+    "algorithm": "RandomSearch",
+    "num_evaluations": MAX_EVALS,
 }
 
 with open("submission.json", "w", encoding="utf-8") as f:
@@ -286,3 +253,4 @@ print(f"  Dimension: {len(x_best)}")
 print(f"  Weight: {w:.4f} kg")
 print(f"  Feasible: {vio <= 1e-6}")
 # EVOLVE-BLOCK-END
+
