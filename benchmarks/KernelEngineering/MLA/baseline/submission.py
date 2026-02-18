@@ -3,7 +3,7 @@ from dataclasses import dataclass
 import torch
 from torch import nn
 import torch.nn.functional as F
-from task import input_t, output_t
+from .task import input_t, output_t
 
 class RoPE(nn.Module):
     def __init__(self, d_model: int):

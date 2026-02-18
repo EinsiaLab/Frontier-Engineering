@@ -6,7 +6,7 @@ import torch
 import torch.nn.functional as F
 import triton
 import triton.language as tl
-from reference import KVCache, Config  # Definition of KVCache and Config classes are shown above. Must import this way. Do not rewrite yourself.
+from .reference import KVCache, Config  # Definition of KVCache and Config classes are shown above. Must import this way. Do not rewrite yourself.
 ### END OF IMPORT STATEMENTS BLOCK ###
 
 # ----------------------------------------------------------------------
