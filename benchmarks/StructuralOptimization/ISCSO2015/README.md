@@ -22,11 +22,8 @@ This folder contains the task specification, a Python-based FEM evaluator, and a
 - `verification/docker/Dockerfile`
   - Containerized evaluation environment for reproducibility.
 
-- `baseline/solution.py`
+- `baseline/differential_evolution.py`
   - Reference optimization script using `scipy.optimize.differential_evolution`. Produces `submission.json`.
-
-- `baseline/result_log.txt`
-  - Execution log from the baseline solution.
 
 ## Quick Start
 
@@ -34,7 +31,7 @@ This folder contains the task specification, a Python-based FEM evaluator, and a
 
 ```bash
 cd benchmarks/StructuralOptimization/ISCSO2015
-python baseline/solution.py
+python baseline/differential_evolution.py
 ```
 
 This produces `submission.json` in the current directory.
@@ -42,7 +39,7 @@ This produces `submission.json` in the current directory.
 ### 2. Evaluate a Submission
 
 ```bash
-python verification/evaluator.py baseline/solution.py
+python verification/evaluator.py baseline/differential_evolution.py
 ```
 
 Or evaluate a pre-existing `submission.json` directly:
@@ -56,7 +53,7 @@ python verification/evaluator.py --test submission.json
 ```bash
 cd verification/docker
 docker build -t iscso2015-eval .
-docker run -v $(pwd)/../../:/workspace iscso2015-eval python /workspace/baseline/solution.py
+docker run -v $(pwd)/../../:/workspace iscso2015-eval python /workspace/baseline/differential_evolution.py
 ```
 
 ## Typical Workflow

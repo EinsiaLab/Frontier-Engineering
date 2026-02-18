@@ -16,11 +16,8 @@
 - `verification/fem_truss3d.py`
   - 纯 Python 3D 桁架 FEM 求解器，使用稀疏矩阵的直接刚度法。同时包含参数化塔拓扑生成器。依赖：`numpy`、`scipy`。
 
-- `baseline/solution.py`
+- `baseline/differential_evolution.py`
   - 参考优化脚本，使用 `scipy.optimize.differential_evolution`。输出 `submission.json`。
-
-- `baseline/result_log.txt`
-  - 基线方案的执行日志。
 
 ## 快速开始
 
@@ -28,13 +25,13 @@
 
 ```bash
 cd benchmarks/StructuralOptimization/ISCSO2023
-python baseline/solution.py
+python baseline/differential_evolution.py
 ```
 
 ### 2. 评估提交
 
 ```bash
-python verification/evaluator.py baseline/solution.py
+python verification/evaluator.py baseline/differential_evolution.py
 ```
 
 或直接评估已有的 `submission.json`：
