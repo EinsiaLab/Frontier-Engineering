@@ -81,19 +81,85 @@
 > 💡 如果这是你第一次贡献，或者对目录结构有疑问，欢迎先提交 Issue 进行讨论。  
 ## 📊 任务进度与规划
 
-下表列出了当前 Benchmark 中各领域任务的覆盖情况。我们不仅欢迎代码贡献，也欢迎社区提出具有挑战性的新工程问题构想。
-| 领域 | 任务名称 | 状态 | 维护者/贡献者 | 备注 |
-| :--- | :--- | :---: | :--- | :--- |
-| **Astrodynamics** | `MannedLunarLanding` | 已完成 | @jdp22 | 登月软着陆轨迹优化 |
-| **ElectronicDesignAutomation** | `IntegrationPhysicalDesignOptimization` | 开发中 | @ahydchh | 芯片宏单元布局优化 |
-| **KernelEngineering** | `MLA` | 已完成 | @ahydchh | 内核工程 |
-| **KernelEngineering** | `TriMul` | 已完成 | @ahydchh | 内核工程 |
-| **SingleCellAnalysis** | `denoising` | 已基本完成，但验证程序源自 test-time-training discover 并不完整 | @ahydchh | 单细胞分析 |
-| **SingleCellAnalysis** | `perturbation_prediction` | 已完成 | — | OpenProblems 扰动响应预测（NeurIPS 2023 scPerturb） |
-| **SingleCellAnalysis** | `predict_modality` | 已完成 | — | OpenProblems 模态预测（NeurIPS 2021，RNA→ADT） |
-| **StructuralOptimization** | `ISCSO2015` | 已完成 | — | 45 杆 2D 桁架尺寸+形状优化 |
-| **StructuralOptimization** | `ISCSO2023` | 已完成 | — | 284 杆 3D 桁架尺寸优化 |
-| **MathModeling** | `SubmarineSearch` | 已完成 | — | 深海潜水器最优搜索 (MCM 2024B) |
+<table>
+  <thead>
+    <tr>
+      <th>领域</th>
+      <th>任务名称</th>
+      <th>状态</th>
+      <th>维护者/贡献者</th>
+      <th>备注</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><b>Astrodynamics</b></td>
+      <td><code>MannedLunarLanding</code></td>
+      <td>已完成</td>
+      <td>@jdp22</td>
+      <td>登月软着陆轨迹优化</td>
+    </tr>
+    <tr>
+      <td><b>ElectronicDesignAutomation</b></td>
+      <td><code>IntegrationPhysicalDesignOptimization</code></td>
+      <td>开发中</td>
+      <td>@ahydchh</td>
+      <td>芯片宏单元布局优化</td>
+    </tr>
+    <tr>
+      <td rowspan="2"><b>Kernel Engineering</b></td>
+      <td><code>MLA</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>GPUMode MLA 解码内核</td>
+    </tr>
+    <tr>
+      <td><code>TriMul</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>GPUMode 三角乘法</td>
+    </tr>
+    <tr>
+      <td rowspan="3"><b>Single Cell Analysis</b></td>
+      <td><code>denoising</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>Open Problems 单细胞分析</td>
+    </tr>
+    <tr>
+      <td><code>perturbation_prediction</code></td>
+      <td>已完成</td>
+      <td>—</td>
+      <td>OpenProblems 扰动响应预测（NeurIPS 2023 scPerturb）</td>
+    </tr>
+    <tr>
+      <td><code>predict_modality</code></td>
+      <td>已完成</td>
+      <td>—</td>
+      <td>OpenProblems 模态预测（NeurIPS 2021，RNA→ADT）</td>
+    </tr>
+    <tr>
+      <td rowspan="2"><b>StructuralOptimization</b></td>
+      <td><code>ISCSO2015</code></td>
+      <td>已完成</td>
+      <td>—</td>
+      <td>45 杆 2D 桁架尺寸+形状优化</td>
+    </tr>
+    <tr>
+      <td><code>ISCSO2023</code></td>
+      <td>已完成</td>
+      <td>—</td>
+      <td>284 杆 3D 桁架尺寸优化</td>
+    </tr>
+    <tr>
+      <td><b>MathModeling</b></td>
+      <td><code>SubmarineSearch</code></td>
+      <td>已完成</td>
+      <td>—</td>
+      <td>深海潜水器最优搜索 (MCM 2024B)</td>
+    </tr>
+  </tbody>
+</table>
 > 💡 **有新的工程问题想法？**
 > 即使你暂时无法提供完整的验证代码，我们也非常欢迎你分享好的**Task 构想**！
 > 请创建一个 Issue 详细描述该问题的**现实背景**与**工程价值**。经讨论确认后，我们会将其加入上表，集结社区力量共同攻克。
