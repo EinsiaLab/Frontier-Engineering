@@ -11,6 +11,8 @@ from frontier_eval.tasks.predict_modality import PredictModalityTask
 
 _TASKS: dict[str, Type[Task]] = {
     MannedLunarLandingTask.NAME: MannedLunarLandingTask,
+    ISCSO2015Task.NAME: ISCSO2015Task,
+    ISCSO2023Task.NAME: ISCSO2023Task,
     PerturbationPredictionTask.NAME: PerturbationPredictionTask,
     PredictModalityTask.NAME: PredictModalityTask,
     ISCSO2015Task.NAME: ISCSO2015Task,
