@@ -8,7 +8,6 @@ from frontier_eval.tasks.iscso2023 import ISCSO2023Task
 from frontier_eval.tasks.manned_lunar_landing import MannedLunarLandingTask
 from frontier_eval.tasks.perturbation_prediction import PerturbationPredictionTask
 from frontier_eval.tasks.predict_modality import PredictModalityTask
-from frontier_eval.tasks.submarine_search import SubmarineSearchTask
 
 _TASKS: dict[str, Type[Task]] = {
     MannedLunarLandingTask.NAME: MannedLunarLandingTask,
@@ -16,7 +15,6 @@ _TASKS: dict[str, Type[Task]] = {
     PredictModalityTask.NAME: PredictModalityTask,
     ISCSO2015Task.NAME: ISCSO2015Task,
     ISCSO2023Task.NAME: ISCSO2023Task,
-    SubmarineSearchTask.NAME: SubmarineSearchTask,
 }
 
 
