@@ -2,7 +2,7 @@ name: AI Code Review Agent
 
 on:
   pull_request_target:
-    types: [opened, synchronize] # 当 PR 创建或有新提交时触发
+    types: [opened, synchronize, reopened] # 当 PR 创建或有新提交时触发
 
 jobs:
   review:
