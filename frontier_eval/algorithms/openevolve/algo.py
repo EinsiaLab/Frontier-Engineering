@@ -32,6 +32,21 @@ def _deep_merge_dict(base: dict[str, Any], override: dict[str, Any]) -> dict[str
     return base
 
 
+def _drop_none(value: Any) -> Any:
+    """
+    Recursively drop `None` values from dict/list structures.
+
+    This is needed because openevolve==0.2.26 uses non-Optional dataclass types with
+    default `None` (e.g. `Config.language: str = None`), and `Config.from_dict()`
+    rejects explicit `None` values via dacite type checking.
+    """
+    if isinstance(value, dict):
+        return {k: _drop_none(v) for k, v in value.items() if v is not None}
+    if isinstance(value, list):
+        return [_drop_none(v) for v in value if v is not None]
+    return value
+
+
 def _as_plain_mapping(value: Any) -> dict[str, Any]:
     if value is None:
         return {}
@@ -202,7 +217,7 @@ class OpenEvolveAlgorithm(Algorithm):
         if oe_overrides:
             merged = config.to_dict()
             _deep_merge_dict(merged, oe_overrides)
-            config = self._oe_Config.from_dict(merged)
+            config = self._oe_Config.from_dict(_drop_none(merged))
 
         config.max_iterations = iterations
         if algo_cfg.get("checkpoint_interval") is not None:
@@ -303,6 +318,7 @@ class OpenEvolveAlgorithm(Algorithm):
             / "openevolve_entrypoint.py"
         ).resolve()
         os.environ["FRONTIER_EVAL_TASK_NAME"] = task.NAME
+        os.environ["FRONTIER_EVAL_EVALUATOR_TIMEOUT_S"] = str(getattr(config.evaluator, "timeout", 300))
         os.environ.setdefault("FRONTIER_ENGINEERING_ROOT", str(self.repo_root))
 
         controller = self._oe_OpenEvolve(

@@ -4,3 +4,4 @@ numpy
 pandas
 anndata
 scipy
+anndata
