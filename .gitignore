@@ -13,5 +13,6 @@ benchmarks/Astrodynamics/MannedLunarLanding/outputlog.txt
 .vscode
 *.csv
 *.h5ad
+*.h5ad.tmp
+*.h5ad.tmp.*
 rawdata/
-
