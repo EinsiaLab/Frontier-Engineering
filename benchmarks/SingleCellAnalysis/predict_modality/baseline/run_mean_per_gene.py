@@ -1,3 +1,13 @@
+# IMPORTANT (OpenEvolve contract):
+# - The evaluator runs this script as:
+#     python <program.py> --output prediction.h5ad --dataset-dir <CACHE_DIR>
+# - Do NOT change these CLI flags or introduce additional REQUIRED args.
+# - You MUST write a valid AnnData to --output with:
+#     - layers["normalized"] shape (n_test_cells, n_mod2_features)
+#     - obs matching test_mod1.obs (same cells/order)
+#     - var matching train_mod2.var (same features/order)
+#     - uns["dataset_id"] present and uns["method_id"] set
+
 from __future__ import annotations
 
 import argparse

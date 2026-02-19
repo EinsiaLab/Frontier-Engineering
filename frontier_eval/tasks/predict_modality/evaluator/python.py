@@ -70,6 +70,19 @@ def evaluate(program_path: str, *, repo_root: Path | None = None) -> Any:
     ).resolve()
 
     artifacts: dict[str, str] = {}
+    artifacts["interface_contract"] = (
+        "Hard requirements for candidate program (do NOT change these):\n"
+        "1) The evaluator will run: python <program.py> --output prediction.h5ad --dataset-dir <CACHE_DIR>\n"
+        "2) Your program MUST accept the flags `--output` and `--dataset-dir` (no additional required CLI args).\n"
+        "3) Your program MUST write a valid AnnData file at --output, with:\n"
+        "   - layers['normalized'] of shape (n_test_cells, n_mod2_features)\n"
+        "   - obs matching test_mod1.obs (same cells/order)\n"
+        "   - var matching train_mod2.var (same features/order)\n"
+        "   - uns['dataset_id'] present (copied from dataset) and uns['method_id']\n"
+        "4) The dataset cache dir already contains or will contain: train_mod1.h5ad, train_mod2.h5ad, "
+        "test_mod1.h5ad, test_mod2.h5ad.\n"
+        "If you change the CLI interface, the program will fail and receive valid=0."
+    )
     metrics: dict[str, float] = {
         "combined_score": 0.0,
         "valid": 0.0,
