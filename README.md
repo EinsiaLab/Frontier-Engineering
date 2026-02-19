@@ -100,6 +100,7 @@ The table below lists the current coverage of domain tasks in the Benchmark. We 
 | **Kernel Engineering** | `TriMul` | Basically Completed, Awaiting Verification | @ahydchh | Kernel Engineering |
 | **Single Cell Analysis** | `denoising` | Basically Completed, Awaiting Verification | @ahydchh | Single Cell Analysis |
 | **Single Cell Analysis** | `perturbation_prediction` | Completed | — | OpenProblems perturbation response prediction (NeurIPS 2023 scPerturb) |
+| **Single Cell Analysis** | `predict_modality` | Completed | — | OpenProblems modality prediction (NeurIPS 2021, RNA→ADT) |
 | **StructuralOptimization** | `ISCSO2015` | Completed | — | 45-bar 2D truss size + shape optimization |
 | **StructuralOptimization** | `ISCSO2023` | Completed | — | 284-member 3D truss sizing optimization |
 | **MathModeling** | `SubmarineSearch` | Completed | — | Optimal search for lost submersible (MCM 2024B) |
