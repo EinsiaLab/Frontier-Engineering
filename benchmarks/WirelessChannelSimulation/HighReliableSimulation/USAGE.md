@@ -19,7 +19,7 @@ pip install omegaconf hydra-core
 
 ## 2. 快速验证任务代码
 
-运行初始化示例（`NaiveSampler`）：
+运行初始化示例（`BesselSampler`）：
 
 ```bash
 python benchmarks/WirelessChannelSimulation/HighReliableSimulation/scripts/init.py
