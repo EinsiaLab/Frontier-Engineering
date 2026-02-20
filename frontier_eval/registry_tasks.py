@@ -5,6 +5,7 @@ from typing import Type
 from frontier_eval.tasks.base import Task
 from frontier_eval.tasks.iscso2015 import ISCSO2015Task
 from frontier_eval.tasks.iscso2023 import ISCSO2023Task
+from frontier_eval.tasks.mla import MLATask
 from frontier_eval.tasks.manned_lunar_landing import MannedLunarLandingTask
 from frontier_eval.tasks.perturbation_prediction import PerturbationPredictionTask
 from frontier_eval.tasks.predict_modality import PredictModalityTask
@@ -17,6 +18,7 @@ _TASKS: dict[str, Type[Task]] = {
     PerturbationPredictionTask.NAME: PerturbationPredictionTask,
     PredictModalityTask.NAME: PredictModalityTask,
     TriMulTask.NAME: TriMulTask,
+    MLATask.NAME: MLATask,
 }
 
 

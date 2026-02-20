@@ -1,6 +1,6 @@
 # amd-mla-decode
 
-This task originates from https://www.gpumode.com/leaderboard/463?tab=rankings. The file organization conforms to the standard format. Validation code is not yet implemented and will be added later. @ahydchh
+This task originates from https://www.gpumode.com/leaderboard/463?tab=rankings.
 
 The MLA reference implementation is located in `baseline/reference.py`, which is the basic implementation and also the standard for numerical correctness.
 
@@ -16,7 +16,8 @@ The evaluation entry point is located in `verification/eval.py`.
 
 ## Execution Method
 
-``` cd benchmarks/KernelEngineering/MLA/verification
+```
+cd benchmarks/KernelEngineering/MLA/verification
 
 # Only check correctness
 POPCORN_FD=1 python eval.py test mla_tests.txt
@@ -30,3 +31,37 @@ POPCORN_FD=1 python eval.py leaderboard mla_bench.txt
 ```
 
 The above code will use `submission.custom_kernel` for evaluation. You can choose to replace `benchmarks/KernelEngineering/MLA/baseline/submission.py` with your own code, or replace all `from baseline.submission import custom_kernel` in `benchmarks/KernelEngineering/MLA/verification/eval.py` with importing from your specified code.
+
+## Evaluation in frontier_eval
+
+`frontier_eval` integration logic for MLA:
+
+- `frontier_eval/tasks/mla/task.py`
+- `frontier_eval/tasks/mla/evaluator/python.py`
+
+Evaluation flow:
+
+1. Initial candidate code uses `benchmarks/KernelEngineering/MLA/baseline/submission.py`.
+2. Each evaluation creates a temporary sandbox and copies `baseline/` and `verification/`.
+3. Candidate code overwrites sandbox `baseline/submission.py`.
+4. Runs benchmark command:
+   - `python eval.py benchmark mla_bench.txt`
+5. Parses `mla_bench.log` benchmark means and computes `geom_mean_ns`.
+6. Uses `combined_score = 1e9 / geom_mean_ns` when valid. Valid requires:
+   - return code is 0
+   - `check == pass`
+   - benchmark means are present
+   Otherwise it forces `valid=0` and `combined_score=0`.
+
+The evaluator also returns artifacts (stdout/stderr, `mla_bench.log`, error summary, task spec) for OpenEvolve follow-up rounds.
+
+### Run MLA with frontier_eval (Example)
+
+```bash
+OPENAI_MODEL=qwen/qwen3-coder-next \
+FRONTIER_EVAL_MLA_PYTHON=/data_storage/chihh2311/.conda/envs/kernel/bin/python \
+/data_storage/chihh2311/.conda/envs/frontier-eval-2/bin/python -m frontier_eval \
+task=mla \
+algorithm.iterations=20 \
+algorithm.oe.evaluator.timeout=1800
+```
