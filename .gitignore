@@ -16,3 +16,4 @@ benchmarks/Astrodynamics/MannedLunarLanding/outputlog.txt
 *.h5ad.tmp
 *.h5ad.tmp.*
 rawdata/
+.ralph-tui/
