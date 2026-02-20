@@ -8,14 +8,29 @@ from scipy.special import gamma, ive
 class SamplerBase:
     def __init__(self):
         self.rng = Generator(Philox())
+        self.code = None
 
     def sample(self, noise_std, tx_bin, batch_size, **kwargs):
+        raise NotImplementedError
+
+    def simulate_variance_controlled(
+        self,
+        *,
+        code,
+        sigma,
+        target_std,
+        max_samples,
+        batch_size,
+        fix_tx=True,
+        min_errors=10,
+    ):
         raise NotImplementedError
 
 
 class NaiveSampler(SamplerBase):
     def __init__(self, code):
         super().__init__()
+        self.code = code
         self.n = code.dim
 
     def sample(self, noise_std, tx_bin, batch_size, **kwargs):
@@ -26,6 +41,27 @@ class NaiveSampler(SamplerBase):
             - self.n / 2 * np.log(2 * np.pi * noise_std**2)
         )
         return noise, log_pdf
+
+    def simulate_variance_controlled(
+        self,
+        *,
+        code,
+        sigma,
+        target_std,
+        max_samples,
+        batch_size,
+        fix_tx=True,
+        min_errors=10,
+    ):
+        return code.simulate_variance_controlled(
+            noise_std=sigma,
+            target_std=target_std,
+            max_samples=max_samples,
+            sampler=self,
+            batch_size=batch_size,
+            fix_tx=fix_tx,
+            min_errors=min_errors,
+        )
 
 
 class BesselSampler(SamplerBase):
@@ -58,3 +94,24 @@ class BesselSampler(SamplerBase):
         noise = g + self.r * u
         log_pdfs = self.log_pdf(noise, noise_std)
         return noise, log_pdfs
+
+    def simulate_variance_controlled(
+        self,
+        *,
+        code,
+        sigma,
+        target_std,
+        max_samples,
+        batch_size,
+        fix_tx=True,
+        min_errors=10,
+    ):
+        return code.simulate_variance_controlled(
+            noise_std=sigma,
+            target_std=target_std,
+            max_samples=max_samples,
+            sampler=self,
+            batch_size=batch_size,
+            fix_tx=fix_tx,
+            min_errors=min_errors,
+        )
