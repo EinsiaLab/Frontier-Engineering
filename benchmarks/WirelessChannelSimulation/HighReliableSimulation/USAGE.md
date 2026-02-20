@@ -1,4 +1,4 @@
-# USAGE
+# 本地运行指南（USAGE）
 
 ## 1. 环境准备
 
@@ -8,18 +8,18 @@
 pip install numpy scipy
 ```
 
-若需要跑 `frontier_eval` CLI，还需要：
+若需要运行 `frontier_eval` CLI，还需要：
 
 ```bash
 pip install omegaconf hydra-core
 ```
 
 说明：
-- 本任务核心运行依赖已内置到 `runtime/`，不需要从 `reliable_sim` 导入模块。
+- 本任务核心运行依赖已内置到 `runtime/`。
 
 ## 2. 快速验证任务代码
 
-运行初始提交（`NaiveSampler`）：
+运行初始化示例（`NaiveSampler`）：
 
 ```bash
 python benchmarks/WirelessChannelSimulation/HighReliableSimulation/scripts/init.py
@@ -33,7 +33,7 @@ python benchmarks/WirelessChannelSimulation/HighReliableSimulation/baseline/solu
 
 ## 3. 单独运行评测器
 
-评测 `init.py`：
+评测 `scripts/init.py`：
 
 ```bash
 python - <<'PY'
@@ -49,7 +49,7 @@ print(mod.evaluate(str(prog), repo_root=repo))
 PY
 ```
 
-评测 `baseline/solution.py`（只改 `prog` 路径）：
+评测 `baseline/solution.py`（仅修改 `prog` 路径）：
 
 ```bash
 python - <<'PY'
@@ -65,9 +65,9 @@ print(mod.evaluate(str(prog), repo_root=repo))
 PY
 ```
 
-## 4. 评测常量说明
+## 4. 冻结常量与评分说明
 
-当前 `evaluator.py` 固定常量：
+当前 `eval/evaluator.py` 冻结常量：
 
 - `sigma = 0.268`
 - `target_std = 0.05`
@@ -109,7 +109,7 @@ code.simulate_variance_controlled(
 )
 ```
 
-## 6. 重新标定 sigma / r0 / t0
+## 6. 重新标定 sigma / r0 / t0（开发用途）
 
 运行标定脚本（示例）：
 
@@ -125,13 +125,13 @@ python benchmarks/WirelessChannelSimulation/HighReliableSimulation/scripts/calib
   --output benchmarks/WirelessChannelSimulation/HighReliableSimulation/calibration_new.json
 ```
 
-然后把 `selected` 中的值同步到 `eval/evaluator.py`：
+然后把 `selected` 中的值同步到 `eval/evaluator.py`（开发用途；线上评测常量以冻结版本为准）：
 
 - `sigma_star -> DEV_SIGMA`
 - `r0 -> R0_DEV`
 - `t0 -> T0_DEV`
 
-## 7. 接入 frontier_eval
+## 7. 接入 frontier_eval（可选）
 
 当前已注册任务名：`high_reliable_simulation`。
 
