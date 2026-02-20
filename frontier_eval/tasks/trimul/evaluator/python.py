@@ -82,6 +82,13 @@ def _geometric_mean(values: list[float]) -> float:
     return float(math.exp(sum(math.log(v) for v in safe) / len(safe)))
 
 
+def _read_text(path: Path) -> str | None:
+    try:
+        return path.read_text(encoding="utf-8", errors="replace")
+    except Exception:
+        return None
+
+
 def evaluate(
     program_path: str,
     *,
@@ -114,6 +121,13 @@ def evaluate(
         "benchmark_count": 0.0,
         "geom_mean_ns": 0.0,
     }
+
+    # Provide the task statement to later evolution rounds via prompt artifacts.
+    task_spec_zh_cn_path = (benchmark_dir / "Task_zh-CN.md").resolve()
+    artifacts["task_spec_zh_cn_path"] = str(task_spec_zh_cn_path)
+    task_spec_zh_cn = _read_text(task_spec_zh_cn_path)
+    if task_spec_zh_cn:
+        artifacts["task_spec_zh_cn"] = _truncate_middle(task_spec_zh_cn)
 
     if not baseline_dir.is_dir() or not verification_dir.is_dir():
         artifacts["error_message"] = (
@@ -218,7 +232,7 @@ def evaluate(
                 "    sys.exit(tri_eval.main())\n",
                 encoding="utf-8",
             )
-            cmd = [kernel_python, str(wrapper_path), "benchmark", "tri_bench.txt"]
+            cmd = [kernel_python, str(wrapper_path), "benchmark", "tri_bench_24g.txt"]
             artifacts["runner_mode"] = "serial_fallback"
             artifacts["benchmark_cmd"] = " ".join(cmd)
             artifacts["fallback_reason"] = "PermissionError SemLock"
