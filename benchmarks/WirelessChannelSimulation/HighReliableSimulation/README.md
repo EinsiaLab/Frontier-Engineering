@@ -10,7 +10,6 @@
 benchmarks/WirelessChannelSimulation/HighReliableSimulation/
 ├── README.md                 # 本文件：导航与快速开始
 ├── Task.md                   # 任务详情：背景、模型、接口、输入输出、评分与失败条件
-├── USAGE.md                  # 更完整的代码开发说明（可选阅读）
 ├── scripts/
 │   ├── init.py               # 初始化提交示例程序（供本地快速验证）
 ├── baseline/
@@ -45,7 +44,7 @@ print(mod.evaluate(str(program), repo_root=repo))
 PY
 ```
 
-如需更详细的运行说明，见 `benchmarks/WirelessChannelSimulation/HighReliableSimulation/USAGE.md`。
+如需更详细的运行与接口说明，见 `benchmarks/WirelessChannelSimulation/HighReliableSimulation/Task.md`。
 
 ## 冻结配置提示
 
