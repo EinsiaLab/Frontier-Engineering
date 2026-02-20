@@ -8,6 +8,7 @@
 #     - var matching train_mod2.var (same features/order)
 #     - uns["dataset_id"] present and uns["method_id"] set
 
+# EVOLVE-BLOCK-START
 from __future__ import annotations
 
 import argparse
@@ -121,3 +122,4 @@ def main(argv: list[str]) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main(sys.argv[1:]))
+# EVOLVE-BLOCK-END

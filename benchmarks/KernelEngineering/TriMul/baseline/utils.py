@@ -1,3 +1,4 @@
+# EVOLVE-BLOCK-START
 import random
 from typing import Tuple
 
@@ -166,3 +167,4 @@ def clear_l2_cache():
     # write stuff to
     dummy.fill_(42)
     del dummy
+# EVOLVE-BLOCK-END

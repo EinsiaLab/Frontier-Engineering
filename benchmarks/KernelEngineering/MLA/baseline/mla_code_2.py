@@ -9,6 +9,7 @@ import triton.language as tl
 from .reference import KVCache, Config  # Definition of KVCache and Config classes are shown above. Must import this way. Do not rewrite yourself.
 ### END OF IMPORT STATEMENTS BLOCK ###
 
+# EVOLVE-BLOCK-START
 # ----------------------------------------------------------------------
 # Global caches (kept across calls) – never re‑allocated
 # ----------------------------------------------------------------------
@@ -603,3 +604,4 @@ def custom_kernel(data: Tuple[Config, torch.Tensor, KVCache]) -> Tuple[torch.Ten
     kv_cache.seq_len = int(new_len)
 
     return out, kv_cache.data
+# EVOLVE-BLOCK-END

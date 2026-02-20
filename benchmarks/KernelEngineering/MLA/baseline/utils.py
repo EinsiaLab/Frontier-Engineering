@@ -1,3 +1,4 @@
+# EVOLVE-BLOCK-START
 import random
 import numpy as np
 import torch
@@ -156,3 +157,4 @@ def make_match_reference(reference: callable, **kwargs):
     def wrapped(data, output):
         return match_reference(data, output, reference=reference, **kwargs)
     return wrapped
+# EVOLVE-BLOCK-END

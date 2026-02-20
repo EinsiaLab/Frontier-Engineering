@@ -9,6 +9,7 @@ import triton.language as tl
 from .reference import KVCache, Config  # Definition of KVCache and Config classes are shown above. Must import this way. Do not rewrite yourself.
 ### END OF IMPORT STATEMENTS BLOCK ###
 
+# EVOLVE-BLOCK-START
 # ----------------------------------------------------------------------
 # Helper: rotate_half (identical to RoPE.rotate_half)
 # ----------------------------------------------------------------------
@@ -519,3 +520,4 @@ def custom_kernel(data: Tuple[Config, torch.Tensor, KVCache]) -> Tuple[torch.Ten
 
     # The compiled fallback already returns shape [B, 1, Dim].
     return out, kv_cache.data
+# EVOLVE-BLOCK-END

@@ -6,7 +6,7 @@
 
 - `frontier_eval/cli.py`: 主程序入口（`python -m frontier_eval`）
 - `frontier_eval/tasks/`: 所有评测任务
-- `frontier_eval/algorithms/`: 所有算法（目前支持接入 `openevolve`）
+- `frontier_eval/algorithms/`: 所有算法（目前支持接入 `openevolve`、`shinkaevolve`）
 - `frontier_eval/conf/`: Hydra 配置（task / algorithm / llm）
 
 ## 环境准备
@@ -32,6 +32,14 @@ conda install -c conda-forge octave octave-signal octave-control -y
 pip install -r frontier_eval/requirements.txt
 ```
 
+可选（ShinkaEvolve）：
+
+```bash
+# 注意：PyPI 上的 `shinka` 不是 ShinkaEvolve
+# 推荐用可编辑安装（确保 `shinka.core` 可用）：
+pip install -e "git+https://github.com/SakanaAI/ShinkaEvolve.git#egg=shinka"
+```
+
 环境变量（推荐用 `.env`）：
 
 ```bash
@@ -45,6 +53,13 @@ cp .env.example .env
 
 ```bash
 python -m frontier_eval algorithm.iterations=10
+```
+
+快速自检（很快、无需额外 benchmark 依赖）：
+
+```bash
+python -m frontier_eval task=smoke algorithm=openevolve algorithm.iterations=0
+python -m frontier_eval task=smoke algorithm=shinkaevolve algorithm.max_generations=0
 ```
 
 ## 批量评测

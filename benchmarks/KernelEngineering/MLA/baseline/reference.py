@@ -1,3 +1,4 @@
+# EVOLVE-BLOCK-START
 import math
 from dataclasses import dataclass
 import torch
@@ -274,3 +275,4 @@ if __name__ == "__main__":
     print(f"\nTiming results over {len(times)} runs (ms):")
     print(f"Average: {avg_time:.2f}")
     print(f"Individual times: {[f'{t:.2f}' for t in times]}")
+# EVOLVE-BLOCK-END
