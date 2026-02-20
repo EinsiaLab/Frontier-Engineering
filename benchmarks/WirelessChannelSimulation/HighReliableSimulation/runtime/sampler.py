@@ -6,9 +6,11 @@ from scipy.special import gamma, ive
 
 
 class SamplerBase:
-    def __init__(self):
-        self.rng = Generator(Philox())
-        self.code = None
+    def __init__(self, code=None, *, seed: int = 0):
+        # Evaluator constructs candidate samplers with (code=..., seed=...).
+        # Keep this base initializer compatible with that protocol.
+        self.rng = Generator(Philox(int(seed)))
+        self.code = code
 
     def sample(self, noise_std, tx_bin, batch_size, **kwargs):
         raise NotImplementedError
@@ -28,9 +30,8 @@ class SamplerBase:
 
 
 class NaiveSampler(SamplerBase):
-    def __init__(self, code):
-        super().__init__()
-        self.code = code
+    def __init__(self, code, *, seed: int = 0):
+        super().__init__(code, seed=seed)
         self.n = code.dim
 
     def sample(self, noise_std, tx_bin, batch_size, **kwargs):
@@ -65,9 +66,8 @@ class NaiveSampler(SamplerBase):
 
 
 class BesselSampler(SamplerBase):
-    def __init__(self, code):
-        super().__init__()
-        self.code = code
+    def __init__(self, code, *, seed: int = 0):
+        super().__init__(code, seed=seed)
         self.dim = code.dim
         self.r = self.code.get_r()
 
