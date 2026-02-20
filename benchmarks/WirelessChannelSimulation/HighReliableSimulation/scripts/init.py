@@ -14,11 +14,11 @@ sys.path.insert(0, str(TASK_ROOT / "runtime"))
 
 from chase import ChaseDecoder
 from code_linear import HammingCode
-from sampler import NaiveSampler
+from sampler import BesselSampler
 
 
-class MySampler(NaiveSampler):
-    """开发阶段初始程序：基于 NaiveSampler 的可运行基线。"""
+class MySampler(BesselSampler):
+    """初始程序：基于 BesselSampler 的重要性采样版本。"""
 
     def __init__(self, code: HammingCode, *, seed: int = 0):
         super().__init__(code)
