@@ -22,11 +22,76 @@
 1. `class MySampler(SamplerBase)`；
 2. `MySampler.simulate_variance_controlled(...)` 方法：内部执行仿真并返回结果。
 
-你可以自行组织实现细节，但必须满足评测器对返回值形状与数值合法性的校验。
+你可以自行组织实现细节，但必须满足评测器对类型、调用签名与返回值的校验。
 
-推荐返回格式与 `HammingCode.simulate_variance_controlled` 一致：
+### 3.1 评测器实际调用方式（以 `eval/evaluator.py` 为准）
+
+评测器对提交程序执行的核心流程可等价理解为：
+
+```python
+sampler = MySampler(code=code, seed=seed)
+result = sampler.simulate_variance_controlled(
+    code=code,
+    sigma=DEV_SIGMA,
+    target_std=TARGET_STD,
+    max_samples=MAX_SAMPLES,
+    batch_size=BATCH_SIZE,
+    fix_tx=True,
+    min_errors=MIN_ERRORS,
+)
+```
+
+其中 `code` 由评测器固定构造为 `HammingCode(r=7, decoder="binary")`，并设置 `ChaseDecoder(t=3)`。
+
+### 3.2 构造函数与继承要求
+
+- `MySampler` 必须是 `SamplerBase` 的子类（评测器有 `issubclass` 检查）。
+- `MySampler` 构造函数必须能接收关键字参数 `code` 与 `seed`（评测器按此实例化）。
+- 推荐直接复用 `runtime/sampler.py` 的基类签名与写法。
+
+### 3.3 `simulate_variance_controlled` 接口要求
+
+`runtime/sampler.py` 中该方法约定为 keyword-only 形式：
+
+```python
+def simulate_variance_controlled(
+    self,
+    *,
+    code,
+    sigma,
+    target_std,
+    max_samples,
+    batch_size,
+    fix_tx=True,
+    min_errors=10,
+):
+    ...
+```
+
+推荐实现：直接调用 `code.simulate_variance_controlled(..., sampler=self, ...)`。
+
+### 3.4 `sample` 接口要求（重要性采样）
+
+当你把 `sampler=self` 传给 `code.simulate_variance_controlled(...)` 后，底层会调用：
+
+```python
+noise_samples, log_pdf_proposal = sampler.sample(
+    noise_std * sqrt(scale_factor), tx_bin, batch_size, **kwargs
+)
+```
+
+因此 `sample` 至少需要满足：
+
+- 返回 `noise_samples`，形状 `(batch_size, n)`；
+- 返回 `log_pdf_proposal`，形状 `(batch_size,)`，且与采样分布一致。
+
+### 3.5 返回值协议
+
+推荐返回格式与 `HammingCode.simulate_variance_controlled` 一致（6元组）：
 
 `(errors_log, weights_log, err_ratio, total_samples, actual_std, converged)`
+
+评测器也接受字典格式（包含同名键）。
 
 返回值含义（与 `runtime/code_linear.py` 约定一致）：
 
@@ -40,6 +105,36 @@
 常用的 BER 对数估计为：
 
 `err_rate_log = errors_log - weights_log`
+
+### 3.6 参数语义补充（按评测调用语境）
+
+- `sigma`：AWGN 噪声标准差，值越大噪声越强。
+- `target_std`：方差控制阈值；达到后可提前停止采样。
+- `max_samples`：总样本数上限。
+- `batch_size`：每轮采样批大小，影响收敛颗粒度与运行时间。
+- `fix_tx`：评测固定为 `True`，即发送端固定全零码字以增强复现性。
+- `min_errors`：最小错误事件门槛，避免“错误太少导致方差虚低”。
+
+### 3.7 最小实现骨架（推荐）
+
+```python
+class MySampler(SamplerBase):
+    def __init__(self, code, *, seed=0):
+        super().__init__(code=code, seed=seed)
+
+    def simulate_variance_controlled(
+        self, *, code, sigma, target_std, max_samples, batch_size, fix_tx=True, min_errors=10
+    ):
+        return code.simulate_variance_controlled(
+            noise_std=sigma,
+            target_std=target_std,
+            max_samples=max_samples,
+            sampler=self,
+            batch_size=batch_size,
+            fix_tx=fix_tx,
+            min_errors=min_errors,
+        )
+```
 
 ## 4. 输入与输出（文件 I/O 协议）
 
@@ -107,3 +202,54 @@
 - `r0 = 5.52431776694918e-07`
 - `t0 = 0.18551087379455566`
 - `epsilon = 0.8`
+
+## 7. 本地运行与验证
+
+### 7.1 环境准备
+
+在仓库根目录执行（建议 Python 3.10+）：
+
+```bash
+pip install numpy scipy
+```
+
+如需运行 `frontier_eval` CLI，再安装：
+
+```bash
+pip install omegaconf hydra-core
+```
+
+### 7.2 快速验证提交程序
+
+```bash
+python benchmarks/WirelessChannelSimulation/HighReliableSimulation/scripts/init.py
+python benchmarks/WirelessChannelSimulation/HighReliableSimulation/baseline/solution.py
+```
+
+### 7.3 单独运行评测器
+
+评测 `scripts/init.py`：
+
+```bash
+python - <<'PY'
+import importlib.util
+from pathlib import Path
+repo = Path('.').resolve()
+eval_path = repo / "benchmarks" / "WirelessChannelSimulation" / "HighReliableSimulation" / "eval" / "evaluator.py"
+prog = repo / "benchmarks" / "WirelessChannelSimulation" / "HighReliableSimulation" / "scripts" / "init.py"
+spec = importlib.util.spec_from_file_location("hrs_eval", str(eval_path))
+mod = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(mod)
+print(mod.evaluate(str(prog), repo_root=repo))
+PY
+```
+
+评测 `baseline/solution.py` 时，只需把 `prog` 改为 baseline 路径。
+
+## 8. 接入 frontier_eval（可选）
+
+当前任务名为 `high_reliable_simulation`。可用以下命令做入口连通性检查：
+
+```bash
+python -m frontier_eval task=high_reliable_simulation algorithm.iterations=0
+```
