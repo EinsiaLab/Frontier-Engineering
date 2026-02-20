@@ -1,3 +1,4 @@
+# EVOLVE-BLOCK-START
 from .utils import make_match_reference, DisableCuDNNTF32
 from .task import input_t, output_t
 
@@ -172,3 +173,4 @@ def generate_input(
 
 
 check_implementation = make_match_reference(ref_kernel, rtol=2e-2, atol=2e-2)
+# EVOLVE-BLOCK-END

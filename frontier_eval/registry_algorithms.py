@@ -4,9 +4,11 @@ from typing import Type
 
 from frontier_eval.algorithms.base import Algorithm
 from frontier_eval.algorithms.openevolve.algo import OpenEvolveAlgorithm
+from frontier_eval.algorithms.shinkaevolve.algo import ShinkaEvolveAlgorithm
 
 _ALGORITHMS: dict[str, Type[Algorithm]] = {
     OpenEvolveAlgorithm.NAME: OpenEvolveAlgorithm,
+    ShinkaEvolveAlgorithm.NAME: ShinkaEvolveAlgorithm,
 }
 
 

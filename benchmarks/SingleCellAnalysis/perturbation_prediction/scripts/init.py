@@ -1,4 +1,3 @@
-# EVOLVE-BLOCK-START
 """
 OpenProblems Perturbation Prediction (neurips-2023-data).
 
@@ -17,7 +16,6 @@ Program contract (do not break):
 
 You may change internal modeling / aggregation logic, but keep I/O format stable.
 """
-# EVOLVE-BLOCK-END
 
 from __future__ import annotations
 
@@ -97,6 +95,7 @@ def _as_matrix(x):
     return np.asarray(x)
 
 
+# EVOLVE-BLOCK-START
 def predict(
     de_train: ad.AnnData,
     *,
@@ -129,6 +128,7 @@ def predict(
     comps = id_map["sm_name"].astype(str).tolist()
     pred = np.stack([mean_by_compound[c] for c in comps], axis=0)
     return pred.astype(np.float32, copy=False)
+# EVOLVE-BLOCK-END
 
 
 def generate_prediction(*, dataset_dir: Path, layer: str, output: Path, method_id: str) -> None:

@@ -6,7 +6,7 @@ Evaluation framework for `Frontier-Engineering`.
 
 - `frontier_eval/cli.py`: main entrypoint (`python -m frontier_eval`)
 - `frontier_eval/tasks/`: all evaluation tasks
-- `frontier_eval/algorithms/`: all algorithms (currently supports `openevolve`)
+- `frontier_eval/algorithms/`: all algorithms (currently supports `openevolve`, `shinkaevolve`)
 - `frontier_eval/conf/`: Hydra configs (`task` / `algorithm` / `llm`)
 
 ## Setup
@@ -32,6 +32,14 @@ conda install -c conda-forge octave octave-signal octave-control -y
 pip install -r frontier_eval/requirements.txt
 ```
 
+Optional (ShinkaEvolve):
+
+```bash
+# NOTE: the PyPI package `shinka` is NOT ShinkaEvolve.
+# Recommended (editable VCS install so `shinka.core` is available):
+pip install -e "git+https://github.com/SakanaAI/ShinkaEvolve.git#egg=shinka"
+```
+
 Environment variables (recommended: `.env`):
 
 ```bash
@@ -45,6 +53,13 @@ When running `python -m frontier_eval ...`, it will automatically search upwards
 
 ```bash
 python -m frontier_eval algorithm.iterations=10
+```
+
+Quick smoke (fast, no external benchmark deps):
+
+```bash
+python -m frontier_eval task=smoke algorithm=openevolve algorithm.iterations=0
+python -m frontier_eval task=smoke algorithm=shinkaevolve algorithm.max_generations=0
 ```
 
 ## Batch runs

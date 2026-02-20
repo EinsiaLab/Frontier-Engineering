@@ -1,3 +1,4 @@
+# EVOLVE-BLOCK-START
 import torch
 from typing import TypeVar, TypedDict
 
@@ -10,3 +11,4 @@ class TestSpec(TypedDict):
     dq: int
     prefill: int
     seed: int
+# EVOLVE-BLOCK-END

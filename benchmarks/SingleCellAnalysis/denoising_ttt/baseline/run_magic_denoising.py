@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# EVOLVE-BLOCK-START
 """Run MAGIC denoising on PBMC and Tabula Muris, then save outputs."""
 
 import argparse
@@ -73,3 +74,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+# EVOLVE-BLOCK-END

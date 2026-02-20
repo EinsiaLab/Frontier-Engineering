@@ -1,3 +1,4 @@
+# EVOLVE-BLOCK-START
 import math
 from dataclasses import dataclass
 import torch
@@ -164,3 +165,4 @@ def custom_kernel(data: input_t) -> output_t:
 
     output, kv_cache = model(x, kv_cache)
     return output, kv_cache
+# EVOLVE-BLOCK-END
