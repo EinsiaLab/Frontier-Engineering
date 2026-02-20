@@ -218,29 +218,7 @@ code.simulate_variance_controlled(
 )
 ```
 
-## 6. 重新标定 sigma / r0 / t0（开发用途）
-
-运行标定脚本（示例）：
-
-```bash
-python benchmarks/WirelessChannelSimulation/HighReliableSimulation/scripts/calibrate_sigma.py \
-  --sigmas 0.26 0.264 0.268 0.272 0.276 \
-  --target-ber 1e-7 \
-  --target-std 0.05 \
-  --max-samples 100000 \
-  --batch-size 10000 \
-  --min-errors 20 \
-  --repeats 5 \
-  --output benchmarks/WirelessChannelSimulation/HighReliableSimulation/calibration_new.json
-```
-
-然后把 `selected` 中的值同步到 `eval/evaluator.py`（开发用途；线上评测常量以冻结版本为准）：
-
-- `sigma_star -> DEV_SIGMA`
-- `r0 -> R0_DEV`
-- `t0 -> T0_DEV`
-
-## 7. 接入 frontier_eval（可选）
+## 6. 接入 frontier_eval（可选）
 
 当前已注册任务名：`high_reliable_simulation`。
 
