@@ -1,12 +1,73 @@
-# Noise Removal
-Removing noise from sparse single-cell RNA sequencing count data
+# Denoising
+Removing noise from sparse single-cell RNA-sequencing count data
 
-This task originates from https://openproblems.bio/benchmarks/denoising?version=v1.0.0. The file organization conforms to the standard format. Validation code has not yet been implemented and will be added later. @ahydchh
+This task originates from https://openproblems.bio/benchmarks/denoising?version=v1.0.0
 
-`baseline/benchmark_denoising.ipynb` is the script in the test-time-training repository that compares the basic MAGIC algorithm with the TTT implementation.
+## How to Run
+```bash
+cd benchmarks/SingleCellAnalysis/denoising
 
-`baseline/run_magic/ttt_denoising.py` is the runtime file for the two methods after our decomposition.
+git clone [https://github.com/openproblems-bio/task_denoising.git](https://github.com/openproblems-bio/task_denoising.git)
+cd task_denoising
+git submodule update --init --recursive # Initialize common
 
-`verification/evaluate_denoising_results.py` is the decomposition evaluation script, which evaluates the results of the Magic and TTT methods.
+# Build components/containers
+bash scripts/project/build_all_components.sh
+bash scripts/project/build_all_docker_containers.sh
 
-For required dependencies, please refer to `verification/README.md` and `requirements-denoising.txt`.
+# Sync resources
+bash scripts/sync_resources.sh
+
+# Run tests
+bash scripts/run_benchmark/run_test_local.sh
+# Datasets: 2
+# cxg_immune_cell_atlas_subsample, cxg_mouse_pancreas_atlas_subsample (see temp/results/testrun_xxx/dataset_uns.yaml).
+# Methods: 7
+# no_denoising, perfect_denoising, alra, cellmapper, dca, knn_smoothing, magic (scprint is excluded to avoid slow or unstable testing caused by GPU/network dependencies, see temp/results/testrun_xxx/run_test_local.sh).
+# Metrics: 2
+# mse and poisson (see temp/results/testrun_xxx/metric_configs.yaml).
+
+```
+
+### Integrating Your Method into the Benchmark
+
+How to implement and integrate a new method into the test
+
+Generate the method skeleton (Recommended)
+
+```bash
+common/scripts/create_component --type method --language python --name my_method
+```
+
+Code implementation: Edit `src/methods/my_method/config.vsh.yaml` + `src/methods/my_method/script.py`
+The input and output interfaces must satisfy the following:
+
+* Input train: layers["counts"] + uns["dataset_id"] + uns["dataset_organism"] (`src/api/file_train.yaml`)
+* Output prediction: layers["denoised"] + uns["dataset_id"] + uns["method_id"] (`src/api/file_prediction.yaml`)
+
+> You can refer to `src/methods/magic/script.py`.
+
+#### Component-level Testing
+
+```bash
+viash test src/methods/my_method/config.vsh.yaml
+```
+
+The above command will perform:
+
+* Configuration specification checks (metadata, links, references, resource tags) `common/component_tests/check_config.py`
+* Execution and output format checks `common/component_tests/run_and_check_output.py`
+
+#### Integrating into the Benchmark Workflow
+
+Add my_method to the method list: `src/workflows/run_benchmark/main.nf` (line 17)
+Add methods/my_method to the workflow dependencies: `src/workflows/run_benchmark/config.vsh.yaml` (line 69)
+Rebuild and run integration tests
+
+```bash
+viash ns build --parallel --setup cachedbuild --query '^(methods/my_method|workflows/run_benchmark)$'
+
+bash scripts/run_benchmark/run_test_local.sh
+```
+Verify successful integration
+Check if `method_id: my_method` appears in `temp/results/testrun_*/score_uns.yaml`.

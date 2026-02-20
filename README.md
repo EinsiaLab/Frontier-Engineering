@@ -92,18 +92,85 @@ We adopt the standard GitHub collaboration flow:
 
 The table below lists the current coverage of domain tasks in the Benchmark. We welcome not only code contributions but also ideas for challenging new engineering problems from the community.
 
-| Domain | Task Name | Status | Maintainer/Contributor | Remarks |
-| --- | --- | --- | --- | --- |
-| **Astrodynamics** | `MannedLunarLanding` | Completed | @jdp22 | Lunar soft landing trajectory optimization |
-| **ElectronicDesignAutomation** | `IntegrationPhysicalDesignOptimization` | In Development | @ahydchh | Chip macro placement optimization |
-| **Kernel Engineering** | `MLA` | Basically Completed, Awaiting Verification | @ahydchh | Kernel Engineering |
-| **Kernel Engineering** | `TriMul` | Basically Completed, Awaiting Verification | @ahydchh | Kernel Engineering |
-| **Single Cell Analysis** | `denoising` | Basically Completed, Awaiting Verification | @ahydchh | Single Cell Analysis |
-| **Single Cell Analysis** | `perturbation_prediction` | Completed | — | OpenProblems perturbation response prediction (NeurIPS 2023 scPerturb) |
-| **Single Cell Analysis** | `predict_modality` | Completed | — | OpenProblems modality prediction (NeurIPS 2021, RNA→ADT) |
-| **StructuralOptimization** | `ISCSO2015` | Completed | — | 45-bar 2D truss size + shape optimization |
-| **StructuralOptimization** | `ISCSO2023` | Completed | — | 284-member 3D truss sizing optimization |
-| **MathModeling** | `SubmarineSearch` | Completed | — | Optimal search for lost submersible (MCM 2024B) |
+<table>
+  <thead>
+    <tr>
+      <th>Domain</th>
+      <th>Task Name</th>
+      <th>Status</th>
+      <th>Maintainer</th>
+      <th>Remarks</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><b>Astrodynamics</b></td>
+      <td><code>MannedLunarLanding</code></td>
+      <td>Completed</td>
+      <td>@jdp22</td>
+      <td>Lunar soft landing trajectory optimization</td>
+    </tr>
+    <tr>
+      <td><b>ElectronicDesignAutomation</b></td>
+      <td><code>IntegrationPhysicalDesignOptimization</code></td>
+      <td>In Development</td>
+      <td>@ahydchh</td>
+      <td>Chip macro placement optimization</td>
+    </tr>
+    <tr>
+      <td rowspan="2"><b>Kernel Engineering</b></td>
+      <td><code>MLA</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>GPUMode</td>
+    </tr>
+    <tr>
+      <td><code>TriMul</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>GPUMode</td>
+    </tr>
+    <tr>
+      <td rowspan="3"><b>Single Cell Analysis</b></td>
+      <td><code>denoising</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>Open Problems in Single-Cell Analysis</td>
+    </tr>
+    <tr>
+      <td><code>perturbation_prediction</code></td>
+      <td>Completed</td>
+      <td>—</td>
+      <td>NeurIPS 2023 scPerturb</td>
+    </tr>
+    <tr>
+      <td><code>predict_modality</code></td>
+      <td>Completed</td>
+      <td>—</td>
+      <td>NeurIPS 2021, RNA→ADT</td>
+    </tr>
+    <tr>
+      <td rowspan="2"><b>StructuralOptimization</b></td>
+      <td><code>ISCSO2015</code></td>
+      <td>Completed</td>
+      <td>—</td>
+      <td>45-bar 2D truss size + shape</td>
+    </tr>
+    <tr>
+      <td><code>ISCSO2023</code></td>
+      <td>Completed</td>
+      <td>—</td>
+      <td>284-member 3D truss sizing</td>
+    </tr>
+    <tr>
+      <td><b>MathModeling</b></td>
+      <td><code>SubmarineSearch</code></td>
+      <td>Completed</td>
+      <td>—</td>
+      <td>MCM 2024B</td>
+    </tr>
+  </tbody>
+</table>
 
 > 💡 **Have an idea for a new engineering problem?**
 > Even if you cannot provide complete verification code for now, we highly welcome you to share good **Task concepts**!

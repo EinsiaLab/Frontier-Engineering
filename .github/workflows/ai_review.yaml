@@ -1,8 +1,8 @@
 name: AI Code Review Agent
 
 on:
-  pull_request:
-    types: [opened, synchronize] # 当 PR 创建或有新提交时触发
+  pull_request_target:
+    types: [opened, synchronize, reopened] # 当 PR 创建或有新提交时触发
 
 jobs:
   review:
@@ -11,6 +11,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
+      issues: write
 
     steps:
       - name: Checkout Code
