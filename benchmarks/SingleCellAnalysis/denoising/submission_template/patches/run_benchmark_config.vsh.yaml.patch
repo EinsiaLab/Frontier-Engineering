@@ -1,0 +1,12 @@
+diff --git a/src/workflows/run_benchmark/config.vsh.yaml b/src/workflows/run_benchmark/config.vsh.yaml
+index 292007b..807bbc4 100644
+--- a/src/workflows/run_benchmark/config.vsh.yaml
++++ b/src/workflows/run_benchmark/config.vsh.yaml
+@@ -76,6 +76,7 @@ dependencies:
+   - name: methods/dca
+   - name: methods/knn_smoothing
+   - name: methods/magic
++  - name: methods/submission
+   - name: methods/scprint
+   - name: metrics/mse
+   - name: metrics/poisson

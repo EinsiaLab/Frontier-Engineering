@@ -33,3 +33,14 @@ exec 3>tri_leaderboard.log POPCORN_FD=3 python eval.py benchmark tri_bench.txt
 ```
 
 The code above will use `submission.custom_kernel` for evaluation. You can choose to replace `benchmarks/KernelEngineering/TriMul/baseline/submission.py` with your own code, or replace all `from baseline.submission import custom_kernel` lines in `benchmarks/KernelEngineering/TriMul/verification/eval.py` with importing from your specified code.
+
+### Running TriMul using frontier_eval (Example)
+
+```bash
+OPENAI_MODEL=qwen/qwen3-coder-next \
+FRONTIER_EVAL_TRIMUL_PYTHON=/path/to/trimul/bin/python \
+/path/to/frontier-eval-2/bin/python -m frontier_eval \
+task=trimul \
+algorithm.iterations=20 \
+algorithm.oe.evaluator.timeout=1800
+```

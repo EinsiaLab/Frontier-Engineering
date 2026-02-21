@@ -1,0 +1,12 @@
+diff --git a/src/workflows/run_benchmark/main.nf b/src/workflows/run_benchmark/main.nf
+index b3f45a0..dd040fc 100644
+--- a/src/workflows/run_benchmark/main.nf
++++ b/src/workflows/run_benchmark/main.nf
+@@ -22,6 +22,7 @@ workflow run_wf {
+     dca,
+     knn_smoothing,
+     magic,
++    submission,
+     scprint
+   ]
+ 
