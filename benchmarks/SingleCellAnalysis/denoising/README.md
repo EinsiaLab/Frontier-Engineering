@@ -71,3 +71,23 @@ bash scripts/run_benchmark/run_test_local.sh
 ```
 Verify successful integration
 Check if `method_id: my_method` appears in `temp/results/testrun_*/score_uns.yaml`.
+
+## Template Implementation
+
+Here is a template implementation without denoising. You can also modify the code here.
+
+Apply the modifications using the following commands:
+
+``` 
+cd benchmarks/SingleCellAnalysis/denoising
+mkdir -p task_denoising/src/methods/submission
+cp submission_template/method_submission/config.vsh.yaml task_denoising/src/methods/submission/config.vsh.yaml
+cp submission_template/method_submission/script.py task_denoising/src/methods/submission/script.py
+
+git -C task_denoising apply ../submission_template/patches/run_benchmark_main.nf.patch
+git -C task_denoising apply ../submission_template/patches/run_benchmark_config.vsh.yaml.patch
+
+cd task_denoising
+viash test src/methods/submission/config.vsh.yaml
+viash ns build --parallel --setup cachedbuild --query '^(methods/submission|workflows/run_benchmark)$'
+```

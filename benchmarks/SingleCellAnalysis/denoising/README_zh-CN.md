@@ -61,3 +61,20 @@ bash scripts/run_benchmark/run_test_local.sh
 ```
 验证接入成功
 看 `temp/results/testrun_*/score_uns.yaml` 里是否出现 method_id: my_method。
+
+## 模版实现
+这里提供一个不进行去噪的模板实现，您也可以在这里的代码基础上修改
+通过如下命令应用修改
+```
+cd benchmarks/SingleCellAnalysis/denoising
+mkdir -p task_denoising/src/methods/submission
+cp submission_template/method_submission/config.vsh.yaml task_denoising/src/methods/submission/config.vsh.yaml
+cp submission_template/method_submission/script.py task_denoising/src/methods/submission/script.py
+
+git -C task_denoising apply ../submission_template/patches/run_benchmark_main.nf.patch
+git -C task_denoising apply ../submission_template/patches/run_benchmark_config.vsh.yaml.patch
+
+cd task_denoising
+viash test src/methods/submission/config.vsh.yaml
+viash ns build --parallel --setup cachedbuild --query '^(methods/submission|workflows/run_benchmark)$'
+```
