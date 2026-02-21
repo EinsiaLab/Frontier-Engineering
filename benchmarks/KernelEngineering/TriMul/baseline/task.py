@@ -1,3 +1,4 @@
+# EVOLVE-BLOCK-START
 from typing import TypedDict, TypeVar, Tuple, Dict
 import torch
 
@@ -12,3 +13,4 @@ class TestSpec(TypedDict):
     hiddendim: int
     seed: int
     nomask: bool
+# EVOLVE-BLOCK-END

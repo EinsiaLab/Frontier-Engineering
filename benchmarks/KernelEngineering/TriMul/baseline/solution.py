@@ -1,3 +1,4 @@
+# EVOLVE-BLOCK-START
 """
 Outgoing TriMul (AlphaFold-3) - Triton accelerated forward pass.
 
@@ -468,3 +469,4 @@ def custom_kernel(
     )
 
     return out
+# EVOLVE-BLOCK-END

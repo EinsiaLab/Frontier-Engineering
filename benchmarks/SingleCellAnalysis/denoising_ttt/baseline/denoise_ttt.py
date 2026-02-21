@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# EVOLVE-BLOCK-START
 """
 Improved MAGIC‑style denoiser – MSE‑optimised flavour with an extra
 log‑space polishing step.
@@ -733,3 +734,4 @@ def magic_denoise(
         print("[magic_denoise] Finished – total counts:", denoised.sum())
 
     return denoised.astype(np.float64)
+# EVOLVE-BLOCK-END

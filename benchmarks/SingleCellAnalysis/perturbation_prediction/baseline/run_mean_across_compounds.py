@@ -1,3 +1,4 @@
+# EVOLVE-BLOCK-START
 from __future__ import annotations
 
 import argparse
@@ -144,3 +145,4 @@ def main(argv: list[str]) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main(sys.argv[1:]))
+# EVOLVE-BLOCK-END

@@ -281,6 +281,60 @@ def _extract_openevolve_best_metrics(output_dir: Path) -> dict[str, Any] | None:
     return None
 
 
+def _extract_shinkaevolve_best_metrics(output_dir: Path) -> dict[str, Any] | None:
+    info_path = output_dir / "shinkaevolve" / "best" / "best_program_info.json"
+    if info_path.is_file():
+        try:
+            info = json.loads(info_path.read_text(encoding="utf-8", errors="replace"))
+        except Exception:
+            info = None
+        if isinstance(info, dict) and isinstance(info.get("metrics"), dict):
+            return info["metrics"]
+
+    root = output_dir / "shinkaevolve"
+    if not root.is_dir():
+        return None
+
+    best_correct: tuple[float, dict[str, Any]] | None = None
+    best_any: tuple[float, dict[str, Any]] | None = None
+
+    for metrics_path in root.rglob("metrics.json"):
+        try:
+            metrics_raw = json.loads(metrics_path.read_text(encoding="utf-8", errors="replace"))
+        except Exception:
+            continue
+        if not isinstance(metrics_raw, dict):
+            continue
+        score = metrics_raw.get("combined_score", None)
+        try:
+            score_f = float(score)
+        except Exception:
+            continue
+
+        correct = True
+        correct_path = metrics_path.parent / "correct.json"
+        if correct_path.is_file():
+            try:
+                correct_raw = json.loads(
+                    correct_path.read_text(encoding="utf-8", errors="replace")
+                )
+                if isinstance(correct_raw, dict):
+                    correct = bool(correct_raw.get("correct"))
+            except Exception:
+                correct = True
+
+        if best_any is None or score_f > best_any[0]:
+            best_any = (score_f, metrics_raw)
+        if correct and (best_correct is None or score_f > best_correct[0]):
+            best_correct = (score_f, metrics_raw)
+
+    if best_correct is not None:
+        return best_correct[1]
+    if best_any is not None:
+        return best_any[1]
+    return None
+
+
 async def _run_one(run: RunSpec) -> dict[str, Any]:
     start = time.time()
     run.output_dir.mkdir(parents=True, exist_ok=True)
@@ -311,7 +365,11 @@ async def _run_one(run: RunSpec) -> dict[str, Any]:
         returncode = await proc.wait()
 
     elapsed_s = time.time() - start
-    metrics = _extract_openevolve_best_metrics(run.output_dir)
+    metrics: dict[str, Any] | None = None
+    if run.algorithm.name == "openevolve":
+        metrics = _extract_openevolve_best_metrics(run.output_dir)
+    elif run.algorithm.name == "shinkaevolve":
+        metrics = _extract_shinkaevolve_best_metrics(run.output_dir)
     record: dict[str, Any] = {
         "task": run.task,
         "algorithm": run.algorithm.name,

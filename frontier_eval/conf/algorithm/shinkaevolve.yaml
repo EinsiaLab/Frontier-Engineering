@@ -1,0 +1,30 @@
+name: shinkaevolve
+
+# Core evolution settings
+max_generations: 0
+# Legacy (kept for backwards compatibility; currently unused by the adapter):
+population_size: 10
+archive_size: 10
+selection_k: 2
+mutation_prob: 0.7
+use_text_feedback: true
+
+# Evaluator / job settings
+evaluator_timeout_s: 300
+job_type: local
+max_parallel: 1
+verbose: false
+
+# Optional: customize Shinka prompts
+run_name: null
+initial_prompt: ""
+problem_description: ""
+mutation_prompt: ""
+
+# Extra ShinkaEvolve native overrides (merged after wrapper defaults).
+# You can override any `shinka.core.EvolutionConfig` / `shinka.launch.LocalJobConfig` /
+# `shinka.database.DatabaseConfig` fields here.
+se:
+  evo: {}
+  job: {}
+  db: {}

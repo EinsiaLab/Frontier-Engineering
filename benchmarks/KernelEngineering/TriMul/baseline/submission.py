@@ -1,3 +1,4 @@
+# EVOLVE-BLOCK-START
 import torch
 from torch import nn, einsum
 from .task import input_t, output_t
@@ -96,3 +97,4 @@ def custom_kernel(data: input_t) -> output_t:
     output = trimul(input_tensor, mask).to(torch.float32)
 
     return output
+# EVOLVE-BLOCK-END
