@@ -1,0 +1,2 @@
+name: denoising
+denoising_python: ${oc.env:FRONTIER_EVAL_DENOISING_PYTHON,python}

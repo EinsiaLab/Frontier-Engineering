@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Type
 
 from frontier_eval.tasks.base import Task
+from frontier_eval.tasks.denoising import DenoisingTask
 from frontier_eval.tasks.iscso2015 import ISCSO2015Task
 from frontier_eval.tasks.iscso2023 import ISCSO2023Task
 from frontier_eval.tasks.mla import MLATask
@@ -15,6 +16,7 @@ _TASKS: dict[str, Type[Task]] = {
     MannedLunarLandingTask.NAME: MannedLunarLandingTask,
     ISCSO2015Task.NAME: ISCSO2015Task,
     ISCSO2023Task.NAME: ISCSO2023Task,
+    DenoisingTask.NAME: DenoisingTask,
     PerturbationPredictionTask.NAME: PerturbationPredictionTask,
     PredictModalityTask.NAME: PredictModalityTask,
     TriMulTask.NAME: TriMulTask,

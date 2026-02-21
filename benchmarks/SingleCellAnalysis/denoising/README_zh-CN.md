@@ -28,6 +28,10 @@ bash scripts/run_benchmark/run_test_local.sh
 # mse 和 poisson（见 temp/results/testrun_xxx/metric_configs.yaml）。
 ```
 
+评测结果将位于 benchmarks/SingleCellAnalysis/denoising/task_denoising/temp/results/xxx/score_uns.yaml
+您可以通过运行 benchmarks/SingleCellAnalysis/denoising/verification/rank_scores.py 来提取其中的分数
+
+
 ### 将您的方法接入测试
 
 新增一个方法，怎么实现并接入测试

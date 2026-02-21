@@ -28,6 +28,9 @@ bash scripts/run_benchmark/run_test_local.sh
 # mse and poisson (see temp/results/testrun_xxx/metric_configs.yaml).
 
 ```
+The evaluation results will be located in `benchmarks/SingleCellAnalysis/denoising/task_denoising/temp/results/xxx/score_uns.yaml`. 
+You can extract the scores from it by running `benchmarks/SingleCellAnalysis/denoising/verification/rank_scores.py`.
+
 
 ### Integrating Your Method into the Benchmark
 
