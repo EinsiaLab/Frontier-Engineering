@@ -2,7 +2,7 @@ benchmarks/ElectronicDesignAutomation/IntegrationPhysicalDesignOptimization/data
 benchmarks/ElectronicDesignAutomation/IntegrationPhysicalDesignOptimization/env/
 benchmarks/ElectronicDesignAutomation/install
 *.zip
-third_party/openevolve/
+third_party/*
 .env
 .venv/
 __pycache__/

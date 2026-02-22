@@ -9,20 +9,26 @@
 - `baseline/`：随机采样基线
 
 ## 快速开始
+0) 准备 PhySense 代码（评测必需）：
+- 默认路径：`third_party/PhySense/Car-Aerodynamics/`
+- 备选：
+  - `<workspace>/PhySense/Car-Aerodynamics/`（与 `Frontier-Engineering/` 同级）
+  - 设置 `PHYSENSE_ROOT=/path/to/PhySense`（也可以直接指到 `Car-Aerodynamics/` 目录）
+
 1) 从 PhySense 下载数据与预训练模型：
 - 数据集：https://drive.google.com/drive/folders/1Xt395uC-RreWQ_bh5v_Bu-AOwV6SRt_w?usp=share_link
 - 预训练模型：https://drive.google.com/drive/folders/1kODTzH5n_njQ7lgL-2i2aXbt33UjGKk9?usp=sharing
 
-2) 将文件放到以下**固定路径**：
-- 数据集根目录：`/data/physense_car_data/`
+2) 将文件放到以下**固定路径**（相对于本任务目录）：
+- 数据集根目录：`data/physense_car_data/`
   - 必须包含 `pressure_files/` 和 `velocity_files/`
-- 基座模型权重：`/data/physense_car_ckpt/physense_transolver_car_base.pth`
+- 基座模型权重：`data/physense_car_ckpt/physense_transolver_car_base.pth`（或 `data/physense_car_ckpt/physense_transolver_car_best_base.pth`）
 
 3) 生成参考点集：
 
 ```bash
 python references/extract_car_mesh.py \
-  --data-dir /data/physense_car_data \
+  --data-dir data/physense_car_data \
   --output references/car_surface_points.npy
 ```
 

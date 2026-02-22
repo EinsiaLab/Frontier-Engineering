@@ -161,6 +161,17 @@ class OpenEvolveAlgorithm(Algorithm):
         self._oe_OpenEvolve = OpenEvolve
 
     async def run(self, task: Task) -> None:
+        # OpenEvolve evaluates candidates in a `ProcessPoolExecutor`. On Linux the default
+        # start method is `fork`, which is incompatible with CUDA if the parent process has
+        # already initialized CUDA (PyTorch raises "Cannot re-initialize CUDA in forked subprocess").
+        # Use `spawn` to make GPU evaluators (e.g., car_aerodynamics_sensing) work reliably.
+        import multiprocessing as mp
+
+        try:
+            mp.set_start_method("spawn", force=True)
+        except Exception:
+            pass
+
         algo_cfg = self.cfg.algorithm
         llm_cfg = self.cfg.llm
 
