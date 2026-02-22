@@ -1,194 +1,131 @@
 # ISCSO 2023 — 284-Member 3D Truss Sizing Optimization
 
-## 1. Background
+## Problem
 
-The **International Student Competition in Structural Optimization (ISCSO)** 2023 presents a large-scale 3D space truss sizing optimization problem. Unlike the 2015 problem which includes shape optimization, ISCSO 2023 is a **pure sizing optimization** problem with a much higher dimensionality (284 design variables).
+Minimize weight of 3D tower truss structure:
+- **Structure**: 92 nodes, 284 members, 23 levels (4 nodes per level)
+- **Design variables**: 284 discrete section IDs
+  - One variable per member: `S_0, S_1, ..., S_283`
+  - Each `S_i ∈ {1, 2, ..., 37}` represents a section ID from the database
+- **Load cases**: 3 independent load cases
+  - **LC 0**: 12 kN total in +X direction, distributed equally to all unsupported nodes (88 nodes, ~136.36 N per node)
+  - **LC 1**: 12 kN total in +Y direction, distributed equally to all unsupported nodes (88 nodes, ~136.36 N per node)
+  - **LC 2**: 15 kN total in -Z direction, distributed equally to all unsupported nodes (88 nodes, ~170.45 N per node)
+- **Constraints**:
+  - Stress: `|σ_i| ≤ 248.2 MPa` for all members (all load cases)
+  - Displacement: `|δ_j| ≤ 5.0 mm` for all free DOFs (all load cases)
+- **Evaluation limit**: Maximum 200,000 FEM evaluations
 
-The structure is a tapered 3D tower truss with 92 nodes and 284 members, subject to three distinct load cases representing wind and gravity loading. This problem tests an optimizer's ability to handle:
+## Parameters
 
-- High-dimensional continuous design spaces
-- Multiple load cases with different constraint-critical members
-- Coupling between member sizes through shared nodes
-- A complex non-convex feasible region
+### Material Properties
+- **Elastic modulus**: E = 200 GPa = 200,000 MPa
+- **Density**: ρ = 7.85e-3 kg/mm³
+- **Yield stress**: 248.2 MPa (used as stress limit)
 
-## 2. Problem Description
+### Constraints
+- **Stress limit**: 248.2 MPa (tension and compression, AISC-LRFD 1994)
+- **Displacement limit**: 5.0 mm (all directions: x, y, z)
 
-The structure is a **3D tower truss** with a square cross-section that tapers from bottom to top:
+### Tower Geometry
+- **Levels**: 23 levels (level 0 to level 22)
+- **Height**: 40 m = 40,000 mm
+- **Bottom cross-section**: Square, half-width 2 m = 2000 mm
+- **Top cross-section**: Square, half-width 0.5 m = 500 mm
+- **Node arrangement**: At each level i (0-22), 4 nodes form a square
+  - Node 4i: (+hw, +hw, z)
+  - Node 4i+1: (-hw, +hw, z)
+  - Node 4i+2: (-hw, -hw, z)
+  - Node 4i+3: (+hw, -hw, z)
+  - where hw = 2000 - i × (2000-500)/22
 
-- **92 nodes** arranged in 23 levels (4 nodes per level)
-- **284 members**: vertical columns (88), horizontal perimeter bars (92), face diagonal bracing (88), and floor cross-bracing (16)
-- **3 load cases**: lateral loads in X and Y directions, and vertical load in Z direction
+### Supports
+- **4 base nodes**: Nodes 0, 1, 2, 3 (level 0, bottom)
+- **All supports**: Fully fixed (fix_x = true, fix_y = true, fix_z = true)
+- **Unsupported nodes**: 88 nodes (nodes 4-91)
 
-The task is to minimize the total structural weight by optimizing the cross-sectional area of each member, subject to stress and displacement constraints under all three load cases.
+### Section Database
+- **37 pipe sections**: IDs 1 through 37
+- **Area range**: 161.29 mm² (ID 1) to 13741.91 mm² (ID 37)
+- **Discrete selection**: Each member must use one of the 37 available sections
+- **Section data**: Available in `references/problem_data.json` under `"sections"` array
 
-### 2.1 Structural Layout
+## Design Variables
 
-The tower has 23 levels (0 to 22) along the Z-axis. At each level, 4 nodes form a square cross-section. The cross-section width tapers linearly from 4000 mm at the base to 1000 mm at the top.
-
+The solution vector has 284 elements:
 ```
-Level 22 (top):    o---o     Height: 40000 mm
-                   |   |     Width: 1000 mm
-                   o---o
-
-     ...           tapers linearly
-
-Level 0 (base):    O---O     Height: 0 mm
-                   |   |     Width: 4000 mm
-                   O---O
-                   (pinned supports)
-```
-
-Member groups:
-- **Vertical columns** (88): connect corresponding nodes between adjacent levels
-- **Horizontal perimeter** (92): form the square frame at each level
-- **Face diagonals** (88): one diagonal brace per face per bay
-- **Floor cross-diagonals** (16): cross-bracing at selected levels (1, 4, 7, 10, 13, 16, 19, 22)
-
-## 3. Mathematical Formulation
-
-### 3.1 Design Variables
-
-Total dimension: **284**
-
-```
-x = [A_0, A_1, ..., A_283]
-```
-
-- `A_i` (i = 0..283): cross-sectional area of member i, in mm²
-
-### 3.2 Variable Bounds
-
-| Variable | Lower Bound | Upper Bound | Unit |
-| :--- | ---: | ---: | :--- |
-| A_i (cross-sectional area) | 10.0 | 20000.0 | mm² |
-
-### 3.3 Objective Function
-
-Minimize total structural weight:
-
-```
-W(x) = sum_{i=0}^{283} rho * L_i * A_i
+x = [S_0, S_1, S_2, ..., S_283]
 ```
 
 where:
-- `rho = 7.86e-6 kg/mm³` (steel density)
-- `L_i` is the length of member i (fixed, determined by geometry)
-- `A_i` is the cross-sectional area of member i
+- `S_i` = section ID for member i (i = 0, 1, ..., 283)
+- `S_i ∈ {1, 2, 3, ..., 37}` (integer values only)
+- Each ID corresponds to a specific pipe section with a fixed cross-sectional area
 
-**Note**: Unlike ISCSO 2015, all member lengths are fixed (no shape variables), making the objective linear in the design variables. However, the constraints are nonlinear.
+**Important**: The optimization must start from a **random initial point** in the design space.
 
-### 3.4 Constraints
+## Objective Function
 
-For **each** load case `k = 0, 1, 2`:
-
-1. **Stress constraints** (all members):
-
+Minimize structural weight:
 ```
-|sigma_{i,k}(x)| <= sigma_allow = 248.2 MPa,  for i = 0..283
+W(x) = Σ (ρ * L_i * A(S_i))
 ```
+
+where:
+- `ρ = 7.85e-3 kg/mm³` (material density)
+- `L_i` = length of member i (fixed, depends on tower geometry)
+- `A(S_i)` = cross-sectional area of section ID `S_i` (from database)
+- Sum is over all 284 members
+
+## Constraints
+
+For **each of the 3 load cases**, all constraints must be satisfied:
+
+1. **Stress constraints** (all 284 members):
+   ```
+   |σ_i| ≤ 248.2 MPa
+   ```
+   where `σ_i` is the axial stress in member i under the current load case
+   - Positive = tension, negative = compression
+   - Checked against AISC-LRFD 1994 regulations
 
 2. **Displacement constraints** (all free DOFs):
+   ```
+   |δ_j| ≤ 5.0 mm
+   ```
+   where `δ_j` is the displacement at free degree of freedom j (x, y, or z direction)
 
-```
-|delta_{j,k}(x)| <= delta_allow = 10.0 mm,  for all free DOFs j
-```
+A solution is **feasible** only if all constraints are satisfied for **all 3 load cases** (within tolerance 1e-6).
 
-3. **Variable bounds** (see Section 3.2)
+## Submission Format
 
-A solution is **feasible** if and only if ALL constraints are satisfied across ALL load cases.
-
-## 4. Physical Model
-
-The structure is a **3D space truss** structure. The structural response (nodal displacements and member stresses) must be computed using appropriate structural analysis methods (e.g., finite element analysis) to evaluate constraint satisfaction.
-
-Key physical relationships:
-- Member stress depends on the applied loads, member cross-sectional areas, and structural geometry
-- Nodal displacements depend on the structural stiffness, which is a function of member areas
-- Both stress and displacement constraints must be satisfied simultaneously under all load cases
-
-## 5. Problem Data
-
-All problem data is stored in `references/problem_data.json`. The topology is generated parametrically from the tower description.
-
-### 5.1 Material Properties
-
-| Property | Value | Unit |
-| :--- | ---: | :--- |
-| Elastic modulus (E) | 200,000 | MPa |
-| Density (rho) | 7.86e-6 | kg/mm³ |
-
-### 5.2 Constraint Limits
-
-| Constraint | Value | Unit |
-| :--- | ---: | :--- |
-| Allowable stress (sigma_allow) | 248.2 | MPa |
-| Allowable displacement (delta_allow) | 10.0 | mm |
-
-### 5.3 Load Cases
-
-| Load Case | Description | Applied Loads |
-| :--- | :--- | :--- |
-| LC 0 | Lateral X-direction wind | 12 kN total in +X at top 4 nodes (3 kN each) |
-| LC 1 | Lateral Y-direction wind | 12 kN total in +Y at top 4 nodes (3 kN each) |
-| LC 2 | Vertical gravity load | 15 kN total in -Z at top 4 nodes (3.75 kN each) |
-
-### 5.4 Support Conditions
-
-| Nodes | Type | Fixed DOFs |
-| :--- | :--- | :--- |
-| 0, 1, 2, 3 (level 0) | Pinned | x, y, z (all) |
-
-### 5.5 Tower Geometry Parameters
-
-| Parameter | Value | Unit |
-| :--- | ---: | :--- |
-| Number of levels | 23 | - |
-| Total height | 40,000 | mm |
-| Bottom width | 4,000 | mm |
-| Top width | 1,000 | mm |
-| Cross-bracing levels | 1, 4, 7, 10, 13, 16, 19, 22 | - |
-
-## 6. Input/Output Format
-
-### 6.1 Submission Format
-
-The solver must output a file named `submission.json` in the working directory:
+Output a JSON file at `temp/submission.json`:
 
 ```json
 {
   "benchmark_id": "iscso_2023",
-  "solution_vector": [A_0, A_1, ..., A_283],
-  "algorithm": "<algorithm name>",
-  "num_evaluations": <integer>
+  "solution_vector": [S_0, S_1, S_2, ..., S_283],
+  "algorithm": "<your_algorithm_name>",
+  "num_evaluations": <number_of_fem_evaluations_used>
 }
 ```
 
-- `solution_vector`: array of 284 floating-point numbers (cross-sectional areas in mm²)
+**Requirements**:
+- `solution_vector`: Array of 284 integers (section IDs 1-37)
+- `algorithm`: String describing your optimization method
+- `num_evaluations`: Integer ≤ 200,000 (number of times FEM was called)
 
-### 6.2 Evaluation Output
+**Note**: The evaluator independently tracks and validates the evaluation count limit.
 
-The evaluator returns:
+## Scoring
 
-```json
-{
-  "objective": <weight in kg>,
-  "feasible": <true/false>,
-  "max_stress_violation": <max (|sigma| - sigma_allow), 0 if feasible>,
-  "max_displacement_violation": <max (|delta| - delta_allow), 0 if feasible>,
-  "score": <weight if feasible, else Infinity>
-}
-```
+- **Feasible solution**: Score = structural weight (kg), **lower is better**
+- **Infeasible solution**: Score = +∞
 
-## 7. Scoring Criteria
+The final design must be feasible (no constraint violations allowed for any load case).
 
-1. **Feasibility check**: All stress and displacement constraints must be satisfied (within tolerance `tol = 1e-6`) across all 3 load cases.
-2. **If infeasible**: `score = +Infinity`
-3. **If feasible**: `score = W(x)` (total structural weight in kg)
-4. **Ranking**: Lower score is better.
+## References
 
-## 8. References
-
-- ISCSO Competition: [http://www.brightoptimizer.com/](http://www.brightoptimizer.com/)
 - Problem data: `references/problem_data.json`
-- Evaluation code: `verification/evaluator.py`
-
+- Evaluator: `verification/evaluator.py`
+- FEM solver: `verification/fem_truss3d.py`
