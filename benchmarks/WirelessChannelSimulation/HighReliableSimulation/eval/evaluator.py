@@ -40,7 +40,7 @@ def _find_repo_root() -> Path:
 def _wrap(metrics: dict[str, float], artifacts: dict[str, str]):
     try:
         from openevolve.evaluation_result import EvaluationResult
-    except Exception:
+    except ModuleNotFoundError:
         return metrics
     return EvaluationResult(metrics=metrics, artifacts=artifacts)
 
@@ -129,7 +129,10 @@ def evaluate(program_path: str, *, repo_root: Path | None = None):
         sys.path.insert(0, str(runtime_dir))
         from sampler import SamplerBase
 
-        module = _load_program_module(program)
+        try:
+            module = _load_program_module(program)
+        except Exception as e:
+            raise RuntimeError(f"加载选手程序失败: {e}") from e
         if not hasattr(module, "MySampler"):
             raise AttributeError("提交程序中未找到类 MySampler")
 
@@ -147,7 +150,10 @@ def evaluate(program_path: str, *, repo_root: Path | None = None):
         for rep in range(REPEATS):
             seed = rep
             code = _build_code(repo_root, seed=seed)
-            sampler = cls(code=code, seed=seed)
+            try:
+                sampler = cls(code=code, seed=seed)
+            except Exception as e:
+                raise RuntimeError(f"MySampler 初始化失败: {e}") from e
             if hasattr(sampler, "rng"):
                 sampler.rng = Generator(Philox(seed))
 
@@ -155,15 +161,18 @@ def evaluate(program_path: str, *, repo_root: Path | None = None):
                 raise AttributeError("MySampler 缺少 simulate_variance_controlled 方法")
 
             t0 = time.time()
-            result = sampler.simulate_variance_controlled(
-                code=code,
-                sigma=DEV_SIGMA,
-                target_std=TARGET_STD,
-                max_samples=MAX_SAMPLES,
-                batch_size=BATCH_SIZE,
-                fix_tx=True,
-                min_errors=MIN_ERRORS,
-            )
+            try:
+                result = sampler.simulate_variance_controlled(
+                    code=code,
+                    sigma=DEV_SIGMA,
+                    target_std=TARGET_STD,
+                    max_samples=MAX_SAMPLES,
+                    batch_size=BATCH_SIZE,
+                    fix_tx=True,
+                    min_errors=MIN_ERRORS,
+                )
+            except Exception as e:
+                raise RuntimeError(f"simulate_variance_controlled 执行失败: {e}") from e
             dt = time.time() - t0
 
             errors_log, weights_log, err_ratio, total_samples, actual_std, converged = _normalize_result(result)
@@ -230,7 +239,15 @@ def evaluate(program_path: str, *, repo_root: Path | None = None):
             ensure_ascii=False,
             indent=2,
         )
-    except Exception as e:
+    except (
+        AttributeError,
+        TypeError,
+        ValueError,
+        RuntimeError,
+        ImportError,
+        ModuleNotFoundError,
+        KeyError,
+    ) as e:
         metrics["combined_score"] = 0.0
         metrics["valid"] = 0.0
         artifacts["error_message"] = str(e)

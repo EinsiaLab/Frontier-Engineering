@@ -1,23 +1,23 @@
 # HighReliableSimulation
 
-Navigation document for this task.
+本任务导航文档。
 
-## Goal
+## 目标
 
-Implement `MySampler` (inherits `SamplerBase`) and provide `simulate_variance_controlled(...)` to estimate BER for Hamming(127,120) over AWGN under fixed evaluator settings.
+实现 `MySampler`（继承 `SamplerBase`），并提供 `simulate_variance_controlled(...)`，在固定评测配置下估计 AWGN 信道中 Hamming(127,120) 的 BER。
 
-## Files
+## 文件
 
-- `Task.md`: task contract and scoring rules (English).
-- `Task_zh-CN.md`: Chinese version of task contract.
-- `scripts/init.py`: minimal runnable starter.
-- `baseline/solution.py`: baseline implementation.
-- `runtime/`: task runtime components.
-- `eval/evaluator.py`: evaluator entry.
+- `Task.md`：任务协议与评分规则（英文）。
+- `Task_zh-CN.md`：任务协议中文版。
+- `scripts/init.py`：最小可运行示例。
+- `baseline/solution.py`：基线实现。
+- `runtime/`：任务运行组件。
+- `eval/evaluator.py`：评测入口。
 
-## Quick Run
+## 快速运行
 
-Run from repository root:
+在仓库根目录执行：
 
 ```bash
 python - <<'PY'
