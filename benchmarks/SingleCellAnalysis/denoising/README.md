@@ -28,6 +28,9 @@ bash scripts/run_benchmark/run_test_local.sh
 # mse and poisson (see temp/results/testrun_xxx/metric_configs.yaml).
 
 ```
+The evaluation results will be located in `benchmarks/SingleCellAnalysis/denoising/task_denoising/temp/results/xxx/score_uns.yaml`. 
+You can extract the scores from it by running `benchmarks/SingleCellAnalysis/denoising/verification/rank_scores.py`.
+
 
 ### Integrating Your Method into the Benchmark
 
@@ -71,3 +74,23 @@ bash scripts/run_benchmark/run_test_local.sh
 ```
 Verify successful integration
 Check if `method_id: my_method` appears in `temp/results/testrun_*/score_uns.yaml`.
+
+## Template Implementation
+
+Here is a template implementation without denoising. You can also modify the code here.
+
+Apply the modifications using the following commands:
+
+``` 
+cd benchmarks/SingleCellAnalysis/denoising
+mkdir -p task_denoising/src/methods/submission
+cp submission_template/method_submission/config.vsh.yaml task_denoising/src/methods/submission/config.vsh.yaml
+cp submission_template/method_submission/script.py task_denoising/src/methods/submission/script.py
+
+git -C task_denoising apply ../submission_template/patches/run_benchmark_main.nf.patch
+git -C task_denoising apply ../submission_template/patches/run_benchmark_config.vsh.yaml.patch
+
+cd task_denoising
+viash test src/methods/submission/config.vsh.yaml
+viash ns build --parallel --setup cachedbuild --query '^(methods/submission|workflows/run_benchmark)$'
+```

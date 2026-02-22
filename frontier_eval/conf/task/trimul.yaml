@@ -1,0 +1,2 @@
+name: trimul
+kernel_python: ${oc.env:FRONTIER_EVAL_TRIMUL_PYTHON,python}

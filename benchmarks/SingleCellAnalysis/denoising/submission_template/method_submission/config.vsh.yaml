@@ -1,0 +1,75 @@
+# The API specifies which type of component this is.
+# It contains specifications for:
+#   - The input/output files
+#   - Common parameters
+#   - A unit test
+__merge__: ../../api/comp_method.yaml
+
+# A unique identifier for your component (required).
+# Can contain only lowercase letters or underscores.
+name: submission
+# A relatively short label, used when rendering visualisations (required)
+label: Submission
+# A one sentence summary of how this method works (required). Used when 
+# rendering summary tables.
+summary: "Template baseline that performs no denoising by copying input counts."
+# A multi-line description of how this component works (required). Used
+# when rendering reference documentation.
+description: |
+  A minimal submission template for this denoising task.
+  It does not train a model and directly copies the input count matrix
+  to the output `denoised` layer. Use this component as a starting point
+  for implementing your own method.
+references:
+  bibtex: |
+    @misc{submission_template,
+      title={Submission Template for the OpenProblems Denoising Task},
+      author={OpenProblems Contributors},
+      year={2026}
+    }
+links:
+  # URL to the documentation for this method (required).
+  documentation: https://github.com/openproblems-bio/task_denoising#readme
+  # URL to the code repository for this method (required).
+  repository: https://github.com/openproblems-bio/task_denoising
+
+
+
+# Metadata for your component
+info:
+  # Which normalisation method this component prefers to use (required).
+  preferred_normalization: counts
+
+# Component-specific parameters (optional)
+# arguments:
+#   - name: "--n_neighbors"
+#     type: "integer"
+#     default: 5
+#     description: Number of neighbors to use.
+
+# Resources required to run the component
+resources:
+  # The script of your component (required)
+  - type: python_script
+    path: script.py
+  # Additional resources your script needs (optional)
+  # - type: file
+  #   path: weights.pt
+
+engines:
+  # Specifications for the Docker image for this component.
+  - type: docker
+    image: openproblems/base_python:1
+    # Add custom dependencies here (optional). For more information, see
+    # https://viash.io/reference/config/engines/docker/#setup .
+    # setup:
+    #   - type: python
+    #     packages: numpy<2
+
+runners:
+  # This platform allows running the component natively
+  - type: executable
+  # Allows turning the component into a Nextflow module / pipeline.
+  - type: nextflow
+    directives:
+      label: [midtime,midmem,midcpu]

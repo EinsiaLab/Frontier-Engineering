@@ -150,6 +150,13 @@ The table below lists the current coverage of domain tasks in the Benchmark. We 
       <td>NeurIPS 2021, RNA→ADT</td>
     </tr>
     <tr>
+      <td><b>Computer Systems</b></td>
+      <td><code>Malloc Lab</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>Dynamic memory allocation</td>
+    </tr>
+    <tr>
       <td rowspan="2"><b>StructuralOptimization</b></td>
       <td><code>ISCSO2015</code></td>
       <td>Completed</td>

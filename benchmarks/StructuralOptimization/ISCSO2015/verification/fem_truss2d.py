@@ -129,14 +129,15 @@ class TrussFEM2D:
         self.n_elements = len(self.elements)
         self.n_dofs = 2 * self.n_nodes
 
-        # Build fixed DOF set
+        # Build fixed DOF set (convert 1-based node IDs to 0-based DOF indices)
         self.fixed_dofs: set[int] = set()
         for sup in self.supports:
             nid = sup["node"]
+            idx = nid - 1
             if sup.get("fix_x", False):
-                self.fixed_dofs.add(2 * nid)
+                self.fixed_dofs.add(2 * idx)
             if sup.get("fix_y", False):
-                self.fixed_dofs.add(2 * nid + 1)
+                self.fixed_dofs.add(2 * idx + 1)
 
         self.free_dofs = sorted(set(range(self.n_dofs)) - self.fixed_dofs)
         self.free_dof_index = {dof: idx for idx, dof in enumerate(self.free_dofs)}
