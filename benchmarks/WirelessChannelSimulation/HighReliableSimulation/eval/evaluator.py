@@ -37,7 +37,7 @@ def _find_repo_root() -> Path:
     return Path.cwd().resolve()
 
 
-def _wrap(metrics: dict[str, float], artifacts: dict[str, str]):
+def _wrap(metrics: dict[str, float], artifacts: dict[str, str | bytes]):
     try:
         from openevolve.evaluation_result import EvaluationResult
     except ModuleNotFoundError:
@@ -114,7 +114,7 @@ def evaluate(program_path: str, *, repo_root: Path | None = None):
         "valid": 0.0,
         "timeout": 0.0,
     }
-    artifacts: dict[str, str] = {}
+    artifacts: dict[str, str | bytes] = {}
 
     try:
         import sys

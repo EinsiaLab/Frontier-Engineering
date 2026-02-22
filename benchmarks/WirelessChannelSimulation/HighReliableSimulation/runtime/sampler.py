@@ -69,6 +69,7 @@ class BesselSampler(SamplerBase):
     def __init__(self, code, *, seed: int = 0):
         super().__init__(code, seed=seed)
         self.dim = code.dim
+        assert self.code is not None
         self.r = self.code.get_r()
 
     def log_pdf(self, x, noise_std):

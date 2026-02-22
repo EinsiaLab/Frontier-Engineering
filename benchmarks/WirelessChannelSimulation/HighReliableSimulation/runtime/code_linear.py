@@ -236,8 +236,8 @@ class HammingCode(LinearCodeBase):
         assert self.decoder is not None
         return self.decoder.get_r(tx_bin)
 
-    def encode(self, tx_bin):
-        tx_bin = np.asarray(tx_bin, dtype=int)
+    def encode(self, message):
+        tx_bin = np.asarray(message, dtype=int)
         tx_code = (tx_bin @ self.G) % 2
         tx_code = tx_code.astype(np.float32)
         return 2 * tx_code - 1
