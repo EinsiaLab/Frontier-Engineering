@@ -9,6 +9,7 @@ Given a fixed 3D car surface point set, select **N = 30** sensor locations (poin
 ## Input
 - `references/car_surface_points.npy`: a numpy array of shape `(M, 3)` that lists the surface points. Indices in your submission must refer to this array.
 - The car aerodynamics dataset (external download; see `README.md`).
+- The PhySense repository (model code) is required for evaluation. The evaluator looks for `third_party/PhySense/Car-Aerodynamics/` by default, or you can set `PHYSENSE_ROOT=/path/to/PhySense` (or to the `Car-Aerodynamics/` folder).
 
 ## Output
 Create a `submission.json` file with the following schema:
@@ -25,7 +26,7 @@ Constraints:
 - Each index must satisfy `0 <= index < M`.
 
 ## Data and Preprocessing
-- Raw pressure files: `/data/physense_car_data/pressure_files/case_{i}_p_car_patch.raw`.
+- Raw pressure files: `data/physense_car_data/pressure_files/case_{i}_p_car_patch.raw` (relative to the task root).
 - Each line contains `x y z p` (coordinates and pressure).
 - Sigma clipping (3 sigma) is applied to remove outliers.
 - Pressure is normalized using:

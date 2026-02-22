@@ -4,6 +4,7 @@ from typing import Type
 
 from frontier_eval.tasks.base import Task
 from frontier_eval.tasks.denoising import DenoisingTask
+from frontier_eval.tasks.car_aerodynamics_sensing import CarAerodynamicsSensingTask
 from frontier_eval.tasks.iscso2015 import ISCSO2015Task
 from frontier_eval.tasks.iscso2023 import ISCSO2023Task
 from frontier_eval.tasks.mla import MLATask
@@ -17,6 +18,7 @@ from frontier_eval.tasks.smoke import SmokeTask
 _TASKS: dict[str, Type[Task]] = {
     SmokeTask.NAME: SmokeTask,
     MannedLunarLandingTask.NAME: MannedLunarLandingTask,
+    CarAerodynamicsSensingTask.NAME: CarAerodynamicsSensingTask,
     ISCSO2015Task.NAME: ISCSO2015Task,
     ISCSO2023Task.NAME: ISCSO2023Task,
     DenoisingTask.NAME: DenoisingTask,
