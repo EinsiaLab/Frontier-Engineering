@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import itertools
+from typing import Any
 
 import numpy as np
 from numpy.random import Generator, Philox
@@ -24,7 +25,7 @@ class LinearCodeBase:
         self.dim = dim
         self.bin_dim = bin_dim
         self.rng = Generator(Philox())
-        self.decoder = None
+        self.decoder: Any = None
 
     def set_decoder(self, decoder):
         self.decoder = decoder
@@ -61,6 +62,7 @@ class LinearCodeBase:
         err_nums = 0
 
         for _ in range(rounds):
+            code_bits: np.ndarray
             if fix_tx:
                 code_bits = np.zeros(self.bin_dim, dtype=int)
             else:
@@ -159,6 +161,7 @@ class LinearCodeBase:
         current_std = 1.0
 
         while total_samples < max_samples:
+            code_bits: np.ndarray
             if fix_tx:
                 code_bits = np.zeros(self.bin_dim, dtype=int)
             else:
@@ -230,6 +233,7 @@ class HammingCode(LinearCodeBase):
             return np.sqrt(2.0)
         if self.decoder == "nearest":
             return np.sqrt(3.0)
+        assert self.decoder is not None
         return self.decoder.get_r(tx_bin)
 
     def encode(self, tx_bin):
@@ -249,6 +253,7 @@ class HammingCode(LinearCodeBase):
         elif self.decoder == "nearest":
             raise NotImplementedError
         else:
+            assert self.decoder is not None
             out = self.decoder.decode(np.asarray(rx_signals))
 
         if one_dim:

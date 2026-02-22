@@ -58,7 +58,7 @@ class ChaseDecoder:
         for i, cand in enumerate(candidates):
             if not valid[i]:
                 continue
-            score = np.sum(rel_base * (1 - 2 * np.bitwise_xor(hard, cand)))
+            score: float = float(np.sum(rel_base * (1 - 2 * np.bitwise_xor(hard, cand))))
             if score > best_score:
                 best_score = score
                 best_idx = i
