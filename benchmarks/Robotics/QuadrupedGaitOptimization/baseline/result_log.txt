@@ -1,0 +1,3 @@
+﻿Baseline notes:
+- Uses a conservative trot parameter set.
+- Final speed depends on local mujoco version.
