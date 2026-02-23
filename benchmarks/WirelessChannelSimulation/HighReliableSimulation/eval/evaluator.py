@@ -3,6 +3,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import math
+import argparse
 import time
 import traceback
 from pathlib import Path
@@ -256,3 +257,19 @@ def evaluate(program_path: str, *, repo_root: Path | None = None):
         metrics["runtime_s_total"] = float(time.time() - start)
 
     return _wrap(metrics, artifacts)
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Evaluate HighReliableSimulation submission.")
+    parser.add_argument("program", help="Path to candidate program file, e.g. scripts/init.py")
+    parser.add_argument("--repo-root", dest="repo_root", default=None, help="Optional repository root path.")
+    args = parser.parse_args()
+
+    repo_root = None if args.repo_root is None else Path(args.repo_root).expanduser().resolve()
+    result = evaluate(args.program, repo_root=repo_root)
+    metrics = result.metrics if hasattr(result, "metrics") else result
+    print(json.dumps(metrics, ensure_ascii=False, indent=2))
+
+
+if __name__ == "__main__":
+    main()

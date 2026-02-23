@@ -17,20 +17,8 @@
 
 ## 快速运行
 
-在仓库根目录执行：
+在任务目录执行：
 
 ```bash
-python - <<'PY'
-import importlib.util
-from pathlib import Path
-
-repo = Path('.').resolve()
-eval_path = repo / 'benchmarks' / 'WirelessChannelSimulation' / 'HighReliableSimulation' / 'eval' / 'evaluator.py'
-program = repo / 'benchmarks' / 'WirelessChannelSimulation' / 'HighReliableSimulation' / 'scripts' / 'init.py'
-
-spec = importlib.util.spec_from_file_location('hrs_eval', str(eval_path))
-mod = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(mod)
-print(mod.evaluate(str(program), repo_root=repo))
-PY
+cd benchmarks/WirelessChannelSimulation/HighReliableSimulation && python eval/evaluator.py scripts/init.py
 ```
