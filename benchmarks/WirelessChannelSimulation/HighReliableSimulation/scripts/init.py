@@ -5,16 +5,15 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-
-import numpy as np
 from numpy.random import Generator, Philox
 
 TASK_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(TASK_ROOT / "runtime"))
+REPO_ROOT = TASK_ROOT.parents[2]
+sys.path.insert(0, str(REPO_ROOT))
 
-from chase import ChaseDecoder
-from code_linear import HammingCode
-from sampler import BesselSampler
+from benchmarks.WirelessChannelSimulation.HighReliableSimulation.runtime.chase import ChaseDecoder
+from benchmarks.WirelessChannelSimulation.HighReliableSimulation.runtime.code_linear import HammingCode
+from benchmarks.WirelessChannelSimulation.HighReliableSimulation.runtime.sampler import BesselSampler
 
 
 class MySampler(BesselSampler):

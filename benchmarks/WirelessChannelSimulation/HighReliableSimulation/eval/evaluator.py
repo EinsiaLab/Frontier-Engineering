@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import importlib
 import json
 import math
 import argparse
@@ -21,7 +22,9 @@ MIN_ERRORS = 20
 REPEATS = 3
 
 EPSILON = 0.8
-R0_DEV = 5.52431776694918e-07
+# Re-calibrated with baseline MySampler under sigma=0.268, max_samples=1_000_000,
+# seeds 0..8 (9 runs), using median(err_rate_log).
+R0_DEV = 7.133143444799886e-07
 R0_LOG_DEV = float(math.log(R0_DEV))
 T0_DEV = 0.18551087379455566
 
@@ -40,7 +43,7 @@ def _find_repo_root() -> Path:
 
 def _wrap(metrics: dict[str, float], artifacts: dict[str, str | bytes]):
     try:
-        from openevolve.evaluation_result import EvaluationResult
+        EvaluationResult = importlib.import_module("openevolve.evaluation_result").EvaluationResult
     except ModuleNotFoundError:
         return metrics
     return EvaluationResult(metrics=metrics, artifacts=artifacts)
@@ -86,16 +89,15 @@ def _normalize_result(result: Any) -> tuple[float, float, float, float, float, f
 def _build_code(repo_root: Path, seed: int):
     import sys
 
-    runtime_dir = (
-        repo_root
-        / "benchmarks"
-        / "WirelessChannelSimulation"
-        / "HighReliableSimulation"
-        / "runtime"
+    sys.path.insert(0, str(repo_root))
+    chase_mod = importlib.import_module(
+        "benchmarks.WirelessChannelSimulation.HighReliableSimulation.runtime.chase"
     )
-    sys.path.insert(0, str(runtime_dir))
-    from chase import ChaseDecoder
-    from code_linear import HammingCode
+    code_mod = importlib.import_module(
+        "benchmarks.WirelessChannelSimulation.HighReliableSimulation.runtime.code_linear"
+    )
+    ChaseDecoder = chase_mod.ChaseDecoder
+    HammingCode = code_mod.HammingCode
 
     code = HammingCode(r=7, decoder="binary")
     code.rng = Generator(Philox(seed))
@@ -120,15 +122,11 @@ def evaluate(program_path: str, *, repo_root: Path | None = None):
     try:
         import sys
 
-        runtime_dir = (
-            repo_root
-            / "benchmarks"
-            / "WirelessChannelSimulation"
-            / "HighReliableSimulation"
-            / "runtime"
+        sys.path.insert(0, str(repo_root))
+        sampler_mod = importlib.import_module(
+            "benchmarks.WirelessChannelSimulation.HighReliableSimulation.runtime.sampler"
         )
-        sys.path.insert(0, str(runtime_dir))
-        from sampler import SamplerBase
+        SamplerBase = sampler_mod.SamplerBase
 
         try:
             module = _load_program_module(program)
@@ -267,7 +265,10 @@ def main() -> None:
 
     repo_root = None if args.repo_root is None else Path(args.repo_root).expanduser().resolve()
     result = evaluate(args.program, repo_root=repo_root)
-    metrics = result.metrics if hasattr(result, "metrics") else result
+    if isinstance(result, dict):
+        metrics = result
+    else:
+        metrics = result.metrics
     print(json.dumps(metrics, ensure_ascii=False, indent=2))
 
 
