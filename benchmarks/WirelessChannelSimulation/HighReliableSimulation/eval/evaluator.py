@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-import importlib.util
-import importlib
 import json
 import math
 import argparse
+import runpy
 import time
 import traceback
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 
 import numpy as np
@@ -23,10 +23,10 @@ REPEATS = 3
 
 EPSILON = 0.8
 # Re-calibrated with baseline MySampler under sigma=0.268, max_samples=1_000_000,
-# seeds 0..8 (9 runs), using median(err_rate_log).
-R0_DEV = 7.133143444799886e-07
+# 9 runs: BER uses geometric mean, runtime uses arithmetic mean.
+R0_DEV = 7.221327076091586e-07
 R0_LOG_DEV = float(math.log(R0_DEV))
-T0_DEV = 0.18551087379455566
+T0_DEV = 10.482284777777778
 
 
 def _is_repo_root(path: Path) -> bool:
@@ -43,19 +43,17 @@ def _find_repo_root() -> Path:
 
 def _wrap(metrics: dict[str, float], artifacts: dict[str, str | bytes]):
     try:
-        EvaluationResult = importlib.import_module("openevolve.evaluation_result").EvaluationResult
+        from openevolve.evaluation_result import EvaluationResult  # pyright: ignore[reportMissingImports]
     except ModuleNotFoundError:
         return metrics
     return EvaluationResult(metrics=metrics, artifacts=artifacts)
 
 
 def _load_program_module(program_path: Path):
-    spec = importlib.util.spec_from_file_location("candidate_program", str(program_path))
-    if spec is None or spec.loader is None:
+    if not program_path.is_file():
         raise RuntimeError(f"无法加载程序文件: {program_path}")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    namespace = runpy.run_path(str(program_path), run_name="candidate_program")
+    return SimpleNamespace(**namespace)
 
 
 def _normalize_result(result: Any) -> tuple[float, float, float, float, float, float]:
@@ -90,14 +88,8 @@ def _build_code(repo_root: Path, seed: int):
     import sys
 
     sys.path.insert(0, str(repo_root))
-    chase_mod = importlib.import_module(
-        "benchmarks.WirelessChannelSimulation.HighReliableSimulation.runtime.chase"
-    )
-    code_mod = importlib.import_module(
-        "benchmarks.WirelessChannelSimulation.HighReliableSimulation.runtime.code_linear"
-    )
-    ChaseDecoder = chase_mod.ChaseDecoder
-    HammingCode = code_mod.HammingCode
+    from benchmarks.WirelessChannelSimulation.HighReliableSimulation.runtime.chase import ChaseDecoder
+    from benchmarks.WirelessChannelSimulation.HighReliableSimulation.runtime.code_linear import HammingCode
 
     code = HammingCode(r=7, decoder="binary")
     code.rng = Generator(Philox(seed))
@@ -123,10 +115,7 @@ def evaluate(program_path: str, *, repo_root: Path | None = None):
         import sys
 
         sys.path.insert(0, str(repo_root))
-        sampler_mod = importlib.import_module(
-            "benchmarks.WirelessChannelSimulation.HighReliableSimulation.runtime.sampler"
-        )
-        SamplerBase = sampler_mod.SamplerBase
+        from benchmarks.WirelessChannelSimulation.HighReliableSimulation.runtime.sampler import SamplerBase
 
         try:
             module = _load_program_module(program)
