@@ -1,11 +1,34 @@
-# Cryptography
+# Cryptographic Benchmarks
 
-Including optimization tasks for consumer devices performing multiscalar multiplication in a browser environment: webgpu-msm# Cryptography
+This domain contains algorithm-acceleration tasks for:
 
-Includes algorithm acceleration tasks for the following algorithms:
+- `AES-128 CTR`
+- `SHA-256`
+- `SHA3-256`
 
-``` AES-128 CTR
-SHA-256
-SHA3-256
+Each task provides:
 
-``` Detailed official documentation and basic implementations are provided for these three tasks, aiming to improve algorithm throughput while ensuring correctness.
+- baseline C++ implementation (`baseline/*.cpp`)
+- correctness verification (`verification/validate.cpp`)
+- throughput benchmark (`verification/evaluate.cpp`)
+- reference PDF (`references/*.pdf`)
+
+## Run with frontier_eval
+
+```bash
+# AES-128
+python -m frontier_eval task=crypto_aes128 algorithm.iterations=10
+
+# SHA-256
+python -m frontier_eval task=crypto_sha256 algorithm.iterations=10
+
+# SHA3-256
+python -m frontier_eval task=crypto_sha3_256 algorithm.iterations=10
+```
+
+Optional reference injection for agents (default: disabled):
+
+```bash
+python -m frontier_eval task=crypto_sha256 task.include_pdf_reference=true
+```
+

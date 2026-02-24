@@ -53,6 +53,21 @@ def _extract_metrics_and_artifacts(result: Any) -> tuple[dict[str, Any], dict[st
     raise TypeError(f"Unsupported evaluation result type: {type(result)}")
 
 
+def _task_cfg_from_env(task_name: str) -> dict[str, Any]:
+    raw = str(os.environ.get("FRONTIER_EVAL_TASK_CFG_JSON", "") or "").strip()
+    if not raw:
+        return {"name": task_name}
+    try:
+        parsed = json.loads(raw)
+    except Exception:
+        return {"name": task_name}
+    if not isinstance(parsed, dict):
+        return {"name": task_name}
+    cfg = dict(parsed)
+    cfg["name"] = str(cfg.get("name") or task_name)
+    return cfg
+
+
 def main(program_path: str, results_dir: str, *, task_name: str | None = None) -> int:
     repo_root = _find_repo_root()
     _ensure_repo_on_syspath(repo_root)
@@ -69,7 +84,7 @@ def main(program_path: str, results_dir: str, *, task_name: str | None = None) -
     from frontier_eval.registry_tasks import get_task
 
     task_cls = get_task(task_name)
-    cfg = OmegaConf.create({"task": {"name": task_name}})
+    cfg = OmegaConf.create({"task": _task_cfg_from_env(task_name)})
     task = task_cls(cfg=cfg, repo_root=repo_root)
 
     program_path_p = Path(program_path).expanduser().resolve()

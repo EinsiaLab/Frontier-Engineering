@@ -62,6 +62,22 @@ python -m frontier_eval task=smoke algorithm=openevolve algorithm.iterations=0
 python -m frontier_eval task=smoke algorithm=shinkaevolve algorithm.max_generations=0
 ```
 
+Cryptographic tasks:
+
+```bash
+# AES-128
+python -m frontier_eval task=crypto_aes128 algorithm.iterations=10
+
+# SHA-256
+python -m frontier_eval task=crypto_sha256 algorithm.iterations=10
+
+# SHA3-256
+python -m frontier_eval task=crypto_sha3_256 algorithm.iterations=10
+
+# Optional: provide the benchmark PDF to agent references (default: false)
+python -m frontier_eval task=crypto_sha256 task.include_pdf_reference=true algorithm.iterations=10
+```
+
 ## Batch runs
 
 Use the batch runner (writes an isolated `run.output_dir` for each combination and aggregates into `summary.jsonl`):

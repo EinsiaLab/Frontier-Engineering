@@ -62,6 +62,22 @@ python -m frontier_eval task=smoke algorithm=openevolve algorithm.iterations=0
 python -m frontier_eval task=smoke algorithm=shinkaevolve algorithm.max_generations=0
 ```
 
+密码学任务：
+
+```bash
+# AES-128
+python -m frontier_eval task=crypto_aes128 algorithm.iterations=10
+
+# SHA-256
+python -m frontier_eval task=crypto_sha256 algorithm.iterations=10
+
+# SHA3-256
+python -m frontier_eval task=crypto_sha3_256 algorithm.iterations=10
+
+# 可选：把对应 PDF 作为 agent reference 注入（默认 false）
+python -m frontier_eval task=crypto_sha256 task.include_pdf_reference=true algorithm.iterations=10
+```
+
 ## 批量评测
 
 使用 batch runner（会为每个组合写入独立的 `run.output_dir`，并汇总到 `summary.jsonl`）：
