@@ -22,11 +22,11 @@ MIN_ERRORS = 20
 REPEATS = 3
 
 EPSILON = 0.8
-# Re-calibrated with baseline MySampler under sigma=0.268, max_samples=1_000_000,
-# 9 runs: BER uses geometric mean, runtime uses arithmetic mean.
-R0_DEV = 7.221327076091586e-07
+# Re-calibrated with baseline MySampler under sigma=0.268, max_samples=10_000_000,
+# 10 runs: BER uses arithmetic mean, runtime uses arithmetic mean.
+R0_DEV = 7.261287772505011e-07
 R0_LOG_DEV = float(math.log(R0_DEV))
-T0_DEV = 10.482284777777778
+T0_DEV = 104.001037335396
 
 
 def _is_repo_root(path: Path) -> bool:
