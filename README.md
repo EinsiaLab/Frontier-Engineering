@@ -159,6 +159,25 @@ The table below lists the current coverage of domain tasks in the Benchmark. We 
       <td>NeurIPS 2021, RNA→ADT</td>
     </tr>
     <tr>
+      <td rowspan="3"><b>Cryptographic</b></td>
+      <td><code>AES-128 CTR</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>Advanced Encryption Standard, 128-bit key, Counter mode</td>
+    </tr>
+    <tr>
+      <td><code>SHA-256</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>Secure Hash Algorithm 256-bit</td>
+    </tr>
+    <tr>
+      <td><code>SHA3-256</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>Secure Hash Algorithm 3 256-bit</td>
+    </tr>
+    <tr>
       <td><b>Computer Systems</b></td>
       <td><code>Malloc Lab</code></td>
       <td>Completed</td>

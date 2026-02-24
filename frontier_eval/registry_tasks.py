@@ -3,6 +3,11 @@ from __future__ import annotations
 from typing import Type
 
 from frontier_eval.tasks.base import Task
+from frontier_eval.tasks.cryptographic.task import (
+    CryptoAES128Task,
+    CryptoSHA3_256Task,
+    CryptoSHA256Task,
+)
 from frontier_eval.tasks.denoising import DenoisingTask
 from frontier_eval.tasks.car_aerodynamics_sensing import CarAerodynamicsSensingTask
 from frontier_eval.tasks.iscso2015 import ISCSO2015Task
@@ -17,6 +22,9 @@ from frontier_eval.tasks.smoke import SmokeTask
 
 _TASKS: dict[str, Type[Task]] = {
     SmokeTask.NAME: SmokeTask,
+    CryptoAES128Task.NAME: CryptoAES128Task,
+    CryptoSHA256Task.NAME: CryptoSHA256Task,
+    CryptoSHA3_256Task.NAME: CryptoSHA3_256Task,
     MannedLunarLandingTask.NAME: MannedLunarLandingTask,
     CarAerodynamicsSensingTask.NAME: CarAerodynamicsSensingTask,
     ISCSO2015Task.NAME: ISCSO2015Task,
