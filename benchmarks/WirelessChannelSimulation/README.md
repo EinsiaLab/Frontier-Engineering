@@ -91,3 +91,5 @@ A major active direction is nearest-neighbor-based proposals, since they can gre
 ## Subtask Index
 
 - `HighReliableSimulation/`: BER estimation under high-reliability settings. Requires implementing custom `MySampler` and running variance-controlled evaluation under frozen settings.
+  - `frontier_eval` task name: `high_reliable_simulation`
+  - quick run: `python -m frontier_eval task=high_reliable_simulation algorithm.iterations=0`

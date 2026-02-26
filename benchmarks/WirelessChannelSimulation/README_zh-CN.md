@@ -99,3 +99,5 @@ $$
 ## 子任务索引
 
 - `HighReliableSimulation/`：高可靠通信场景下的 BER 估计。要求实现自定义采样器 `MySampler`，并通过固定评测入口在冻结参数下完成方差受控的误码率估计。
+  - `frontier_eval` 任务名：`high_reliable_simulation`
+  - 快速运行：`python -m frontier_eval task=high_reliable_simulation algorithm.iterations=0`

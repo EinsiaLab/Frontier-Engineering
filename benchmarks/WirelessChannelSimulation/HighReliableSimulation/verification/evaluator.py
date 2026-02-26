@@ -22,11 +22,13 @@ MIN_ERRORS = 20
 REPEATS = 3
 
 EPSILON = 0.8
+INVALID_SCORE_SCALE = 0.1
+INVALID_SCORE_CAP = 0.1
 # Re-calibrated with baseline MySampler under sigma=0.268, max_samples=10_000_000,
 # 10 runs: BER uses arithmetic mean, runtime uses arithmetic mean.
 R0_DEV = 7.261287772505011e-07
 R0_LOG_DEV = float(math.log(R0_DEV))
-T0_DEV = 104.001037335396
+T0_DEV = 10.4001037335396
 
 
 def _is_repo_root(path: Path) -> bool:
@@ -54,6 +56,31 @@ def _load_program_module(program_path: Path):
         raise RuntimeError(f"无法加载程序文件: {program_path}")
     namespace = runpy.run_path(str(program_path), run_name="candidate_program")
     return SimpleNamespace(**namespace)
+
+
+def _resolve_program_path(program_path: str, repo_root: Path) -> Path:
+    """
+    Resolve candidate program path robustly.
+    Priority:
+    1) As provided (relative to current working directory).
+    2) Relative to task root if (1) does not exist.
+    """
+    raw = Path(program_path).expanduser()
+    if raw.is_absolute():
+        return raw.resolve()
+
+    cwd_path = (Path.cwd() / raw).resolve()
+    if cwd_path.is_file():
+        return cwd_path
+
+    task_root = (
+        repo_root
+        / "benchmarks"
+        / "WirelessChannelSimulation"
+        / "HighReliableSimulation"
+    )
+    task_path = (task_root / raw).resolve()
+    return task_path
 
 
 def _normalize_result(result: Any) -> tuple[float, float, float, float, float, float]:
@@ -100,7 +127,7 @@ def _build_code(repo_root: Path, seed: int):
 def evaluate(program_path: str, *, repo_root: Path | None = None):
     start = time.time()
     repo_root = _find_repo_root() if repo_root is None else repo_root.expanduser().resolve()
-    program = Path(program_path).expanduser().resolve()
+    program = _resolve_program_path(program_path, repo_root)
 
     metrics: dict[str, float] = {
         "combined_score": 0.0,
@@ -181,9 +208,12 @@ def evaluate(program_path: str, *, repo_root: Path | None = None):
         err_log_ratio = float(abs(err_log_median - R0_LOG_DEV))
 
         valid = float(err_log_ratio < EPSILON)
-        score = 0.0
+        raw_score = float(T0_DEV / (runtime_median * err_log_ratio + 1e-6))
         if valid > 0:
-            score = float(T0_DEV / (runtime_median * err_log_ratio + 1e-6))
+            score = raw_score
+        else:
+            # Invalid candidates still receive a heavily penalized score.
+            score = min(raw_score * INVALID_SCORE_SCALE, INVALID_SCORE_CAP)
 
         metrics.update(
             {

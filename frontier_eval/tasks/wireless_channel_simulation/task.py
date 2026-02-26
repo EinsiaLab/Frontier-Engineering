@@ -35,12 +35,12 @@ class HighReliableSimulationTask(Task):
             / "benchmarks"
             / "WirelessChannelSimulation"
             / "HighReliableSimulation"
-            / "eval"
+            / "verification"
             / "evaluator.py",
             self.repo_root
             / "WirelessChannelSimulation"
             / "HighReliableSimulation"
-            / "eval"
+            / "verification"
             / "evaluator.py",
         ]
         eval_path = eval_candidates[0]
@@ -55,4 +55,3 @@ class HighReliableSimulationTask(Task):
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         return module.evaluate(str(program_path), repo_root=self.repo_root)
-

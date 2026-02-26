@@ -13,7 +13,7 @@ class TestHighReliableSimulationEvaluator(unittest.TestCase):
             / "benchmarks"
             / "WirelessChannelSimulation"
             / "HighReliableSimulation"
-            / "eval"
+            / "verification"
             / "evaluator.py"
         )
         program_path = (
