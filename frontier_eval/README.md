@@ -62,7 +62,7 @@ python -m frontier_eval task=smoke algorithm=openevolve algorithm.iterations=0
 python -m frontier_eval task=smoke algorithm=shinkaevolve algorithm.max_generations=0
 ```
 
-## Unified task (no new Python task code)
+## Unified task
 
 Use `task=unified` to onboard a new benchmark by adding metadata files under the benchmark folder, instead of implementing a new `frontier_eval/tasks/<task>/...`.
 
@@ -71,7 +71,7 @@ Run example:
 ```bash
 python -m frontier_eval \
   task=unified \
-  task.benchmark=KernelEngineering/TriMul \
+  task.benchmark=ComputerSystems/MallocLab \
   algorithm=openevolve \
   algorithm.iterations=10
 ```
@@ -79,7 +79,7 @@ python -m frontier_eval \
 When `task=unified`, default run directory includes benchmark id:
 - `runs/unified__<Domain>__<Task>/<algorithm>/<model>/<timestamp>`
 
-### Benchmark metadata layout
+#### Benchmark metadata layout
 
 Under `benchmarks/<Domain>/<Task>/frontier_eval/`:
 
@@ -102,7 +102,7 @@ Line-based `*.txt` files (`initial_program.txt`, `candidate_destination.txt`, `e
 
 `eval_command.txt` is raw shell command text (can be multi-line).
 
-### What each metadata file means
+#### What each metadata file means
 
 - `initial_program.txt`: initial source file used by evolution (relative to benchmark root).
 - `candidate_destination.txt`: path in sandbox benchmark where each candidate is written. If omitted, defaults to `initial_program.txt`.
@@ -114,7 +114,7 @@ Line-based `*.txt` files (`initial_program.txt`, `candidate_destination.txt`, `e
 - `artifact_files.txt`: files/dirs collected by unified framework after eval (for example logs/output files). This avoids writing custom artifacts-export code.
 - `constraints.txt`: free-form instruction text attached to artifacts (agent prompt context).
 
-### Placeholder reference
+#### Placeholder reference
 
 Safe placeholders (shell-escaped, recommended):
 - `{python}`: runtime python command.
@@ -139,8 +139,6 @@ Default outputs expected from your eval command:
 - `metrics.json`: a JSON object. Unified reads all numeric-like fields (int/float/bool/numeric string), not only `combined_score` and `valid`.
 - `artifacts.json` (optional): a JSON object with extra structured artifacts.
 - For simple tasks, you can skip `artifacts.json` and use `artifact_files.txt` so unified collects logs automatically.
-
-Metric fallback behavior:
 - If `valid` is missing, unified falls back to command return code (`0 -> 1`, non-zero -> `0`).
 - If `combined_score` is missing, unified falls back to `1` when `valid > 0`, else `0`.
 - If eval command returns non-zero, unified forces `valid=0` and `combined_score=0`.
@@ -154,7 +152,10 @@ python -m frontier_eval task=unified \
   task.artifacts_json=verification/out/artifacts.json
 ```
 
-### Environment selection (per benchmark)
+
+For specific examples, please refer to `benchmarks/ComputerSystems/MallocLab/frontier_eval`
+
+### Environment selection
 
 `unified` supports passing benchmark runtime environment:
 - default conda env: `frontier-eval-2`
@@ -168,8 +169,6 @@ python -m frontier_eval task=unified \
   task.benchmark=MyDomain/MyTask \
   task.runtime.conda_env=frontier-eval-2
 ```
-
-For specific examples, please refer to `benchmarks/ComputerSystems/MallocLab/frontier_eval`
 
 ## Batch runs
 
