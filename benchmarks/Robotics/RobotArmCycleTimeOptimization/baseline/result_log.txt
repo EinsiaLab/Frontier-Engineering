@@ -1,0 +1,3 @@
+﻿Baseline notes:
+- Solver uses fixed via-point and binary-searches minimal feasible cycle time.
+- Final score depends on local pybullet/scipy versions.
