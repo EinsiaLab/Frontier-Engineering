@@ -62,21 +62,114 @@ python -m frontier_eval task=smoke algorithm=openevolve algorithm.iterations=0
 python -m frontier_eval task=smoke algorithm=shinkaevolve algorithm.max_generations=0
 ```
 
-密码学任务：
+## Unified 统一任务（无需新增 Python task 代码）
+
+使用 `task=unified` 可以通过 benchmark 目录下的元数据文件接入新评测，不再需要为每个 benchmark 手写 `frontier_eval/tasks/<task>/...`。
+
+运行示例：
 
 ```bash
-# AES-128
-python -m frontier_eval task=crypto_aes128 algorithm.iterations=10
-
-# SHA-256
-python -m frontier_eval task=crypto_sha256 algorithm.iterations=10
-
-# SHA3-256
-python -m frontier_eval task=crypto_sha3_256 algorithm.iterations=10
-
-# 可选：把对应 PDF 作为 agent reference 注入（默认 false）
-python -m frontier_eval task=crypto_sha256 task.include_pdf_reference=true algorithm.iterations=10
+python -m frontier_eval \
+  task=unified \
+  task.benchmark=KernelEngineering/TriMul \
+  algorithm=openevolve \
+  algorithm.iterations=10
 ```
+
+当 `task=unified` 时，默认输出目录会自动包含 benchmark 标识：
+- `runs/unified__<Domain>__<Task>/<algorithm>/<model>/<timestamp>`
+
+### Benchmark 元数据目录约定
+
+在 `benchmarks/<Domain>/<Task>/frontier_eval/` 下放置：
+
+```text
+initial_program.txt      # 必需：baseline 候选程序相对路径
+candidate_destination.txt# 可选：候选程序在沙箱中的落盘位置
+eval_command.txt         # 必需：评测命令模板
+eval_cwd.txt             # 可选：评测命令工作目录（相对 benchmark 根）
+agent_files.txt          # 可选：暴露给 agent 的上下文文件列表
+copy_files.txt           # 可选：复制到临时沙箱的文件/目录列表
+readonly_files.txt       # 可选：运行前后必须保持不变的文件/目录
+artifact_files.txt       # 可选：由框架自动收集的输出文件/目录
+constraints.txt          # 可选：约束/提示词文本
+```
+
+行列表类型的 `*.txt`（如 `initial_program.txt`、`candidate_destination.txt`、`agent_files.txt`、`artifact_files.txt` 等）规则：
+- 每行一个相对路径
+- 空行忽略
+- 以 `#` 开头的行忽略
+
+`eval_command.txt` 是原始 shell 命令（可多行）。
+
+### 各个元数据文件的含义
+
+- `initial_program.txt`：演化起始程序路径（相对 benchmark 根目录）。
+- `candidate_destination.txt`：每轮候选程序在沙箱 benchmark 中写入的位置。不配置时默认等于 `initial_program.txt`。
+- `eval_command.txt`：评测命令模板。
+- `eval_cwd.txt`：评测命令工作目录（沙箱内，相对 benchmark 根目录），`.` 表示 benchmark 根。
+- `agent_files.txt`：会注入到 artifacts 给 LLM 参考的文件/目录列表。
+- `copy_files.txt`：复制到评测沙箱的文件/目录列表。为空时默认复制整个 benchmark 目录。
+- `readonly_files.txt`：评测前后做指纹校验的路径，变化即判为 invalid。
+- `artifact_files.txt`：评测结束后由 unified 框架自动采集到 artifacts 的文件/目录（如日志、stdout/stderr 输出文件），避免用户自己写 artifacts 导出代码。
+- `constraints.txt`：自由文本约束，会作为 artifacts 提供给 agent 上下文。
+
+### 占位符说明
+
+安全占位符（已做 shell 转义，推荐优先使用）：
+- `{python}`：运行评测的 Python 命令。
+- `{candidate}`：候选程序在沙箱中的路径。
+- `{benchmark}`：沙箱 benchmark 根目录。
+- `{sandbox}`：本次评测临时目录根。
+- `{repo_root}`：Frontier-Engineering 仓库根目录。
+- `{benchmark_source}`：原始 benchmark 目录（非沙箱）。
+- `{benchmark_id}`：规范化 benchmark 标识（例如 `ComputerSystems/MallocLab`）。
+
+原始占位符（不做 shell 转义）：
+- `{python_raw}`, `{candidate_raw}`, `{benchmark_raw}`, `{sandbox_raw}`, `{repo_root_raw}`, `{benchmark_source_raw}`, `{benchmark_id_raw}`。
+- 仅在你明确自己处理引号/转义时使用。
+
+示例：
+
+```text
+bash frontier_eval/run_eval.sh {python} {benchmark} {candidate}
+```
+
+默认会尝试读取你的评测命令产出：
+- `metrics.json`：JSON 对象。Unified 会读取所有“可转成数值”的字段，不仅是 `combined_score` 和 `valid`。
+- `artifacts.json`（可选）：JSON 对象，可放结构化附加信息。
+- 对于简单任务，可不写 `artifacts.json`，改用 `artifact_files.txt` 让 unified 自动收集日志类产物。
+
+指标兜底行为：
+- 缺少 `valid` 时，用命令返回码兜底（`0 -> 1`，非 `0 -> 0`）。
+- 缺少 `combined_score` 时，用 `valid` 兜底（`valid > 0 -> 1`，否则 `0`）。
+- 若评测命令返回非 0，Unified 会强制 `valid=0` 且 `combined_score=0`。
+
+若输出路径不同，可运行时覆盖：
+
+```bash
+python -m frontier_eval task=unified \
+  task.benchmark=MyDomain/MyTask \
+  task.metrics_json=verification/out/metrics.json \
+  task.artifacts_json=verification/out/artifacts.json
+```
+
+### 评测环境选择（支持按 benchmark 传入）
+
+`unified` 支持环境参数传入：
+- 默认 conda 环境：`frontier-eval-2`
+- 覆盖环境名：`task.runtime.conda_env=<env_name>`
+- 显式 Python 路径：`task.runtime.python_path=/path/to/python`
+
+示例：
+
+```bash
+python -m frontier_eval task=unified \
+  task.benchmark=MyDomain/MyTask \
+  task.runtime.conda_env=frontier-eval-2
+```
+
+具体例子可参考 `benchmarks/ComputerSystems/MallocLab/frontier_eval`
 
 ## 批量评测
 
@@ -88,5 +181,6 @@ python -m frontier_eval.batch --matrix frontier_eval/conf/batch/example_matrix.y
 
 ## 扩展方式（新增 task / algorithm）
 
-- 新增任务：实现 `frontier_eval/tasks/base.py` 的 `Task` 子类（`initial_program_path()` + `evaluate_program()`），并在 `frontier_eval/registry_tasks.py` 注册（或继续用 `frontier_eval/registry.py` 的 `get_task`）。
+- 大多数新 benchmark 推荐：直接使用 `task=unified` + benchmark 本地元数据文件（见上文），无需新增 Python task 代码。
+- 仅在 unified 不满足需求时：实现 `frontier_eval/tasks/base.py` 的 `Task` 子类（`initial_program_path()` + `evaluate_program()`），并在 `frontier_eval/registry_tasks.py` 注册（或继续用 `frontier_eval/registry.py` 的 `get_task`）。
 - 新增算法：实现 `frontier_eval/algorithms/base.py` 的 `Algorithm` 子类，并在 `frontier_eval/registry_algorithms.py` 注册。

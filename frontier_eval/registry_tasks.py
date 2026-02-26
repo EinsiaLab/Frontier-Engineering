@@ -19,6 +19,7 @@ from frontier_eval.tasks.perturbation_prediction import PerturbationPredictionTa
 from frontier_eval.tasks.predict_modality import PredictModalityTask
 from frontier_eval.tasks.trimul import TriMulTask
 from frontier_eval.tasks.smoke import SmokeTask
+from frontier_eval.tasks.unified import UnifiedTask
 
 _TASKS: dict[str, Type[Task]] = {
     SmokeTask.NAME: SmokeTask,
@@ -35,6 +36,7 @@ _TASKS: dict[str, Type[Task]] = {
     TriMulTask.NAME: TriMulTask,
     MLATask.NAME: MLATask,
     MallocLabTask.NAME: MallocLabTask,
+    UnifiedTask.NAME: UnifiedTask,
 }
 
 
