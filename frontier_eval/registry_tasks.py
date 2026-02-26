@@ -10,6 +10,7 @@ from frontier_eval.tasks.cryptographic.task import (
 )
 from frontier_eval.tasks.denoising import DenoisingTask
 from frontier_eval.tasks.car_aerodynamics_sensing import CarAerodynamicsSensingTask
+from frontier_eval.tasks.dynamic_obstacle_navigation import DynamicObstacleNavigationTask
 from frontier_eval.tasks.iscso2015 import ISCSO2015Task
 from frontier_eval.tasks.iscso2023 import ISCSO2023Task
 from frontier_eval.tasks.mla import MLATask
@@ -33,6 +34,7 @@ _TASKS: dict[str, Type[Task]] = {
     DenoisingTask.NAME: DenoisingTask,
     PerturbationPredictionTask.NAME: PerturbationPredictionTask,
     PredictModalityTask.NAME: PredictModalityTask,
+    DynamicObstacleNavigationTask.NAME: DynamicObstacleNavigationTask,
     TriMulTask.NAME: TriMulTask,
     MLATask.NAME: MLATask,
     MallocLabTask.NAME: MallocLabTask,
