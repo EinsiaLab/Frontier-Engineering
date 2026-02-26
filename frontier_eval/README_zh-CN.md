@@ -76,6 +76,9 @@ python -m frontier_eval \
   algorithm.iterations=10
 ```
 
+当 `task=unified` 时，默认输出目录会自动包含 benchmark 标识：
+- `runs/unified__<Domain>__<Task>/<algorithm>/<model>/<timestamp>`
+
 ### Benchmark 元数据目录约定
 
 在 `benchmarks/<Domain>/<Task>/frontier_eval/` 下放置：

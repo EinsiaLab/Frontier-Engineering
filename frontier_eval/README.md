@@ -76,6 +76,9 @@ python -m frontier_eval \
   algorithm.iterations=10
 ```
 
+When `task=unified`, default run directory includes benchmark id:
+- `runs/unified__<Domain>__<Task>/<algorithm>/<model>/<timestamp>`
+
 ### Benchmark metadata layout
 
 Under `benchmarks/<Domain>/<Task>/frontier_eval/`:
