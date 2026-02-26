@@ -88,10 +88,11 @@ eval_cwd.txt             # 可选：评测命令工作目录（相对 benchmark 
 agent_files.txt          # 可选：暴露给 agent 的上下文文件列表
 copy_files.txt           # 可选：复制到临时沙箱的文件/目录列表
 readonly_files.txt       # 可选：运行前后必须保持不变的文件/目录
+artifact_files.txt       # 可选：由框架自动收集的输出文件/目录
 constraints.txt          # 可选：约束/提示词文本
 ```
 
-行列表类型的 `*.txt`（如 `initial_program.txt`、`candidate_destination.txt`、`agent_files.txt` 等）规则：
+行列表类型的 `*.txt`（如 `initial_program.txt`、`candidate_destination.txt`、`agent_files.txt`、`artifact_files.txt` 等）规则：
 - 每行一个相对路径
 - 空行忽略
 - 以 `#` 开头的行忽略
@@ -107,6 +108,7 @@ constraints.txt          # 可选：约束/提示词文本
 - `agent_files.txt`：会注入到 artifacts 给 LLM 参考的文件/目录列表。
 - `copy_files.txt`：复制到评测沙箱的文件/目录列表。为空时默认复制整个 benchmark 目录。
 - `readonly_files.txt`：评测前后做指纹校验的路径，变化即判为 invalid。
+- `artifact_files.txt`：评测结束后由 unified 框架自动采集到 artifacts 的文件/目录（如日志、stdout/stderr 输出文件），避免用户自己写 artifacts 导出代码。
 - `constraints.txt`：自由文本约束，会作为 artifacts 提供给 agent 上下文。
 
 ### 占位符说明
@@ -127,16 +129,13 @@ constraints.txt          # 可选：约束/提示词文本
 示例：
 
 ```text
-{python} frontier_eval/evaluate_malloclab.py \
-  --workdir {benchmark} \
-  --candidate {candidate} \
-  --metrics-out {benchmark}/metrics.json \
-  --artifacts-out {benchmark}/artifacts.json
+bash frontier_eval/run_eval.sh {python} {benchmark} {candidate}
 ```
 
 默认会尝试读取你的评测命令产出：
 - `metrics.json`：JSON 对象。Unified 会读取所有“可转成数值”的字段，不仅是 `combined_score` 和 `valid`。
-- `artifacts.json`：JSON 对象。可放任意调试/上下文字段（字符串、数字、对象、数组都可）。
+- `artifacts.json`（可选）：JSON 对象，可放结构化附加信息。
+- 对于简单任务，可不写 `artifacts.json`，改用 `artifact_files.txt` 让 unified 自动收集日志类产物。
 
 指标兜底行为：
 - 缺少 `valid` 时，用命令返回码兜底（`0 -> 1`，非 `0 -> 0`）。
@@ -166,6 +165,8 @@ python -m frontier_eval task=unified \
   task.benchmark=MyDomain/MyTask \
   task.runtime.conda_env=frontier-eval-2
 ```
+
+具体例子可参考 `benchmarks/ComputerSystems/MallocLab/frontier_eval`
 
 ## 批量评测
 

@@ -252,6 +252,46 @@ def _append_agent_context(spec: UnifiedTaskSpec, artifacts: dict[str, Any]) -> N
         artifacts[f"{key_base}::error"] = "path not found"
 
 
+def _collect_output_artifacts(
+    *,
+    sandbox_benchmark: Path,
+    artifact_files: tuple[str, ...],
+    artifacts: dict[str, Any],
+) -> None:
+    if not artifact_files:
+        return
+
+    artifacts["artifact_files"] = "\n".join(artifact_files)
+    for rel in artifact_files:
+        target = (sandbox_benchmark / rel).resolve()
+        key_base = f"collected_artifact::{rel}"
+        if not _is_within(target, sandbox_benchmark):
+            artifacts[f"{key_base}::error"] = "outside sandbox benchmark dir"
+            continue
+
+        if target.is_file():
+            text = _read_text(target)
+            if text is None:
+                artifacts[f"{key_base}::error"] = "failed to read file"
+            else:
+                artifacts[key_base] = _truncate_middle(text, limit=120_000)
+            continue
+
+        if target.is_dir():
+            entries: list[str] = []
+            for child in sorted(target.rglob("*")):
+                if child.is_dir():
+                    continue
+                entries.append(child.relative_to(sandbox_benchmark).as_posix())
+                if len(entries) >= 500:
+                    entries.append("... (truncated)")
+                    break
+            artifacts[f"{key_base}::dir_listing"] = "\n".join(entries)
+            continue
+
+        artifacts[f"{key_base}::error"] = "path not found"
+
+
 def _render_eval_command(
     *,
     command_template: str,
@@ -471,6 +511,12 @@ def evaluate(program_path: str, *, spec: UnifiedTaskSpec) -> Any:
                 artifacts["artifacts_json_error"] = (
                     "artifacts_json exists but is not valid JSON object"
                 )
+
+        _collect_output_artifacts(
+            sandbox_benchmark=sandbox_benchmark,
+            artifact_files=spec.artifact_files,
+            artifacts=artifacts,
+        )
 
         if "valid" not in metrics:
             metrics["valid"] = 1.0 if proc.returncode == 0 else 0.0

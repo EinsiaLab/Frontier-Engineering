@@ -43,6 +43,11 @@ copy_files_file: copy_files.txt
 readonly_files: []
 readonly_files_file: readonly_files.txt
 
+# Optional files/dirs collected by unified framework into artifacts directly.
+# This avoids writing custom artifacts export code in benchmark scripts.
+artifact_files: []
+artifact_files_file: artifact_files.txt
+
 # Optional prompt/constraint text (for artifacts and LLM context).
 constraints_text: null
 constraints_file: constraints.txt

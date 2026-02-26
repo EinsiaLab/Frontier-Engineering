@@ -4,5 +4,5 @@ Task.md
 README_zh-CN.md
 README.md
 frontier_eval/constraints.txt
-frontier_eval/evaluate_malloclab.py
+frontier_eval/run_eval.sh
 frontier_eval/parse_mdriver_result.py

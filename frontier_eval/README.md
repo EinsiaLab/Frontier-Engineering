@@ -88,10 +88,11 @@ eval_cwd.txt             # optional: working dir (relative to benchmark root)
 agent_files.txt          # optional: files exposed to agent as artifacts
 copy_files.txt           # optional: files/dirs copied into temp sandbox
 readonly_files.txt       # optional: files/dirs that must stay unchanged
+artifact_files.txt       # optional: files/dirs auto-collected by framework
 constraints.txt          # optional: prompt/constraints text for agent
 ```
 
-Line-based `*.txt` files (`initial_program.txt`, `candidate_destination.txt`, `eval_cwd.txt`, `agent_files.txt`, `copy_files.txt`, `readonly_files.txt`) support:
+Line-based `*.txt` files (`initial_program.txt`, `candidate_destination.txt`, `eval_cwd.txt`, `agent_files.txt`, `copy_files.txt`, `readonly_files.txt`, `artifact_files.txt`) support:
 - one path per line
 - empty lines ignored
 - lines starting with `#` ignored
@@ -107,6 +108,7 @@ Line-based `*.txt` files (`initial_program.txt`, `candidate_destination.txt`, `e
 - `agent_files.txt`: files/dirs loaded into artifacts for LLM context.
 - `copy_files.txt`: files/dirs copied into sandbox. If empty, unified copies the entire benchmark directory.
 - `readonly_files.txt`: files/dirs fingerprinted before/after eval. Any change marks run invalid.
+- `artifact_files.txt`: files/dirs collected by unified framework after eval (for example logs/output files). This avoids writing custom artifacts-export code.
 - `constraints.txt`: free-form instruction text attached to artifacts (agent prompt context).
 
 ### Placeholder reference
@@ -127,16 +129,13 @@ Raw placeholders (not shell-escaped):
 Example:
 
 ```text
-{python} frontier_eval/evaluate_malloclab.py \
-  --workdir {benchmark} \
-  --candidate {candidate} \
-  --metrics-out {benchmark}/metrics.json \
-  --artifacts-out {benchmark}/artifacts.json
+bash frontier_eval/run_eval.sh {python} {benchmark} {candidate}
 ```
 
 Default outputs expected from your eval command:
 - `metrics.json`: a JSON object. Unified reads all numeric-like fields (int/float/bool/numeric string), not only `combined_score` and `valid`.
-- `artifacts.json`: a JSON object with any debug/context values (strings, numbers, nested objects, lists).
+- `artifacts.json` (optional): a JSON object with extra structured artifacts.
+- For simple tasks, you can skip `artifacts.json` and use `artifact_files.txt` so unified collects logs automatically.
 
 Metric fallback behavior:
 - If `valid` is missing, unified falls back to command return code (`0 -> 1`, non-zero -> `0`).
@@ -166,6 +165,8 @@ python -m frontier_eval task=unified \
   task.benchmark=MyDomain/MyTask \
   task.runtime.conda_env=frontier-eval-2
 ```
+
+For specific examples, please refer to `benchmarks/ComputerSystems/MallocLab/frontier_eval`
 
 ## Batch runs
 

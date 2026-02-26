@@ -171,6 +171,7 @@ class UnifiedTaskSpec:
     agent_files: tuple[str, ...]
     copy_files: tuple[str, ...]
     readonly_files: tuple[str, ...]
+    artifact_files: tuple[str, ...]
     constraints_text: str | None
     constraints_path: Path | None
     metrics_json_rel: str | None
@@ -306,6 +307,19 @@ def load_unified_task_spec(*, task_cfg: Any, repo_root: Path) -> UnifiedTaskSpec
         for item in _dedupe(inline_readonly_files + file_readonly_files)
     )
 
+    inline_artifact_files = _as_str_list(cfg.get("artifact_files"), field_name="artifact_files")
+    artifact_files_file = str(cfg.get("artifact_files_file") or "artifact_files.txt")
+    artifact_files_path = _resolve_metadata_path(
+        benchmark_dir=benchmark_dir,
+        metadata_dir=metadata_dir,
+        file_name=artifact_files_file,
+    )
+    file_artifact_files = _read_list_file(artifact_files_path)
+    artifact_files = tuple(
+        _safe_relpath(item, field_name="artifact_files", allow_dot=False)
+        for item in _dedupe(inline_artifact_files + file_artifact_files)
+    )
+
     constraints_text = str(cfg.get("constraints_text") or "").strip() or None
     constraints_path: Path | None = None
     if constraints_text is None:
@@ -378,6 +392,7 @@ def load_unified_task_spec(*, task_cfg: Any, repo_root: Path) -> UnifiedTaskSpec
         agent_files=agent_files,
         copy_files=copy_files,
         readonly_files=readonly_files,
+        artifact_files=artifact_files,
         constraints_text=constraints_text,
         constraints_path=constraints_path,
         metrics_json_rel=metrics_json_rel,
