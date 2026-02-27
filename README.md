@@ -20,6 +20,8 @@ Current AI4Research evaluation systems have the following limitations:
 
 We need the power of the community to expand the coverage of the Benchmark. We welcome the submission of new engineering problems via Pull Requests (PR). If you wish to contribute, please follow the standards and processes below:
 
+> **AI-Assisted Contributions**: We welcome contributions created with the assistance of AI tools. If you're using an AI assistant to help with your contribution, we recommend providing the prompt guide from this repository (`AGENT.md`) to ensure your AI assistant follows our standards and requirements. **However, please do not over-rely on AI tools or leave the process entirely to AI**. Human review and supervision are essential to ensure quality and correctness.
+
 ### Sample Requirements
 
 1. **Reality Gap**: Must be close to reality, considering real-world influencing factors, not purely abstract mathematics.
