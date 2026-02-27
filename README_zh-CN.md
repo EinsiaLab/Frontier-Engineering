@@ -93,7 +93,8 @@
       <th>领域</th>
       <th>任务名称</th>
       <th>状态</th>
-      <th>维护者/贡献者</th>
+      <th>贡献者</th>
+      <th>审查者</th>
       <th>备注</th>
     </tr>
   </thead>
@@ -103,12 +104,14 @@
       <td><code>MannedLunarLanding</code></td>
       <td>已完成</td>
       <td>@jdp22</td>
+      <td>@jdp22</td>
       <td>登月软着陆轨迹优化</td>
     </tr>
     <tr>
       <td><b>ElectronicDesignAutomation</b></td>
       <td><code>IntegrationPhysicalDesignOptimization</code></td>
       <td>开发中</td>
+      <td>@ahydchh</td>
       <td>@ahydchh</td>
       <td>芯片宏单元布局优化</td>
     </tr>
@@ -117,11 +120,13 @@
       <td><code>MLA</code></td>
       <td>已完成</td>
       <td>@ahydchh</td>
+      <td>@ahydchh</td>
       <td>GPUMode MLA 解码内核</td>
     </tr>
     <tr>
       <td><code>TriMul</code></td>
       <td>已完成</td>
+      <td>@ahydchh</td>
       <td>@ahydchh</td>
       <td>GPUMode 三角乘法</td>
     </tr>
@@ -130,17 +135,20 @@
       <td><code>denoising</code></td>
       <td>已完成</td>
       <td>@ahydchh</td>
+      <td>@ahydchh</td>
       <td>Open Problems 单细胞分析</td>
     </tr>
     <tr>
       <td><code>perturbation_prediction</code></td>
       <td>已完成</td>
       <td>—</td>
+      <td>—</td>
       <td>OpenProblems 扰动响应预测（NeurIPS 2023 scPerturb）</td>
     </tr>
     <tr>
       <td><code>predict_modality</code></td>
       <td>已完成</td>
+      <td>—</td>
       <td>—</td>
       <td>OpenProblems 模态预测（NeurIPS 2021，RNA→ADT）</td>
     </tr>
@@ -149,17 +157,20 @@
       <td><code>AES-128 CTR</code></td>
       <td>已完成</td>
       <td>@ahydchh</td>
+      <td>@ahydchh</td>
       <td>Advanced Encryption Standard, 128-bit key, Counter mode</td>
     </tr>
     <tr>
       <td><code>SHA-256</code></td>
       <td>已完成</td>
       <td>@ahydchh</td>
+      <td>@ahydchh</td>
       <td>Secure Hash Algorithm 256-bit</td>
     </tr>
     <tr>
       <td><code>SHA3-256</code></td>
       <td>已完成</td>
+      <td>@ahydchh</td>
       <td>@ahydchh</td>
       <td>Secure Hash Algorithm 3 256-bit</td>
     </tr>
@@ -168,6 +179,7 @@
       <td><code>Malloc Lab</code></td>
       <td>已完成</td>
       <td>@ahydchh</td>
+      <td>@ahydchh</td>
       <td>动态内存分配实验</td>
     </tr>
     <tr>
@@ -175,27 +187,39 @@
       <td><code>CY_03, WJ_01, XY_05, AM_02, AM_03, YJ_02, YJ_03</code></td>
       <td>已完成</td>
       <td>@ahydchh</td>
+      <td>@ahydchh</td>
       <td><a href="https://github.com/AGI4Engineering/EngDesign.git">EngDesign</a></td>
     </tr>
     <tr>
       <td rowspan="2"><b>StructuralOptimization</b></td>
       <td><code>ISCSO2015</code></td>
       <td>已完成</td>
-      <td>—</td>
+      <td>@yks23</td>
+      <td>@yks23</td>
       <td>45 杆 2D 桁架尺寸+形状优化</td>
     </tr>
     <tr>
       <td><code>ISCSO2023</code></td>
       <td>已完成</td>
-      <td>—</td>
+      <td>@yks23</td>
+      <td>@yks23</td>
       <td>284 杆 3D 桁架尺寸优化</td>
     </tr>
     <tr>
-      <td><b>MathModeling</b></td>
-      <td><code>SubmarineSearch</code></td>
+      <td><b>Aerodynamics</b></td>
+      <td><code>CarAerodynamicsSensing</code></td>
       <td>已完成</td>
-      <td>—</td>
-      <td>深海潜水器最优搜索 (MCM 2024B)</td>
+      <td>@llltttwww</td>
+      <td>@llltttwww</td>
+      <td>3D 汽车表面传感器布局优化，用于压力场重建</td>
+    </tr>
+    <tr>
+      <td><b>WirelessChannelSimulation</b></td>
+      <td><code>HighReliableSimulation</code></td>
+      <td>已完成</td>
+      <td>@tonyhaohan</td>
+      <td>@yks23, @ahydchh</td>
+      <td>使用重要性采样估计 Hamming(127,120) 的误码率</td>
     </tr>
   </tbody>
 </table>

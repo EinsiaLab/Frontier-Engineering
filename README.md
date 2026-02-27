@@ -107,7 +107,8 @@ The table below lists the current coverage of domain tasks in the Benchmark. We 
       <th>Domain</th>
       <th>Task Name</th>
       <th>Status</th>
-      <th>Maintainer</th>
+      <th>Contributor</th>
+      <th>Reviewer</th>
       <th>Remarks</th>
     </tr>
   </thead>
@@ -117,12 +118,14 @@ The table below lists the current coverage of domain tasks in the Benchmark. We 
       <td><code>MannedLunarLanding</code></td>
       <td>Completed</td>
       <td>@jdp22</td>
+      <td>@jdp22</td>
       <td>Lunar soft landing trajectory optimization</td>
     </tr>
     <tr>
       <td><b>ElectronicDesignAutomation</b></td>
       <td><code>IntegrationPhysicalDesignOptimization</code></td>
       <td>In Development</td>
+      <td>@ahydchh</td>
       <td>@ahydchh</td>
       <td>Chip macro placement optimization</td>
     </tr>
@@ -131,11 +134,13 @@ The table below lists the current coverage of domain tasks in the Benchmark. We 
       <td><code>MLA</code></td>
       <td>Completed</td>
       <td>@ahydchh</td>
+      <td>@ahydchh</td>
       <td>GPUMode</td>
     </tr>
     <tr>
       <td><code>TriMul</code></td>
       <td>Completed</td>
+      <td>@ahydchh</td>
       <td>@ahydchh</td>
       <td>GPUMode</td>
     </tr>
@@ -144,17 +149,20 @@ The table below lists the current coverage of domain tasks in the Benchmark. We 
       <td><code>denoising</code></td>
       <td>Completed</td>
       <td>@ahydchh</td>
+      <td>@ahydchh</td>
       <td>Open Problems in Single-Cell Analysis</td>
     </tr>
     <tr>
       <td><code>perturbation_prediction</code></td>
       <td>Completed</td>
       <td>—</td>
+      <td>—</td>
       <td>NeurIPS 2023 scPerturb</td>
     </tr>
     <tr>
       <td><code>predict_modality</code></td>
       <td>Completed</td>
+      <td>—</td>
       <td>—</td>
       <td>NeurIPS 2021, RNA→ADT</td>
     </tr>
@@ -163,17 +171,20 @@ The table below lists the current coverage of domain tasks in the Benchmark. We 
       <td><code>AES-128 CTR</code></td>
       <td>Completed</td>
       <td>@ahydchh</td>
+      <td>@ahydchh</td>
       <td>Advanced Encryption Standard, 128-bit key, Counter mode</td>
     </tr>
     <tr>
       <td><code>SHA-256</code></td>
       <td>Completed</td>
       <td>@ahydchh</td>
+      <td>@ahydchh</td>
       <td>Secure Hash Algorithm 256-bit</td>
     </tr>
     <tr>
       <td><code>SHA3-256</code></td>
       <td>Completed</td>
+      <td>@ahydchh</td>
       <td>@ahydchh</td>
       <td>Secure Hash Algorithm 3 256-bit</td>
     </tr>
@@ -182,6 +193,7 @@ The table below lists the current coverage of domain tasks in the Benchmark. We 
       <td><code>Malloc Lab</code></td>
       <td>Completed</td>
       <td>@ahydchh</td>
+      <td>@ahydchh</td>
       <td>Dynamic memory allocation</td>
     </tr>
     <tr>
@@ -189,27 +201,39 @@ The table below lists the current coverage of domain tasks in the Benchmark. We 
       <td><code>CY_03, WJ_01, XY_05, AM_02, AM_03, YJ_02, YJ_03</code></td>
       <td>Completed</td>
       <td>@ahydchh</td>
+      <td>@ahydchh</td>
       <td><a href="https://github.com/AGI4Engineering/EngDesign.git">EngDesign</a></td>
     </tr>
     <tr>
       <td rowspan="2"><b>StructuralOptimization</b></td>
       <td><code>ISCSO2015</code></td>
       <td>Completed</td>
-      <td>—</td>
+      <td>@yks23</td>
+      <td>@yks23</td>
       <td>45-bar 2D truss size + shape</td>
     </tr>
     <tr>
       <td><code>ISCSO2023</code></td>
       <td>Completed</td>
-      <td>—</td>
+      <td>@yks23</td>
+      <td>@yks23</td>
       <td>284-member 3D truss sizing</td>
     </tr>
     <tr>
-      <td><b>MathModeling</b></td>
-      <td><code>SubmarineSearch</code></td>
+      <td><b>Aerodynamics</b></td>
+      <td><code>CarAerodynamicsSensing</code></td>
       <td>Completed</td>
-      <td>—</td>
-      <td>MCM 2024B</td>
+      <td>@llltttwww</td>
+      <td>@llltttwww</td>
+      <td>Sensor placement on 3D car surface for pressure field reconstruction</td>
+    </tr>
+    <tr>
+      <td><b>WirelessChannelSimulation</b></td>
+      <td><code>HighReliableSimulation</code></td>
+      <td>Completed</td>
+      <td>@tonyhaohan</td>
+      <td>@yks23, @ahydchh</td>
+      <td>BER estimation with importance sampling for Hamming(127,120)</td>
     </tr>
   </tbody>
 </table>
