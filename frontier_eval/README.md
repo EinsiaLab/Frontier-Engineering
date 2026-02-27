@@ -76,6 +76,30 @@ python -m frontier_eval \
   algorithm.iterations=10
 ```
 
+EngDesign example (preset config, still unified under the hood):
+
+```bash
+python -m frontier_eval \
+  task=engdesign \
+  algorithm=openevolve \
+  algorithm.iterations=10
+```
+
+Equivalent explicit unified command:
+
+```bash
+python -m frontier_eval \
+  task=unified \
+  task.benchmark=EngDesign \
+  task.runtime.use_conda_run=false \
+  algorithm=openevolve \
+  algorithm.iterations=10
+```
+
+EngDesign runtime mode (from `benchmarks/EngDesign/README.md`):
+- `benchmarks/EngDesign/frontier_eval/run_eval.sh` uses `docker` first when available (`ENGDESIGN_EVAL_MODE=auto`).
+- Set `ENGDESIGN_EVAL_MODE=local` to force local Python evaluation.
+
 When `task=unified`, default run directory includes benchmark id:
 - `runs/unified__<Domain>__<Task>/<algorithm>/<model>/<timestamp>`
 
