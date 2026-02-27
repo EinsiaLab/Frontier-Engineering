@@ -11,7 +11,7 @@
 `YJ_03`
 ```
 
-环境配置方法如下
+## 环境配置
 ### 1. 安装并登录 Docker
 请在 [hub.docker.com](https://hub.docker.com/) 注册并验证您的电子邮件。
 在您的计算机上下载并安装 [Download Docker Desktop](https://www.docker.com/products/docker-desktop/)
@@ -41,3 +41,10 @@
    ```bash
    docker run -it --rm -v /path/to/your/local/directory:/app --entrypoint bash engdesign-sim
    ```
+
+## 评测方法
+```
+export ENGDESIGN_EVAL_MODE=docker
+export ENGDESIGN_DOCKER_IMAGE=engdesign-sim
+python -m frontier_eval task=engdesign algorithm=openevolve algorithm.iterations=10
+```

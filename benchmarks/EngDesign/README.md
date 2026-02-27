@@ -12,8 +12,8 @@ The tasks in this directory are all from [EngDesign](https://github.com/AGI4Engi
 `YJ_03`
 
 ```
-The environment configuration method is as follows:
 
+## Environment
 ### 1. Install and Log in to Docker
 
 - Register at [hub.docker.com](https://hub.docker.com/) and **verify your email**.
@@ -44,3 +44,10 @@ Mount your local project directory and start a bash session in the container:
    ```bash
    docker run -it --rm -v /path/to/your/local/directory:/app --entrypoint bash engdesign-sim
    ```
+
+## Evaluation
+```
+export ENGDESIGN_EVAL_MODE=docker
+export ENGDESIGN_DOCKER_IMAGE=engdesign-sim
+python -m frontier_eval task=engdesign algorithm=openevolve algorithm.iterations=10
+```
