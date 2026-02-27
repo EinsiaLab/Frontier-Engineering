@@ -185,6 +185,13 @@ The table below lists the current coverage of domain tasks in the Benchmark. We 
       <td>Dynamic memory allocation</td>
     </tr>
     <tr>
+      <td><b>EngDesign</b></td>
+      <td><code>CY_03, WJ_01, XY_05, AM_02, AM_03, YJ_02, YJ_03</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td><a href="https://github.com/AGI4Engineering/EngDesign.git">EngDesign</a></td>
+    </tr>
+    <tr>
       <td rowspan="2"><b>StructuralOptimization</b></td>
       <td><code>ISCSO2015</code></td>
       <td>Completed</td>
