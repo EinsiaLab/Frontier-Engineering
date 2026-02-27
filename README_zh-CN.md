@@ -221,6 +221,28 @@
       <td>@yks23, @ahydchh</td>
       <td>使用重要性采样估计 Hamming(127,120) 的误码率</td>
     </tr>
+    <tr>
+      <td rowspan="3"><b>CommunicationEngineering</b></td>
+      <td><code>LDPCErrorFloor</code></td>
+      <td>已完成</td>
+      <td>wayneyjin@gmail.com</td>
+      <td>TBD</td>
+      <td>使用重要性采样估计LDPC码错误地板，针对trapping sets</td>
+    </tr>
+    <tr>
+      <td><code>RayleighFadingBER</code></td>
+      <td>已完成</td>
+      <td>wayneyjin@gmail.com</td>
+      <td>TBD</td>
+      <td>瑞利衰落信道误码率分析，使用重要性采样模拟深衰落事件</td>
+    </tr>
+    <tr>
+      <td><code>PMDSimulation</code></td>
+      <td>已完成</td>
+      <td>wayneyjin@gmail.com</td>
+      <td>TBD</td>
+      <td>极化模色散仿真，使用重要性采样处理罕见停机事件</td>
+    </tr>
   </tbody>
 </table>
 > 💡 **有新的工程问题想法？**
