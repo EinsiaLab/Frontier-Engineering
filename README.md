@@ -237,6 +237,28 @@ The table below lists the current coverage of domain tasks in the Benchmark. We 
       <td>@yks23, @ahydchh</td>
       <td>BER estimation with importance sampling for Hamming(127,120)</td>
     </tr>
+    <tr>
+      <td rowspan="3"><b>CommunicationEngineering</b></td>
+      <td><code>LDPCErrorFloor</code></td>
+      <td>Completed</td>
+      <td>wayneyjin@gmail.com</td>
+      <td>TBD</td>
+      <td>LDPC code error floor estimation using importance sampling for trapping sets</td>
+    </tr>
+    <tr>
+      <td><code>RayleighFadingBER</code></td>
+      <td>Completed</td>
+      <td>wayneyjin@gmail.com</td>
+      <td>TBD</td>
+      <td>BER analysis under Rayleigh fading with importance sampling for deep fade events</td>
+    </tr>
+    <tr>
+      <td><code>PMDSimulation</code></td>
+      <td>Completed</td>
+      <td>wayneyjin@gmail.com</td>
+      <td>TBD</td>
+      <td>Polarization Mode Dispersion simulation with importance sampling for rare outage events</td>
+    </tr>
   </tbody>
 </table>
 
