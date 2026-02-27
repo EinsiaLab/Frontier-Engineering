@@ -76,6 +76,30 @@ python -m frontier_eval \
   algorithm.iterations=10
 ```
 
+EngDesign 示例（使用预设配置，本质仍是 unified）：
+
+```bash
+python -m frontier_eval \
+  task=engdesign \
+  algorithm=openevolve \
+  algorithm.iterations=10
+```
+
+等价的显式 unified 命令：
+
+```bash
+python -m frontier_eval \
+  task=unified \
+  task.benchmark=EngDesign \
+  task.runtime.use_conda_run=false \
+  algorithm=openevolve \
+  algorithm.iterations=10
+```
+
+EngDesign 运行环境说明（参考 `benchmarks/EngDesign/README.md`）：
+- `benchmarks/EngDesign/frontier_eval/run_eval.sh` 在可用时优先使用 `docker`（`ENGDESIGN_EVAL_MODE=auto`）。
+- 如需强制本地 Python 评测，可设置 `ENGDESIGN_EVAL_MODE=local`。
+
 #### Benchmark 元数据目录约定
 
 在 `benchmarks/<Domain>/<Task>/frontier_eval/` 下放置：
