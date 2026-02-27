@@ -155,15 +155,15 @@ The table below lists the current coverage of domain tasks in the Benchmark. We 
     <tr>
       <td><code>perturbation_prediction</code></td>
       <td>Completed</td>
-      <td>—</td>
-      <td>—</td>
+      <td>@llltttwww</td>
+      <td>@llltttwww</td>
       <td>NeurIPS 2023 scPerturb</td>
     </tr>
     <tr>
       <td><code>predict_modality</code></td>
       <td>Completed</td>
-      <td>—</td>
-      <td>—</td>
+      <td>@llltttwww</td>
+      <td>@llltttwww</td>
       <td>NeurIPS 2021, RNA→ADT</td>
     </tr>
     <tr>
@@ -223,7 +223,7 @@ The table below lists the current coverage of domain tasks in the Benchmark. We 
       <td><b>Aerodynamics</b></td>
       <td><code>CarAerodynamicsSensing</code></td>
       <td>Completed</td>
-      <td>@llltttwww</td>
+      <td>@LeiDQ, @llltttwww</td>
       <td>@llltttwww</td>
       <td>Sensor placement on 3D car surface for pressure field reconstruction</td>
     </tr>
