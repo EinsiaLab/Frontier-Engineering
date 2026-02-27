@@ -143,15 +143,15 @@
     <tr>
       <td><code>perturbation_prediction</code></td>
       <td>已完成</td>
-      <td>—</td>
-      <td>—</td>
+      <td>@llltttwww</td>
+      <td>@llltttwww</td>
       <td>OpenProblems 扰动响应预测（NeurIPS 2023 scPerturb）</td>
     </tr>
     <tr>
       <td><code>predict_modality</code></td>
       <td>已完成</td>
-      <td>—</td>
-      <td>—</td>
+      <td>@llltttwww</td>
+      <td>@llltttwww</td>
       <td>OpenProblems 模态预测（NeurIPS 2021，RNA→ADT）</td>
     </tr>
     <tr>
@@ -211,7 +211,7 @@
       <td><b>Aerodynamics</b></td>
       <td><code>CarAerodynamicsSensing</code></td>
       <td>已完成</td>
-      <td>@llltttwww</td>
+      <td>@LeiDQ, @llltttwww</td>
       <td>@llltttwww</td>
       <td>3D 汽车表面传感器布局优化，用于压力场重建</td>
     </tr>
