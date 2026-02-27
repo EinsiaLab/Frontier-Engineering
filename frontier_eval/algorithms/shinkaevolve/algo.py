@@ -180,9 +180,14 @@ class ShinkaEvolveAlgorithm(Algorithm):
             / "shinkaevolve"
             / "shinkaevolve_entrypoint.py"
         ).resolve()
+        task_cfg_view = OmegaConf.to_container(getattr(self.cfg, "task", None), resolve=True)
+        task_cfg_payload: dict[str, Any] = task_cfg_view if isinstance(task_cfg_view, dict) else {}
+        task_cfg_payload = dict(task_cfg_payload)
+        task_cfg_payload.setdefault("name", task.NAME)
 
         # Ensure Frontier Eval context is visible to Shinka's evaluation subprocesses.
         os.environ["FRONTIER_EVAL_TASK_NAME"] = task.NAME
+        os.environ["FRONTIER_EVAL_TASK_CFG_JSON"] = json.dumps(task_cfg_payload, ensure_ascii=False)
         os.environ["FRONTIER_EVAL_EVALUATOR_TIMEOUT_S"] = str(evaluator_timeout_s)
         os.environ.setdefault("FRONTIER_ENGINEERING_ROOT", str(self.repo_root))
         os.environ.setdefault("PYTHONUNBUFFERED", "1")

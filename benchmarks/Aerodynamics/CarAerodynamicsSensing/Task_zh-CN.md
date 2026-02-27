@@ -9,6 +9,7 @@
 ## 输入
 - `references/car_surface_points.npy`：形状为 `(M, 3)` 的 numpy 数组，记录表面点坐标。提交的索引必须指向该数组。
 - 汽车空气动力学数据集（外部下载，见 `README.md`）。
+- PhySense 仓库（模型代码，评测必需）。评测器默认会在 `third_party/PhySense/Car-Aerodynamics/` 查找，或可通过 `PHYSENSE_ROOT=/path/to/PhySense` 指定（也可以直接指到 `Car-Aerodynamics/` 目录）。
 
 ## 输出
 生成 `submission.json`，格式如下：
@@ -25,7 +26,7 @@
 - 每个索引需满足 `0 <= index < M`。
 
 ## 数据与预处理
-- 原始压力文件：`/data/physense_car_data/pressure_files/case_{i}_p_car_patch.raw`。
+- 原始压力文件：`data/physense_car_data/pressure_files/case_{i}_p_car_patch.raw`（相对于任务目录）。
 - 每行包含 `x y z p`（坐标与压力）。
 - 使用 3 sigma 裁剪去除离群值。
 - 压力归一化：

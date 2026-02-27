@@ -7,6 +7,6 @@ Generate the reference points after downloading the dataset:
 
 ```bash
 python extract_car_mesh.py \
-  --data-dir /data/physense_car_data \
+  --data-dir ../data/physense_car_data \
   --output car_surface_points.npy
 ```

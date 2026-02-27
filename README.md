@@ -56,6 +56,15 @@ Each Task should contain the following file structure:
 
 > The above directory structure serves only as a reference template. Contributors may adjust the file organization based on specific circumstances, provided that all core elements (e.g., background, input/output, evaluation metrics) are included. Additionally, there are no restrictions on the programming language and format of the verification code.
 
+### Submission Guidelines
+
+1. Keep test commands as short as possible (ideally single-line commands). Testing is mandatory before submission!
+
+  1. `python verification/evaluator.py scripts/init.py` # Run under benchmark, using `verification/evaluator.py` as the evaluation entry point. The target of the test, i.e., the target of agent evolution, is `scripts/init.py`.
+  2. `python -m frontier_eval task=<task_name> algorithm.iterations=0` # Framework compatibility verification. Note: Please specify the `task_name` registered in the README.
+
+2. Please avoid files containing private information, such as: `.env`, API keys, IDE configurations (`.vscode/`), temporary files (`*.log`, `temp/`, `__pycache__`, and personal test scripts). Also, please check that the submitted content does not contain absolute paths to avoid reproducibility issues and privacy leaks.
+
 ### Contribution Process
 
 We adopt the standard GitHub collaboration flow:
@@ -150,11 +159,37 @@ The table below lists the current coverage of domain tasks in the Benchmark. We 
       <td>NeurIPS 2021, RNA→ADT</td>
     </tr>
     <tr>
+      <td rowspan="3"><b>Cryptographic</b></td>
+      <td><code>AES-128 CTR</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>Advanced Encryption Standard, 128-bit key, Counter mode</td>
+    </tr>
+    <tr>
+      <td><code>SHA-256</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>Secure Hash Algorithm 256-bit</td>
+    </tr>
+    <tr>
+      <td><code>SHA3-256</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>Secure Hash Algorithm 3 256-bit</td>
+    </tr>
+    <tr>
       <td><b>Computer Systems</b></td>
       <td><code>Malloc Lab</code></td>
       <td>Completed</td>
       <td>@ahydchh</td>
       <td>Dynamic memory allocation</td>
+    </tr>
+    <tr>
+      <td><b>EngDesign</b></td>
+      <td><code>CY_03, WJ_01, XY_05, AM_02, AM_03, YJ_02, YJ_03</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td><a href="https://github.com/AGI4Engineering/EngDesign.git">EngDesign</a></td>
     </tr>
     <tr>
       <td rowspan="2"><b>StructuralOptimization</b></td>

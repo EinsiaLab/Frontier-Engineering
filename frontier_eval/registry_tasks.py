@@ -3,7 +3,13 @@ from __future__ import annotations
 from typing import Type
 
 from frontier_eval.tasks.base import Task
+from frontier_eval.tasks.cryptographic.task import (
+    CryptoAES128Task,
+    CryptoSHA3_256Task,
+    CryptoSHA256Task,
+)
 from frontier_eval.tasks.denoising import DenoisingTask
+from frontier_eval.tasks.car_aerodynamics_sensing import CarAerodynamicsSensingTask
 from frontier_eval.tasks.iscso2015 import ISCSO2015Task
 from frontier_eval.tasks.iscso2023 import ISCSO2023Task
 from frontier_eval.tasks.mla import MLATask
@@ -14,10 +20,15 @@ from frontier_eval.tasks.predict_modality import PredictModalityTask
 from frontier_eval.tasks.smoke import SmokeTask
 from frontier_eval.tasks.trimul import TriMulTask
 from frontier_eval.tasks.wireless_channel_simulation import HighReliableSimulationTask
+from frontier_eval.tasks.unified import UnifiedTask
 
 _TASKS: dict[str, Type[Task]] = {
     SmokeTask.NAME: SmokeTask,
+    CryptoAES128Task.NAME: CryptoAES128Task,
+    CryptoSHA256Task.NAME: CryptoSHA256Task,
+    CryptoSHA3_256Task.NAME: CryptoSHA3_256Task,
     MannedLunarLandingTask.NAME: MannedLunarLandingTask,
+    CarAerodynamicsSensingTask.NAME: CarAerodynamicsSensingTask,
     ISCSO2015Task.NAME: ISCSO2015Task,
     ISCSO2023Task.NAME: ISCSO2023Task,
     DenoisingTask.NAME: DenoisingTask,
@@ -27,6 +38,7 @@ _TASKS: dict[str, Type[Task]] = {
     MLATask.NAME: MLATask,
     MallocLabTask.NAME: MallocLabTask,
     HighReliableSimulationTask.NAME: HighReliableSimulationTask,
+    UnifiedTask.NAME: UnifiedTask,
 }
 
 
