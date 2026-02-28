@@ -63,6 +63,10 @@
     2. python -m frontier_eval task=<task_name> algorithm.iterations=0 # 与框架的适配验证。注意，请在README中说明任务注册的task_name
 2. 请注意不要包含私人信息的文件，例如:.env、API keys、IDE 配置（.vscode/）、临时文件（*.log, temp/, __pycache__/）、个人测试脚本，同时请检查提交的内容中是否包含绝对路径，避免出现复现问题和个人隐私泄露。
 
+3. **单文件闭包（Baseline，必需）**：`scripts/init.py`（以及可选的 `baseline/solution.py`）必须自包含，便于 OpenEvolve 等算法进行单文件优化。
+   - 不要 `import` 本仓库 `benchmarks/` 下的其他 Python 代码（例如任务目录下的其它 `.py` 文件）。
+   - 允许导入 Python 标准库和 `verification/requirements.txt` 中声明的第三方依赖。
+
 ### 贡献流程
 
 我们采用标准的 GitHub 协作流程：

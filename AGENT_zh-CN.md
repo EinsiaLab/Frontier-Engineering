@@ -111,6 +111,9 @@ python -m frontier_eval task=<task_name> algorithm.iterations=0
 - **包含重要逻辑**：将关键逻辑和工具函数直接放在 `init.py` 中
   - 算法迭代将修改 `init.py`，因此所有必要的上下文必须存在
   - 不要依赖迭代期间可能不可用的外部模块
+- **单文件闭包（必需）**：`scripts/init.py`（以及可选的 `baseline/solution.py`）必须自包含，以便 OpenEvolve 等算法进行单文件优化
+  - 不要 `import` 本仓库 `benchmarks/` 下的其他 Python 代码（例如任务目录下的其它 `.py` 文件）
+  - 允许导入 Python 标准库和 `verification/requirements.txt` 中声明的第三方依赖
 - **标注工具函数**：对于给定的工具函数，使用注释清楚标记：
   - `# 可修改：[描述]` - 迭代期间可以更改的部分
   - `# 请勿修改：[描述]` - 必须保持不变的部分（例如，接口契约、约束验证、I/O 格式）
@@ -205,4 +208,3 @@ $ python -m frontier_eval task=my_task algorithm.iterations=0
 ---
 
 **重点**：可行解 + 测试证据。文档由维护者单独处理。
-

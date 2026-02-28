@@ -111,6 +111,9 @@ This ensures human reviewers can identify and manually remove AI-generated conte
 - **Include Important Logic**: Place critical logic and utility functions directly in `init.py`
   - Algorithm iterations will modify `init.py`, so all necessary context must be present
   - Do not rely on external modules that may not be available during iteration
+- **Single-File Closure (Required)**: `scripts/init.py` (and optional `baseline/solution.py`) must be self-contained to enable single-file optimization (e.g., OpenEvolve)
+  - Do **not** import other Python modules from this benchmark repository (e.g., `benchmarks/...` or other `.py` files in the task folder)
+  - Imports from the Python standard library and packages listed in `verification/requirements.txt` are allowed
 - **Annotate Utility Functions**: For given utility functions, use comments to clearly mark:
   - `# MODIFIABLE: [description]` - Parts that can be changed during iteration
   - `# DO NOT MODIFY: [description]` - Parts that must remain unchanged (e.g., interface contracts, constraint validation, I/O format)

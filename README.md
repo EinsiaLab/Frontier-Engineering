@@ -67,6 +67,10 @@ Each Task should contain the following file structure:
 
 2. Please avoid files containing private information, such as: `.env`, API keys, IDE configurations (`.vscode/`), temporary files (`*.log`, `temp/`, `__pycache__`, and personal test scripts). Also, please check that the submitted content does not contain absolute paths to avoid reproducibility issues and privacy leaks.
 
+3. **Single-File Baseline Closure (Required)**: `scripts/init.py` (and optional `baseline/solution.py`) must be self-contained so tools like OpenEvolve can optimize it as a single file.
+   - Do **not** import other Python modules from this benchmark repository (e.g., `benchmarks/...` or other `.py` files in the task folder).
+   - Imports from the Python standard library and packages listed in `verification/requirements.txt` are allowed.
+
 ### Contribution Process
 
 We adopt the standard GitHub collaboration flow:
