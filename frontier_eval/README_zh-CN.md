@@ -6,7 +6,7 @@
 
 - `frontier_eval/cli.py`: 主程序入口（`python -m frontier_eval`）
 - `frontier_eval/tasks/`: 所有评测任务
-- `frontier_eval/algorithms/`: 所有算法（目前支持接入 `openevolve`、`shinkaevolve`）
+- `frontier_eval/algorithms/`: 所有算法（目前支持接入 `abmcts`、`openevolve`、`shinkaevolve`）
 - `frontier_eval/conf/`: Hydra 配置（task / algorithm / llm）
 
 ## 环境准备
@@ -40,6 +40,16 @@ pip install -r frontier_eval/requirements.txt
 pip install -e "git+https://github.com/SakanaAI/ShinkaEvolve.git#egg=shinka"
 ```
 
+可选（AB-MCTS / TreeQuest）：
+
+```bash
+pip install -e third_party/treequest
+# 可选（ABMCTS-M / 混合模型）：
+pip install -e "third_party/treequest[abmcts-m]"
+# 可选（树可视化）：
+pip install -e "third_party/treequest[vis]"
+```
+
 环境变量（推荐用 `.env`）：
 
 ```bash
@@ -60,6 +70,7 @@ python -m frontier_eval algorithm.iterations=10
 ```bash
 python -m frontier_eval task=smoke algorithm=openevolve algorithm.iterations=0
 python -m frontier_eval task=smoke algorithm=shinkaevolve algorithm.max_generations=0
+python -m frontier_eval task=smoke algorithm=abmcts algorithm.iterations=0
 ```
 
 ## Unified 统一任务

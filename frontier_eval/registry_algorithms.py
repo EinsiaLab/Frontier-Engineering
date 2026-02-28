@@ -3,10 +3,12 @@ from __future__ import annotations
 from typing import Type
 
 from frontier_eval.algorithms.base import Algorithm
+from frontier_eval.algorithms.abmcts.algo import ABMCTSAlgorithm
 from frontier_eval.algorithms.openevolve.algo import OpenEvolveAlgorithm
 from frontier_eval.algorithms.shinkaevolve.algo import ShinkaEvolveAlgorithm
 
 _ALGORITHMS: dict[str, Type[Algorithm]] = {
+    ABMCTSAlgorithm.NAME: ABMCTSAlgorithm,
     OpenEvolveAlgorithm.NAME: OpenEvolveAlgorithm,
     ShinkaEvolveAlgorithm.NAME: ShinkaEvolveAlgorithm,
 }

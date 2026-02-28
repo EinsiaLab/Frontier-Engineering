@@ -6,7 +6,7 @@ Evaluation framework for `Frontier-Engineering`.
 
 - `frontier_eval/cli.py`: main entrypoint (`python -m frontier_eval`)
 - `frontier_eval/tasks/`: all evaluation tasks
-- `frontier_eval/algorithms/`: all algorithms (currently supports `openevolve`, `shinkaevolve`)
+- `frontier_eval/algorithms/`: all algorithms (currently supports `abmcts`, `openevolve`, `shinkaevolve`)
 - `frontier_eval/conf/`: Hydra configs (`task` / `algorithm` / `llm`)
 
 ## Setup
@@ -40,6 +40,16 @@ Optional (ShinkaEvolve):
 pip install -e "git+https://github.com/SakanaAI/ShinkaEvolve.git#egg=shinka"
 ```
 
+Optional (AB-MCTS via TreeQuest):
+
+```bash
+pip install -e third_party/treequest
+# Optional (ABMCTS-M / mixed model):
+pip install -e "third_party/treequest[abmcts-m]"
+# Optional (tree visualization):
+pip install -e "third_party/treequest[vis]"
+```
+
 Environment variables (recommended: `.env`):
 
 ```bash
@@ -60,6 +70,7 @@ Quick smoke (fast, no external benchmark deps):
 ```bash
 python -m frontier_eval task=smoke algorithm=openevolve algorithm.iterations=0
 python -m frontier_eval task=smoke algorithm=shinkaevolve algorithm.max_generations=0
+python -m frontier_eval task=smoke algorithm=abmcts algorithm.iterations=0
 ```
 
 ## Unified task
