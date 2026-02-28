@@ -32,6 +32,20 @@ conda install -c conda-forge octave octave-signal octave-control -y
 pip install -r frontier_eval/requirements.txt
 ```
 
+Note on `third_party/`:
+
+Some optional algorithms/benchmarks depend on extra repos under `third_party/`. In this repo, `third_party/` is meant for local checkouts and is ignored by git (see `.gitignore`), so if you see commands like `pip install -e third_party/...`, clone the corresponding repo first, e.g.:
+
+```bash
+mkdir -p third_party
+
+# AB-MCTS / TreeQuest (required if you run `algorithm=abmcts`)
+git clone https://github.com/SakanaAI/treequest.git third_party/treequest
+
+# CarAerodynamicsSensing / PhySense (required to evaluate that benchmark)
+git clone https://github.com/thuml/PhySense.git third_party/PhySense
+```
+
 Optional (ShinkaEvolve):
 
 ```bash
@@ -43,6 +57,7 @@ pip install -e "git+https://github.com/SakanaAI/ShinkaEvolve.git#egg=shinka"
 Optional (AB-MCTS via TreeQuest):
 
 ```bash
+# Requires the TreeQuest repo in `third_party/treequest` (see above).
 pip install -e third_party/treequest
 # Optional (ABMCTS-M / mixed model):
 pip install -e "third_party/treequest[abmcts-m]"

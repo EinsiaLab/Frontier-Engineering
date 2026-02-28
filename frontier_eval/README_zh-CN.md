@@ -32,6 +32,20 @@ conda install -c conda-forge octave octave-signal octave-control -y
 pip install -r frontier_eval/requirements.txt
 ```
 
+关于 `third_party/`：
+
+本仓库会把部分第三方/较大依赖放在 `third_party/` 下，但这些目录内容默认不随 git 提交（见 `.gitignore`）。因此如果你看到类似 `pip install -e third_party/...` 的命令，需要先把对应仓库 clone 到本地，例如：
+
+```bash
+mkdir -p third_party
+
+# AB-MCTS / TreeQuest（使用 `algorithm=abmcts` 时必需）
+git clone https://github.com/SakanaAI/treequest.git third_party/treequest
+
+# CarAerodynamicsSensing / PhySense（评测该任务时必需）
+git clone https://github.com/thuml/PhySense.git third_party/PhySense
+```
+
 可选（ShinkaEvolve）：
 
 ```bash
@@ -43,6 +57,7 @@ pip install -e "git+https://github.com/SakanaAI/ShinkaEvolve.git#egg=shinka"
 可选（AB-MCTS / TreeQuest）：
 
 ```bash
+# 依赖 `third_party/treequest`（见上面的 clone 说明）。
 pip install -e third_party/treequest
 # 可选（ABMCTS-M / 混合模型）：
 pip install -e "third_party/treequest[abmcts-m]"

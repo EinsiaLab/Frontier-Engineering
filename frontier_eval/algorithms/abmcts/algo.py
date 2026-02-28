@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from omegaconf import DictConfig, OmegaConf
+from omegaconf import DictConfig, ListConfig, OmegaConf
 
 from frontier_eval.algorithms.base import Algorithm
 from frontier_eval.tasks.base import Task
@@ -55,9 +55,9 @@ def _tail(text: str, limit: int) -> str:
 
 
 def _strip_code_fences(text: str) -> str:
-    raw = str(text or "")
+    raw = str(text or "").strip()
     if "```" not in raw:
-        return raw.strip()
+        return raw
 
     best: str | None = None
     cursor = 0
@@ -79,7 +79,16 @@ def _strip_code_fences(text: str) -> str:
 
         cursor = end + 3
 
-    return (best if best is not None else raw).strip()
+    if best is not None:
+        return best.strip()
+
+    # Fallback: handle unbalanced fences like "```python\n...\n" (missing closing ```).
+    cleaned_lines: list[str] = []
+    for line in raw.splitlines():
+        if line.strip().startswith("```"):
+            continue
+        cleaned_lines.append(line)
+    return "\n".join(cleaned_lines).strip()
 
 
 def _split_evolve_block(code: str) -> tuple[str, str, str] | None:
@@ -205,7 +214,7 @@ def _parse_actions(value: Any) -> list[_ActionSpec]:
         text = value.strip()
         return [_ActionSpec(name=text or "default")]
 
-    if isinstance(value, DictConfig):
+    if isinstance(value, (DictConfig, ListConfig)):
         value = OmegaConf.to_container(value, resolve=True)
 
     if isinstance(value, list):
@@ -323,7 +332,10 @@ class ABMCTSAlgorithm(Algorithm):
         if variant not in {"a", "m"}:
             raise ValueError("`algorithm.variant` must be one of: a, m")
 
-        evaluator_timeout_s = float(getattr(algo_cfg, "evaluator_timeout_s", 300) or 300)
+        # Must be an int because some evaluators parse this env var via `int(...)`
+        # (e.g. `predict_modality`). Using float here would stringify as "300.0"
+        # and crash downstream.
+        evaluator_timeout_s = int(getattr(algo_cfg, "evaluator_timeout_s", 300) or 300)
         max_code_length = int(getattr(algo_cfg, "max_code_length", 20000) or 20000)
         artifact_char_limit = int(getattr(algo_cfg, "artifact_char_limit", 12000) or 12000)
         seed = int(getattr(algo_cfg, "seed", 0) or 0)
@@ -387,7 +399,7 @@ class ABMCTSAlgorithm(Algorithm):
             "You are optimizing a Python program for an automated benchmark.\n"
             "Goal: maximize metrics['combined_score'] (higher is better) while keeping the "
             "program correct, fast, and self-contained.\n"
-            "Return only code. Do not include explanations or markdown.\n"
+            "Return only plain Python code. Do not include explanations, markdown, or ``` code fences.\n"
         )
         sys_prompt = sys_prompt_override or sys_prompt_default
 
@@ -566,6 +578,7 @@ class ABMCTSAlgorithm(Algorithm):
             parent: ProgramState | None,
             action: _ActionSpec,
             attempt: int,
+            feedback: str | None = None,
         ) -> tuple[str, str, str]:
             base_code = baseline_code if parent is None else parent.code
             parent_metrics = baseline_metrics if parent is None else parent.metrics
@@ -622,6 +635,12 @@ class ABMCTSAlgorithm(Algorithm):
 
             if attempt > 1:
                 user_prompt += "\nAvoid producing identical code.\n"
+            if feedback:
+                user_prompt += (
+                    "\nPrevious attempt feedback (fix this):\n"
+                    + _tail(str(feedback).strip(), 1200)
+                    + "\n"
+                )
 
             messages = [
                 {"role": "system", "content": sys_prompt},
@@ -710,18 +729,36 @@ class ABMCTSAlgorithm(Algorithm):
                     user_prompt = ""
                     llm_raw = ""
                     code = ""
+                    feedback: str | None = None
                     for attempt in range(1, max(1, max_llm_attempts) + 1):
                         user_prompt, llm_raw, code = await _propose_code(
                             parent=parent_state,
                             action=action_spec,
                             attempt=attempt,
+                            feedback=feedback,
                         )
+                        feedback = None
                         if not code.strip():
+                            feedback = "Empty output. Return valid Python code only."
                             continue
                         if len(code) > max_code_length:
+                            feedback = (
+                                f"Output too long ({len(code)} chars). Keep it under {max_code_length} chars."
+                            )
+                            continue
+                        try:
+                            compile(code, "<abmcts_candidate>", "exec")
+                        except SyntaxError as e:
+                            loc = f"line {e.lineno}" if e.lineno is not None else "unknown line"
+                            msg = str(e.msg) if getattr(e, "msg", None) else str(e)
+                            feedback = (
+                                f"Python syntax error ({loc}): {msg}. "
+                                "Return only valid Python code (no markdown fences)."
+                            )
                             continue
                         h = _sha256_text(code)
                         if h in code_hashes and attempt < max(1, max_llm_attempts):
+                            feedback = "Output was identical to a previous program. Produce a different variant."
                             continue
                         break
 

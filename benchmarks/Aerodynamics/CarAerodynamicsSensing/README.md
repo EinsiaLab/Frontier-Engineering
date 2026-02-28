@@ -10,6 +10,8 @@ Select 30 sensor locations on a fixed 3D car surface to minimize the reconstruct
 
 ## Quickstart
 0) Ensure the PhySense repo (model code) is available (required for evaluation):
+- Recommended:
+  - `git clone https://github.com/thuml/PhySense.git third_party/PhySense`
 - Default: `third_party/PhySense/Car-Aerodynamics/`
 - Alternatives:
   - `<workspace>/PhySense/Car-Aerodynamics/` (next to `Frontier-Engineering/`)

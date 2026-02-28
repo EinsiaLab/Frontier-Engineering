@@ -10,6 +10,8 @@
 
 ## 快速开始
 0) 准备 PhySense 代码（评测必需）：
+- 推荐：
+  - `git clone https://github.com/thuml/PhySense.git third_party/PhySense`
 - 默认路径：`third_party/PhySense/Car-Aerodynamics/`
 - 备选：
   - `<workspace>/PhySense/Car-Aerodynamics/`（与 `Frontier-Engineering/` 同级）
