@@ -234,7 +234,7 @@
 > 请创建一个 Issue 详细描述该问题的**现实背景**与**工程价值**。经讨论确认后，我们会将其加入上表，集结社区力量共同攻克。
 
 ## 🧪 评测框架
-初步实现部分评测算法与 benchmark 的对接。实现的核心部分见 `./frontier_eval`，使用方法详见[评测 README](frontier_eval/README_zh-CN.md)。
+初步实现部分评测算法与 benchmark 的对接。实现的核心部分见 `./frontier_eval`，使用方法详见[评测 README](frontier_eval/README_zh-CN.md)。注意：部分可选算法/任务依赖 `third_party/` 下的外部仓库（需要本地 clone），请按评测 README 的说明进行配置。
 
 ## 💬 加入社区
 

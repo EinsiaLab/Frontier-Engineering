@@ -249,7 +249,7 @@ The table below lists the current coverage of domain tasks in the Benchmark. We 
 > Please create an Issue detailing the **real-world background** and **engineering value** of the problem. After discussion and confirmation, we will add it to the table above to rally community power to solve it together.
 
 ## 🧪 Evaluation Framework
-An initial integration between some evaluation algorithms and benchmarks has been implemented. The core implementation is located in `./frontier_eval`. For usage instructions, see the [Evaluation README](frontier_eval/README.md).
+An initial integration between some evaluation algorithms and benchmarks has been implemented. The core implementation is located in `./frontier_eval`. For usage instructions, see the [Evaluation README](frontier_eval/README.md). Note: some optional algorithms/benchmarks require extra repos under `third_party/` (local clones); the Evaluation README documents how to set them up.
 
 ## 💬 Join the Community
 Welcome to our developer community! Whether you want to discuss new engineering problem concepts, find task collaborators, or encounter technical issues during your contribution, you can always communicate with us in the group.

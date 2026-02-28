@@ -6,7 +6,7 @@
 
 - `frontier_eval/cli.py`: 主程序入口（`python -m frontier_eval`）
 - `frontier_eval/tasks/`: 所有评测任务
-- `frontier_eval/algorithms/`: 所有算法（目前支持接入 `openevolve`、`shinkaevolve`）
+- `frontier_eval/algorithms/`: 所有算法（目前支持接入 `abmcts`、`openevolve`、`shinkaevolve`）
 - `frontier_eval/conf/`: Hydra 配置（task / algorithm / llm）
 
 ## 环境准备
@@ -32,12 +32,37 @@ conda install -c conda-forge octave octave-signal octave-control -y
 pip install -r frontier_eval/requirements.txt
 ```
 
+关于 `third_party/`：
+
+本仓库会把部分第三方/较大依赖放在 `third_party/` 下，但这些目录内容默认不随 git 提交（见 `.gitignore`）。因此如果你看到类似 `pip install -e third_party/...` 的命令，需要先把对应仓库 clone 到本地，例如：
+
+```bash
+mkdir -p third_party
+
+# AB-MCTS / TreeQuest（使用 `algorithm=abmcts` 时必需）
+git clone https://github.com/SakanaAI/treequest.git third_party/treequest
+
+# CarAerodynamicsSensing / PhySense（评测该任务时必需）
+git clone https://github.com/thuml/PhySense.git third_party/PhySense
+```
+
 可选（ShinkaEvolve）：
 
 ```bash
 # 注意：PyPI 上的 `shinka` 不是 ShinkaEvolve
 # 推荐用可编辑安装（确保 `shinka.core` 可用）：
 pip install -e "git+https://github.com/SakanaAI/ShinkaEvolve.git#egg=shinka"
+```
+
+可选（AB-MCTS / TreeQuest）：
+
+```bash
+# 依赖 `third_party/treequest`（见上面的 clone 说明）。
+pip install -e third_party/treequest
+# 可选（ABMCTS-M / 混合模型）：
+pip install -e "third_party/treequest[abmcts-m]"
+# 可选（树可视化）：
+pip install -e "third_party/treequest[vis]"
 ```
 
 环境变量（推荐用 `.env`）：
@@ -60,6 +85,7 @@ python -m frontier_eval algorithm.iterations=10
 ```bash
 python -m frontier_eval task=smoke algorithm=openevolve algorithm.iterations=0
 python -m frontier_eval task=smoke algorithm=shinkaevolve algorithm.max_generations=0
+python -m frontier_eval task=smoke algorithm=abmcts algorithm.iterations=0
 ```
 
 ## Unified 统一任务

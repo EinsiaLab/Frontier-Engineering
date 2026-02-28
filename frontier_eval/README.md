@@ -6,7 +6,7 @@ Evaluation framework for `Frontier-Engineering`.
 
 - `frontier_eval/cli.py`: main entrypoint (`python -m frontier_eval`)
 - `frontier_eval/tasks/`: all evaluation tasks
-- `frontier_eval/algorithms/`: all algorithms (currently supports `openevolve`, `shinkaevolve`)
+- `frontier_eval/algorithms/`: all algorithms (currently supports `abmcts`, `openevolve`, `shinkaevolve`)
 - `frontier_eval/conf/`: Hydra configs (`task` / `algorithm` / `llm`)
 
 ## Setup
@@ -32,12 +32,37 @@ conda install -c conda-forge octave octave-signal octave-control -y
 pip install -r frontier_eval/requirements.txt
 ```
 
+Note on `third_party/`:
+
+Some optional algorithms/benchmarks depend on extra repos under `third_party/`. In this repo, `third_party/` is meant for local checkouts and is ignored by git (see `.gitignore`), so if you see commands like `pip install -e third_party/...`, clone the corresponding repo first, e.g.:
+
+```bash
+mkdir -p third_party
+
+# AB-MCTS / TreeQuest (required if you run `algorithm=abmcts`)
+git clone https://github.com/SakanaAI/treequest.git third_party/treequest
+
+# CarAerodynamicsSensing / PhySense (required to evaluate that benchmark)
+git clone https://github.com/thuml/PhySense.git third_party/PhySense
+```
+
 Optional (ShinkaEvolve):
 
 ```bash
 # NOTE: the PyPI package `shinka` is NOT ShinkaEvolve.
 # Recommended (editable VCS install so `shinka.core` is available):
 pip install -e "git+https://github.com/SakanaAI/ShinkaEvolve.git#egg=shinka"
+```
+
+Optional (AB-MCTS via TreeQuest):
+
+```bash
+# Requires the TreeQuest repo in `third_party/treequest` (see above).
+pip install -e third_party/treequest
+# Optional (ABMCTS-M / mixed model):
+pip install -e "third_party/treequest[abmcts-m]"
+# Optional (tree visualization):
+pip install -e "third_party/treequest[vis]"
 ```
 
 Environment variables (recommended: `.env`):
@@ -60,6 +85,7 @@ Quick smoke (fast, no external benchmark deps):
 ```bash
 python -m frontier_eval task=smoke algorithm=openevolve algorithm.iterations=0
 python -m frontier_eval task=smoke algorithm=shinkaevolve algorithm.max_generations=0
+python -m frontier_eval task=smoke algorithm=abmcts algorithm.iterations=0
 ```
 
 ## Unified task

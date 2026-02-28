@@ -335,6 +335,20 @@ def _extract_shinkaevolve_best_metrics(output_dir: Path) -> dict[str, Any] | Non
     return None
 
 
+def _extract_abmcts_best_metrics(output_dir: Path) -> dict[str, Any] | None:
+    info_path = output_dir / "abmcts" / "best" / "best_program_info.json"
+    if not info_path.is_file():
+        return None
+    try:
+        info = json.loads(info_path.read_text(encoding="utf-8", errors="replace"))
+    except Exception:
+        return None
+    metrics = info.get("metrics")
+    if isinstance(metrics, dict):
+        return metrics
+    return None
+
+
 async def _run_one(run: RunSpec) -> dict[str, Any]:
     start = time.time()
     run.output_dir.mkdir(parents=True, exist_ok=True)
@@ -370,6 +384,8 @@ async def _run_one(run: RunSpec) -> dict[str, Any]:
         metrics = _extract_openevolve_best_metrics(run.output_dir)
     elif run.algorithm.name == "shinkaevolve":
         metrics = _extract_shinkaevolve_best_metrics(run.output_dir)
+    elif run.algorithm.name == "abmcts":
+        metrics = _extract_abmcts_best_metrics(run.output_dir)
     record: dict[str, Any] = {
         "task": run.task,
         "algorithm": run.algorithm.name,
