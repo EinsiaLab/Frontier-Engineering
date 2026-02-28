@@ -20,6 +20,8 @@ Current AI4Research evaluation systems have the following limitations:
 
 We need the power of the community to expand the coverage of the Benchmark. We welcome the submission of new engineering problems via Pull Requests (PR). If you wish to contribute, please follow the standards and processes below:
 
+> **AI-Assisted Contributions**: We welcome contributions created with the assistance of AI tools. If you're using an AI assistant to help with your contribution, we recommend providing the prompt guide from this repository (`AGENT.md`) to ensure your AI assistant follows our standards and requirements. **However, please do not over-rely on AI tools or leave the process entirely to AI**. Human review and supervision are essential to ensure quality and correctness.
+
 ### Sample Requirements
 
 1. **Reality Gap**: Must be close to reality, considering real-world influencing factors, not purely abstract mathematics.
@@ -64,6 +66,10 @@ Each Task should contain the following file structure:
   2. `python -m frontier_eval task=<task_name> algorithm.iterations=0` # Framework compatibility verification. Note: Please specify the `task_name` registered in the README.
 
 2. Please avoid files containing private information, such as: `.env`, API keys, IDE configurations (`.vscode/`), temporary files (`*.log`, `temp/`, `__pycache__`, and personal test scripts). Also, please check that the submitted content does not contain absolute paths to avoid reproducibility issues and privacy leaks.
+
+3. **Single-File Baseline Closure (Required)**: `scripts/init.py` (and optional `baseline/solution.py`) must be self-contained so tools like OpenEvolve can optimize it as a single file.
+   - Do **not** import other Python modules from this benchmark repository (e.g., `benchmarks/...` or other `.py` files in the task folder).
+   - Imports from the Python standard library and packages listed in `verification/requirements.txt` are allowed.
 
 ### Contribution Process
 
