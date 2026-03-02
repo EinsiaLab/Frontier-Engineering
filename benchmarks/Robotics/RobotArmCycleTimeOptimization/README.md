@@ -76,5 +76,5 @@ docker run --rm -v $(pwd)/../submission.json:/workspace/submission.json arm-eval
 - **Robot**: KUKA LBR iiwa (URDF via `pybullet_data`)
 - **Start**: `[0.0, 0.5, 0.0, -1.5, 0.0, 1.0, 0.0]` rad
 - **Goal**: `[1.2, -0.3, 0.8, -0.8, 0.5, 0.8, 1.0]` rad
-- **Obstacle**: AABB at center `[0.30, 0.00, 0.65]`, half-extents `[0.08, 0.20, 0.08]` m
+- **Obstacle**: AABB at center `[0.45, -0.35, 0.65]`, half-extents `[0.08, 0.20, 0.08]` m
 - **Objective**: Minimize total time `T`

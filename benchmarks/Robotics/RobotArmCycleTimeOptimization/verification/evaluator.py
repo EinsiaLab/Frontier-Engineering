@@ -18,7 +18,7 @@ MAX_VEL = np.array([1.48, 1.48, 1.74, 1.74, 2.27, 2.27, 2.27], dtype=float)
 MAX_ACC = np.array([3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0], dtype=float)
 SAMPLES_PER_SEG = 30
 
-OBS_CENTER = [0.30, 0.00, 0.65]
+OBS_CENTER = [0.45, -0.35, 0.65]
 OBS_HALF = [0.08, 0.20, 0.08]
 
 

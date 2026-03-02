@@ -20,7 +20,7 @@ q_goal = [1.2, -0.3, 0.8, -0.8, 0.5, 0.8, 1.0]
 ```
 
 - Obstacle: axis-aligned box
-  - center: `[0.30, 0.00, 0.65]`
+  - center: `[0.45, -0.35, 0.65]`
   - half extents: `[0.08, 0.20, 0.08]`
 
 ## 3. Objective
