@@ -18,6 +18,8 @@ from frontier_eval.tasks.malloclab import MallocLabTask
 from frontier_eval.tasks.manned_lunar_landing import MannedLunarLandingTask
 from frontier_eval.tasks.perturbation_prediction import PerturbationPredictionTask
 from frontier_eval.tasks.predict_modality import PredictModalityTask
+from frontier_eval.tasks.quadruped_gait import QuadrupedGaitTask
+from frontier_eval.tasks.trimul import TriMulTask
 from frontier_eval.tasks.smoke import SmokeTask
 from frontier_eval.tasks.trimul import TriMulTask
 from frontier_eval.tasks.wireless_channel_simulation import HighReliableSimulationTask
@@ -35,6 +37,7 @@ _TASKS: dict[str, Type[Task]] = {
     DenoisingTask.NAME: DenoisingTask,
     PerturbationPredictionTask.NAME: PerturbationPredictionTask,
     PredictModalityTask.NAME: PredictModalityTask,
+    QuadrupedGaitTask.NAME: QuadrupedGaitTask,
     DynamicObstacleNavigationTask.NAME: DynamicObstacleNavigationTask,
     TriMulTask.NAME: TriMulTask,
     MLATask.NAME: MLATask,
