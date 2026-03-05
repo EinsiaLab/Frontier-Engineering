@@ -224,9 +224,13 @@ class LDPCCode:
             weights = np.exp(log_weights)
             
             # Decode each sample
+            # For BPSK: all-zero codeword -> all +1 transmitted signal
+            tx_signal = np.ones(self.n)  # All +1 for all-zero codeword
             for i in range(batch_size_actual):
-                received = noise[i, :]
-                llr = 2.0 * received / (noise_std**2)  # For BPSK, all-zero codeword
+                # Received signal = transmitted signal + noise
+                received = tx_signal + noise[i, :]
+                # LLR for BPSK: LLR = 2 * received / sigma^2
+                llr = 2.0 * received / (noise_std**2)
                 decoded, _ = self.decode(llr)
                 
                 # Check for error
@@ -300,4 +304,5 @@ class LDPCCode:
         # Ensure each variable node has approximately dv connections
         # This is a simplified construction
         return LDPCCode(H, decoder_type="sum_product", max_iter=50)
+
 

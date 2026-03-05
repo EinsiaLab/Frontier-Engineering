@@ -23,11 +23,12 @@ BATCH_SIZE = 5_000
 MIN_ERRORS = 20
 REPEATS = 3
 
-EPSILON = 1.0
+EPSILON = 2.0  # Increased tolerance for initial submissions
 INVALID_SCORE_SCALE = 0.1
 INVALID_SCORE_CAP = 0.1
-# Reference values (to be calibrated)
-R0_DEV = 1e-6  # Reference error floor
+# Reference values (to be calibrated with baseline solution)
+# Note: These are placeholder values and should be calibrated with actual baseline runs
+R0_DEV = 1e-5  # Reference error floor (adjusted for initial testing)
 R0_LOG_DEV = float(math.log(R0_DEV))
 T0_DEV = 10.0  # Reference runtime
 

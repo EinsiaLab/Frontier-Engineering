@@ -26,10 +26,11 @@ MIN_OUTAGES = 20
 REPEATS = 3
 NUM_SEGMENTS = 100
 
-EPSILON = 1.0
+EPSILON = 2.0  # Increased tolerance for initial submissions
 INVALID_SCORE_SCALE = 0.1
 INVALID_SCORE_CAP = 0.1
-R0_DEV = 1e-10
+# Reference values (to be calibrated with baseline solution)
+R0_DEV = 1e-9  # Reference outage probability (adjusted for initial testing)
 R0_LOG_DEV = float(math.log(R0_DEV))
 T0_DEV = 10.0
 

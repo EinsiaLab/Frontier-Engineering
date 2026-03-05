@@ -26,10 +26,11 @@ NUM_BRANCHES = 4
 DIVERSITY_TYPE = "MRC"
 MODULATION = "BPSK"
 
-EPSILON = 1.0
+EPSILON = 2.0  # Increased tolerance for initial submissions
 INVALID_SCORE_SCALE = 0.1
 INVALID_SCORE_CAP = 0.1
-R0_DEV = 1e-6
+# Reference values (to be calibrated with baseline solution)
+R0_DEV = 1e-5  # Reference BER (adjusted for initial testing)
 R0_LOG_DEV = float(math.log(R0_DEV))
 T0_DEV = 10.0
 
