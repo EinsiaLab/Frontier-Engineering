@@ -20,14 +20,14 @@
 ## 子任务索引
 
 - `LDPCErrorFloor/`: 使用重要性采样估计LDPC码的错误地板，处理罕见的trapping set事件。
-  - `frontier_eval` 任务名称: `ldpc_error_floor`
-  - 快速运行: `python -m frontier_eval task=ldpc_error_floor algorithm.iterations=0`
+  - `frontier_eval` 任务: `task=unified task.benchmark=CommunicationEngineering/LDPCErrorFloor`
+  - 快速运行: `python -m frontier_eval task=unified task.benchmark=CommunicationEngineering/LDPCErrorFloor algorithm.iterations=0`
 
 - `RayleighFadingBER/`: 使用重要性采样分析瑞利衰落信道下的误码率，模拟深衰落事件。
-  - `frontier_eval` 任务名称: `rayleigh_fading_ber`
-  - 快速运行: `python -m frontier_eval task=rayleigh_fading_ber algorithm.iterations=0`
+  - `frontier_eval` 任务: `task=unified task.benchmark=CommunicationEngineering/RayleighFadingBER`
+  - 快速运行: `python -m frontier_eval task=unified task.benchmark=CommunicationEngineering/RayleighFadingBER algorithm.iterations=0`
 
 - `PMDSimulation/`: 使用重要性采样仿真光纤系统中的极化模色散(PMD)，处理罕见的停机事件。
-  - `frontier_eval` 任务名称: `pmd_simulation`
-  - 快速运行: `python -m frontier_eval task=pmd_simulation algorithm.iterations=0`
+  - `frontier_eval` 任务: `task=unified task.benchmark=CommunicationEngineering/PMDSimulation`
+  - 快速运行: `python -m frontier_eval task=unified task.benchmark=CommunicationEngineering/PMDSimulation algorithm.iterations=0`
 

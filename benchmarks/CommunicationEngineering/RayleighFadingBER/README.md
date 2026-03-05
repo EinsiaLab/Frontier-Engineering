@@ -43,15 +43,16 @@ cd benchmarks/CommunicationEngineering/RayleighFadingBER && python verification/
 
 ## frontier_eval Task Name
 
-Registered `task_name` for this task:
+This task uses the unified task framework. Run with:
 
-```text
-rayleigh_fading_ber
+```bash
+python -m frontier_eval task=unified task.benchmark=CommunicationEngineering/RayleighFadingBER algorithm.iterations=0
 ```
 
-Example:
+Or use the short alias (if registered):
 
 ```bash
 python -m frontier_eval task=rayleigh_fading_ber algorithm.iterations=0
 ```
+
 

@@ -43,15 +43,16 @@ cd benchmarks/CommunicationEngineering/LDPCErrorFloor && python verification/eva
 
 ## frontier_eval Task Name
 
-Registered `task_name` for this task:
+This task uses the unified task framework. Run with:
 
-```text
-ldpc_error_floor
+```bash
+python -m frontier_eval task=unified task.benchmark=CommunicationEngineering/LDPCErrorFloor algorithm.iterations=0
 ```
 
-Example:
+Or use the short alias (if registered):
 
 ```bash
 python -m frontier_eval task=ldpc_error_floor algorithm.iterations=0
 ```
+
 

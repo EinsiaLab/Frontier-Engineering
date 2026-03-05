@@ -43,15 +43,16 @@ cd benchmarks/CommunicationEngineering/PMDSimulation && python verification/eval
 
 ## frontier_eval Task Name
 
-Registered `task_name` for this task:
+This task uses the unified task framework. Run with:
 
-```text
-pmd_simulation
+```bash
+python -m frontier_eval task=unified task.benchmark=CommunicationEngineering/PMDSimulation algorithm.iterations=0
 ```
 
-Example:
+Or use the short alias (if registered):
 
 ```bash
 python -m frontier_eval task=pmd_simulation algorithm.iterations=0
 ```
+
 

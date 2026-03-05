@@ -228,6 +228,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Evaluate PMD Simulation submission.")
     parser.add_argument("program", help="Path to candidate program file")
     parser.add_argument("--repo-root", dest="repo_root", default=None)
+    parser.add_argument("--metrics-out", dest="metrics_out", default=None, help="Output metrics JSON file path.")
     args = parser.parse_args()
     
     repo_root = None if args.repo_root is None else Path(args.repo_root).expanduser().resolve()
@@ -236,9 +237,17 @@ def main() -> None:
         metrics = result
     else:
         metrics = result.metrics
-    print(json.dumps(metrics, ensure_ascii=False, indent=2))
+    
+    # Output to file if specified, otherwise stdout
+    metrics_json = json.dumps(metrics, ensure_ascii=False, indent=2)
+    if args.metrics_out:
+        with open(args.metrics_out, 'w', encoding='utf-8') as f:
+            f.write(metrics_json)
+    else:
+        print(metrics_json)
 
 
 if __name__ == "__main__":
     main()
+
 
