@@ -13,14 +13,19 @@ TASK_ROOT = Path(__file__).resolve().parents[1]
 REPO_ROOT = TASK_ROOT.parents[3]
 sys.path.insert(0, str(REPO_ROOT))
 
-from benchmarks.CommunicationEngineering.LDPCErrorFloor.runtime.sampler import NaiveSampler
+from benchmarks.CommunicationEngineering.LDPCErrorFloor.runtime.sampler import BiasedVarianceSampler
 
 
-class TrappingSetSampler(NaiveSampler):
-    """Baseline: Naive Monte Carlo sampler (no biasing)."""
+class TrappingSetSampler(BiasedVarianceSampler):
+    """Improved baseline: Biased variance importance sampler.
+    
+    Uses increased noise variance to make errors more likely,
+    then corrects using importance weights.
+    """
     
     def __init__(self, code, *, seed: int = 0):
-        super().__init__(code, seed=seed)
+        # Use bias_factor=1.5 to increase noise by 50%
+        super().__init__(code, seed=seed, bias_factor=1.5)
         self.rng = Generator(Philox(seed))
     
     def simulate_variance_controlled(
@@ -53,4 +58,5 @@ if __name__ == "__main__":
     sampler = TrappingSetSampler(code, seed=0)
     result = sampler.simulate_variance_controlled(code=code)
     print(result)
+
 
