@@ -50,7 +50,15 @@ git clone https://github.com/thuml/PhySense.git third_party/PhySense
 
 ```bash
 # 注意：PyPI 上的 `shinka` 不是 ShinkaEvolve
-# 推荐用可编辑安装（确保 `shinka.core` 可用）：
+
+# 方式 A：本地 clone 到 `third_party/`（需要打补丁/调试时推荐）
+git clone https://github.com/SakanaAI/ShinkaEvolve.git third_party/ShinkaEvolve
+# Frontier-Engineering 补丁：修复 `DatabaseDisplay` 在 `program.metadata` 缺失时的崩溃，
+# 并在价格表中补充 OpenRouter 模型 `qwen/qwen3-coder-next`。
+git apply patches/third_party_shinkaevolve.patch
+pip install -e third_party/ShinkaEvolve
+
+# 方式 B：可编辑 VCS 安装（确保 `shinka.core` 可用）：
 pip install -e "git+https://github.com/SakanaAI/ShinkaEvolve.git#egg=shinka"
 ```
 
@@ -222,6 +230,20 @@ python -m frontier_eval task=unified \
 
 ```bash
 python -m frontier_eval.batch --matrix frontier_eval/conf/batch/example_matrix.yaml
+```
+
+补测（只重跑部分 task）：
+
+```bash
+python -m frontier_eval.batch --matrix frontier_eval/conf/batch/example_matrix.yaml \
+  --tasks denoising --tasks trimul
+```
+
+原地补测（在已有 batch 目录下补测；会先删除选中的 task 目录再重跑）：
+
+```bash
+python -m frontier_eval.batch --matrix runs/batch/<batch_id>/matrix_resolved.yaml \
+  --in-place --tasks denoising
 ```
 
 ## 扩展方式（新增 task / algorithm）

@@ -50,7 +50,15 @@ Optional (ShinkaEvolve):
 
 ```bash
 # NOTE: the PyPI package `shinka` is NOT ShinkaEvolve.
-# Recommended (editable VCS install so `shinka.core` is available):
+
+# Option A: local checkout under `third_party/` (recommended if you need to apply local patches)
+git clone https://github.com/SakanaAI/ShinkaEvolve.git third_party/ShinkaEvolve
+# Frontier-Engineering patch: fixes `DatabaseDisplay` when `program.metadata` is missing,
+# and adds the OpenRouter model id `qwen/qwen3-coder-next` to the pricing table.
+git apply patches/third_party_shinkaevolve.patch
+pip install -e third_party/ShinkaEvolve
+
+# Option B: editable VCS install so `shinka.core` is available:
 pip install -e "git+https://github.com/SakanaAI/ShinkaEvolve.git#egg=shinka"
 ```
 
@@ -226,6 +234,20 @@ Use the batch runner (writes an isolated `run.output_dir` for each combination a
 
 ```bash
 python -m frontier_eval.batch --matrix frontier_eval/conf/batch/example_matrix.yaml
+```
+
+Rerun a subset of tasks:
+
+```bash
+python -m frontier_eval.batch --matrix frontier_eval/conf/batch/example_matrix.yaml \
+  --tasks denoising --tasks trimul
+```
+
+Rerun in-place inside an existing batch directory (deletes the selected task directories first):
+
+```bash
+python -m frontier_eval.batch --matrix runs/batch/<batch_id>/matrix_resolved.yaml \
+  --in-place --tasks denoising
 ```
 
 ## Extending (new task / algorithm)
