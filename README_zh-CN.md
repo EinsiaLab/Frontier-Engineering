@@ -159,6 +159,28 @@
       <td>OpenProblems 模态预测（NeurIPS 2021，RNA→ADT）</td>
     </tr>
     <tr>
+      <td rowspan="3"><b>QuantumComputing</b></td>
+      <td><code>routing qftentangled</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>路由导向优化</td>
+    </tr>
+    <tr>
+      <td><code>clifford t synthesis</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>Clifford+T 综合优化</td>
+    </tr>
+    <tr>
+      <td><code>cross target qaoa</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>跨目标鲁棒优化</td>
+    </tr>
+    <tr>
       <td rowspan="3"><b>Cryptographic</b></td>
       <td><code>AES-128 CTR</code></td>
       <td>已完成</td>

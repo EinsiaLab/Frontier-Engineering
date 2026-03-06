@@ -173,6 +173,28 @@ The table below lists the current coverage of domain tasks in the Benchmark. We 
       <td>NeurIPS 2021, RNA→ADT</td>
     </tr>
     <tr>
+      <td rowspan="3"><b>QuantumComputing</b></td>
+      <td><code>routing qftentangled</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>Routing-Oriented Optimization</td>
+    </tr>
+    <tr>
+      <td><code>clifford t synthesis</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>Clifford+T Synthesis Optimization</td>
+    </tr>
+    <tr>
+      <td><code>cross target qaoa</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>Cross-Target Robust Optimization</td>
+    </tr>
+    <tr>
       <td rowspan="3"><b>Cryptographic</b></td>
       <td><code>AES-128 CTR</code></td>
       <td>Completed</td>
