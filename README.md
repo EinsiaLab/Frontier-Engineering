@@ -217,6 +217,28 @@ The table below lists the current coverage of domain tasks in the Benchmark. We 
       <td>Secure Hash Algorithm 3 256-bit</td>
     </tr>
     <tr>
+      <td rowspan="3"><b>CommunicationEngineering</b></td>
+      <td><code>LDPCErrorFloor</code></td>
+      <td>Completed</td>
+      <td>@WayneJin0918</td>
+      <td>@ahydchh</td>
+      <td>Low-Density Parity-Check (LDPC) Estimation</td>
+    </tr>
+    <tr>
+      <td><code>PMDSimulation</code></td>
+      <td>Completed</td>
+      <td>@WayneJin0918</td>
+      <td>@ahydchh</td>
+      <td>Polarization Mode Dispersion (PMD) Simulation</td>
+    </tr>
+    <tr>
+      <td><code>RayleighFadingBER</code></td>
+      <td>Completed</td>
+      <td>@WayneJin0918</td>
+      <td>@ahydchh</td>
+      <td>Rayleigh Fading BER Analysis Task</td>
+    </tr>
+    <tr>
       <td><b>Computer Systems</b></td>
       <td><code>Malloc Lab</code></td>
       <td>Completed</td>
@@ -262,6 +284,28 @@ The table below lists the current coverage of domain tasks in the Benchmark. We 
       <td>@tonyhaohan</td>
       <td>@yks23, @ahydchh</td>
       <td>BER estimation with importance sampling for Hamming(127,120)</td>
+    </tr>
+    <tr>
+      <td rowspan="3"><b>CommunicationEngineering</b></td>
+      <td><code>LDPCErrorFloor</code></td>
+      <td>Completed</td>
+      <td>wayneyjin@gmail.com</td>
+      <td>TBD</td>
+      <td>LDPC code error floor estimation using importance sampling for trapping sets</td>
+    </tr>
+    <tr>
+      <td><code>RayleighFadingBER</code></td>
+      <td>Completed</td>
+      <td>wayneyjin@gmail.com</td>
+      <td>TBD</td>
+      <td>BER analysis under Rayleigh fading with importance sampling for deep fade events</td>
+    </tr>
+    <tr>
+      <td><code>PMDSimulation</code></td>
+      <td>Completed</td>
+      <td>wayneyjin@gmail.com</td>
+      <td>TBD</td>
+      <td>Polarization Mode Dispersion simulation with importance sampling for rare outage events</td>
     </tr>
   </tbody>
 </table>
