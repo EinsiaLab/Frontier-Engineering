@@ -2,14 +2,9 @@
 """
 Topology Optimization — MBB Beam (SIMP Method)
 
-This file contains the baseline topology optimization algorithm. The code is divided into:
-- ALLOWED TO MODIFY: optimize_topology() — the optimization algorithm
+- ALLOWED TO MODIFY: optimize_topology()
 - NOT ALLOWED TO MODIFY: load_problem(), fem_solve_2d_quad(), compute_compliance(),
                          apply_density_filter(), output format
-
-The evaluator (verification/evaluator.py) uses its own FEM solver and will validate
-your solution independently. Your optimization algorithm can use these helper functions
-for internal evaluation, but the final solution will be checked by the evaluator.
 """
 
 import json
@@ -25,11 +20,7 @@ from scipy.sparse.linalg import spsolve
 # ============================================================================
 
 def load_problem():
-    """
-    Load problem configuration from JSON file.
-
-    DO NOT MODIFY: This function must match the evaluator's data loading interface.
-    """
+    """Load problem config. DO NOT MODIFY."""
     candidates = [
         Path("references/problem_config.json"),
         Path(__file__).resolve().parent.parent / "references" / "problem_config.json",
@@ -46,12 +37,7 @@ def load_problem():
 # ============================================================================
 
 def _element_stiffness_matrix(nu):
-    """
-    Compute the 8x8 element stiffness matrix for a unit-size square
-    bilinear quadrilateral (Q4) element under plane stress.
-
-    DO NOT MODIFY.
-    """
+    """8x8 element stiffness matrix for unit Q4 element, plane stress. DO NOT MODIFY."""
     k = np.array([
         1/2 - nu/6, 1/8 + nu/8, -1/4 - nu/12, -1/8 + 3*nu/8,
         -1/4 + nu/12, -1/8 - nu/8, nu/6, 1/8 - 3*nu/8
@@ -70,28 +56,7 @@ def _element_stiffness_matrix(nu):
 
 
 def fem_solve_2d_quad(nelx, nely, density, config):
-    """
-    2D FEM solver for topology optimization using Q4 elements.
-
-    DO NOT MODIFY: This implementation must match the evaluator's FEM solver
-    exactly. The evaluator uses its own solver to validate your solution.
-
-    Parameters
-    ----------
-    nelx : int
-        Number of elements in x direction.
-    nely : int
-        Number of elements in y direction.
-    density : ndarray of shape (nely, nelx)
-        Element density field.
-    config : dict
-        Problem configuration.
-
-    Returns
-    -------
-    u : ndarray
-        Displacement vector.
-    """
+    """2D FEM solver with Q4 elements. Returns displacement vector. DO NOT MODIFY."""
     E0 = config["E0"]
     Emin = config["Emin"]
     nu = config["nu"]
@@ -155,29 +120,7 @@ def fem_solve_2d_quad(nelx, nely, density, config):
 
 
 def compute_compliance(nelx, nely, density, u, config):
-    """
-    Compute element-wise compliance (sensitivity) and total compliance.
-
-    DO NOT MODIFY.
-
-    Parameters
-    ----------
-    nelx, nely : int
-        Mesh dimensions.
-    density : ndarray of shape (nely, nelx)
-        Element density field.
-    u : ndarray
-        Displacement vector.
-    config : dict
-        Problem configuration.
-
-    Returns
-    -------
-    compliance : float
-        Total compliance c = F^T u.
-    dc : ndarray of shape (nely, nelx)
-        Element sensitivities dc/drho.
-    """
+    """Compute total compliance and element sensitivities. DO NOT MODIFY."""
     E0 = config["E0"]
     Emin = config["Emin"]
     nu = config["nu"]
@@ -208,27 +151,7 @@ def compute_compliance(nelx, nely, density, u, config):
 
 
 def apply_density_filter(nelx, nely, rmin, x, dc):
-    """
-    Apply density filter for mesh-independence.
-
-    DO NOT MODIFY.
-
-    Parameters
-    ----------
-    nelx, nely : int
-        Mesh dimensions.
-    rmin : float
-        Filter radius.
-    x : ndarray of shape (nely, nelx)
-        Current density field.
-    dc : ndarray of shape (nely, nelx)
-        Raw sensitivities.
-
-    Returns
-    -------
-    dc_filtered : ndarray of shape (nely, nelx)
-        Filtered sensitivities.
-    """
+    """Apply density filter for mesh-independence. DO NOT MODIFY."""
     dc_new = np.zeros_like(dc)
     for i in range(nelx):
         for j in range(nely):
@@ -251,26 +174,7 @@ def apply_density_filter(nelx, nely, rmin, x, dc):
 # ============================================================================
 
 def optimize_topology(nelx, nely, config, max_iter=50):
-    """
-    Optimality Criteria (OC) method for topology optimization.
-
-    ALLOWED TO MODIFY: This is the optimization algorithm. You can completely
-    rewrite this function or replace it with your own optimization method.
-
-    Parameters
-    ----------
-    nelx, nely : int
-        Mesh dimensions.
-    config : dict
-        Problem configuration.
-    max_iter : int
-        Maximum number of iterations.
-
-    Returns
-    -------
-    density : ndarray of shape (nely, nelx)
-        Optimized density field.
-    """
+    """OC method for topology optimization. ALLOWED TO MODIFY."""
     volfrac = config["volfrac"]
     rmin = config["rmin"]
     rho_min = 1e-3
@@ -322,14 +226,7 @@ def optimize_topology(nelx, nely, config, max_iter=50):
 # ============================================================================
 
 def main():
-    """
-    Main topology optimization routine.
-
-    PARTIALLY MODIFIABLE:
-    - You can modify the optimization flow and algorithm calls
-    - You MUST keep the output format (submission.json) exactly as shown
-    - The evaluator expects submission.json in temp/ directory with this exact structure
-    """
+    """Main routine. Keep output format (submission.json) fixed."""
     config = load_problem()
     nelx = config["nelx"]
     nely = config["nely"]

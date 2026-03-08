@@ -1,13 +1,4 @@
-"""
-Evaluator for Topology Optimization — MBB Beam (SIMP Method)
-
-This script:
-1. Runs a candidate Python program that outputs submission.json
-2. Loads the problem config from references/problem_config.json
-3. Performs independent FEM analysis to compute compliance
-4. Checks the volume fraction constraint
-5. Returns a score (-compliance if feasible, large negative otherwise)
-"""
+"""Evaluator for Topology Optimization — MBB Beam (SIMP Method)"""
 
 from __future__ import annotations
 
