@@ -49,10 +49,4 @@ This task uses the unified task framework. Run with:
 python -m frontier_eval task=unified task.benchmark=CommunicationEngineering/PMDSimulation algorithm.iterations=0
 ```
 
-Or use the short alias (if registered):
-
-```bash
-python -m frontier_eval task=pmd_simulation algorithm.iterations=0
-```
-
 

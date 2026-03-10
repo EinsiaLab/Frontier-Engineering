@@ -85,6 +85,19 @@ The evaluator will:
 - **Efficiency**: Runtime and sample efficiency
 - **Final Score**: $s = t_0 / (t \cdot e + \epsilon)$, where $t$ is median runtime
 
+Baseline Estimated Runtime
+| Target Runtime | REPEATS | BATCH_SIZE | MAX_SAMPLES | MIN_ERRORS | TARGET_STD |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| 30-45 seconds | 1 | 50 | 50 | 20 | 0.1 |
+| 1-2 minutes | 2 | 50 | 50 | 20 | 0.1 |
+| 2-3 minutes | 2 | 100 | 100 | 20 | 0.1 |
+| 5-7 minutes | 3 | 150 | 150 | 20 | 0.1 |
+| 9-14 minutes | 3 | 300 | 300 | 20 | 0.1 |
+| 18-28 minutes | 3 | 600 | 600 | 20 | 0.1 |
+| 45-70 minutes | 3 | 1500 | 1500 | 20 | 0.1 | 
+
+Parameters can be adjusted as needed.
+
 Frozen evaluation constants:
 - Code: Regular (3,6) LDPC, length 1008
 - Decoder: Sum-Product, 50 iterations

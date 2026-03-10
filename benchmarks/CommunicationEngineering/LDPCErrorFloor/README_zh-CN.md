@@ -53,7 +53,7 @@ ldpc_error_floor
 示例：
 
 ```bash
-python -m frontier_eval task=ldpc_error_floor algorithm.iterations=0 algorithm.oe.evaluator.timeout=99999
+python -m frontier_eval task=unified task.benchmark=CommunicationEngineering/LDPCErrorFloor algorithm.iterations=0 algorithm.oe.evaluator.timeout=60
 ```
 
 

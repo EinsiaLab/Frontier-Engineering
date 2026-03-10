@@ -52,7 +52,7 @@ python -m frontier_eval task=unified task.benchmark=CommunicationEngineering/Ray
 Or use the short alias (if registered):
 
 ```bash
-python -m frontier_eval task=rayleigh_fading_ber algorithm.iterations=0
+python -m frontier_eval task=unified task.benchmark=CommunicationEngineering/RayleighFadingBER algorithm.iterations=0
 ```
 
 

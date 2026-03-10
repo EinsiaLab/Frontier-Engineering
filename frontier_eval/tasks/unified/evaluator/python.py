@@ -261,13 +261,10 @@ def _collect_output_artifacts(
     if not artifact_files:
         return
 
-    artifacts["artifact_files"] = "\n".join(artifact_files)
-    for rel in artifact_files:
-        target = (sandbox_benchmark / rel).resolve()
-        key_base = f"collected_artifact::{rel}"
+    def _collect_one(*, key_base: str, target: Path) -> None:
         if not _is_within(target, sandbox_benchmark):
             artifacts[f"{key_base}::error"] = "outside sandbox benchmark dir"
-            continue
+            return
 
         if target.is_file():
             text = _read_text(target)
@@ -275,7 +272,7 @@ def _collect_output_artifacts(
                 artifacts[f"{key_base}::error"] = "failed to read file"
             else:
                 artifacts[key_base] = _truncate_middle(text, limit=120_000)
-            continue
+            return
 
         if target.is_dir():
             entries: list[str] = []
@@ -287,9 +284,46 @@ def _collect_output_artifacts(
                     entries.append("... (truncated)")
                     break
             artifacts[f"{key_base}::dir_listing"] = "\n".join(entries)
-            continue
+            return
 
         artifacts[f"{key_base}::error"] = "path not found"
+
+    def _has_glob(pattern: str) -> bool:
+        return any(ch in pattern for ch in "*?[]")
+
+    artifacts["artifact_files"] = "\n".join(artifact_files)
+    for rel in artifact_files:
+        key_base = f"collected_artifact::{rel}"
+        if _has_glob(rel):
+            try:
+                matched = sorted(
+                    (p.resolve() for p in sandbox_benchmark.glob(rel)),
+                    key=lambda p: p.as_posix(),
+                )
+            except Exception:
+                artifacts[f"{key_base}::error"] = "invalid glob pattern"
+                continue
+
+            if not matched:
+                # For glob patterns, no match is normal and should not be treated as an error.
+                continue
+
+            resolved_items: list[str] = []
+            for target in matched:
+                if not _is_within(target, sandbox_benchmark):
+                    continue
+                rel_target = target.relative_to(sandbox_benchmark).as_posix()
+                resolved_items.append(rel_target)
+                _collect_one(key_base=f"collected_artifact::{rel_target}", target=target)
+
+            if resolved_items:
+                artifacts[f"{key_base}::matches"] = "\n".join(resolved_items[:500])
+                if len(resolved_items) > 500:
+                    artifacts[f"{key_base}::matches"] += "\n... (truncated)"
+            continue
+
+        target = (sandbox_benchmark / rel).resolve()
+        _collect_one(key_base=key_base, target=target)
 
 
 def _render_eval_command(

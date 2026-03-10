@@ -48,13 +48,5 @@ This task takes a long time to run, and the upper limit of the running time is i
 This task uses the unified task framework. Run with:
 
 ```bash
-python -m frontier_eval task=unified task.benchmark=CommunicationEngineering/LDPCErrorFloor algorithm.iterations=0 algorithm.oe.evaluator.timeout=99999
+python -m frontier_eval task=unified task.benchmark=CommunicationEngineering/LDPCErrorFloor algorithm.iterations=0 algorithm.oe.evaluator.timeout=60
 ```
-
-Or use the short alias (if registered):
-
-```bash
-python -m frontier_eval task=ldpc_error_floor algorithm.iterations=0 algorithm.oe.evaluator.timeout=99999
-```
-
-

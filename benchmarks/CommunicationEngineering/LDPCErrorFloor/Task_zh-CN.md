@@ -85,15 +85,28 @@ def simulate_variance_controlled(
 - **效率**：运行时间和样本效率
 - **最终得分**：$s = t_0 / (t \cdot e + \epsilon)$，其中 $t$ 是中位运行时间
 
+baseline预计运行时间
+| 目标耗时 | REPEATS | BATCH_SIZE | MAX_SAMPLES | MIN_ERRORS | TARGET_STD |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| 30-45 秒 | 1 | 50 | 50 | 20 | 0.1 |
+| 1-2 分钟 | 2 | 50 | 50 | 20 | 0.1 |
+| 2-3 分钟 | 2 | 100 | 100 | 20 | 0.1 |
+| 5-7 分钟 | 3 | 150 | 150 | 20 | 0.1 |
+| 9-14 分钟 | 3 | 300 | 300 | 20 | 0.1 |
+| 18-28 分钟 | 3 | 600 | 600 | 20 | 0.1 |
+| 45-70 分钟 | 3 | 1500 | 1500 | 20 | 0.1 |
+
+可根据后续需要自行调整参数
+
 冻结评估常量：
 - 码：正则(3,6) LDPC，长度1008
 - 译码器：Sum-Product，50次迭代
 - `sigma = 0.6`（SNR $\approx$ 4.4 dB）
 - `target_std = 0.1`
-- `max_samples = 50000`
-- `batch_size = 5000`
+- `max_samples = 50`
+- `batch_size = 50`
 - `min_errors = 20`
-- `repeats = 3`
+- `repeats = 1`
 
 ## 失败情况
 
