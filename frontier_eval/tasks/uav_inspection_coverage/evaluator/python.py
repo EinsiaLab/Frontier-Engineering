@@ -96,7 +96,7 @@ def evaluate(program_path: str, *, repo_root: Path | None = None):
             raw_score = float(result["score"])
             metrics["valid"] = 1.0
             metrics["coverage_objective"] = raw_score
-            metrics["combined_score"] = raw_score / 1e6
+            metrics["combined_score"] = raw_score
         else:
             artifacts["error_message"] = "infeasible UAV trajectory"
 
