@@ -22,7 +22,7 @@ p_{k+1} = p_k + (v_{k+1} + w(p_k, t_k)) * dt
 
 ## 3. Input Scenarios
 
-`references/scenarios.json` provides 3 fixed scenes. Each scene includes:
+`references/scenarios.json` provides 4 fixed scenes. Each scene includes:
 
 - 3D bounds `[xmin, xmax, ymin, ymax, zmin, zmax]`
 - no-fly zones (axis-aligned boxes)
@@ -73,7 +73,7 @@ A scene fails on any of:
 - Scene score:
 
 ```text
-scene_score = (coverage_ratio^2) * 1e6 - energy
+scene_score = coverage_ratio * 100.0 - energy * 0.5
 energy = sum(||u_k||^2 * dt)
 ```
 
@@ -84,14 +84,14 @@ energy = sum(||u_k||^2 * dt)
 
 ```json
 {
-  "score": 901234.5,
+  "score": 28.85,
   "feasible": true,
   "details": {
     "scene_1": {
       "success": true,
-      "coverage_ratio": 0.9,
-      "energy": 17.2,
-      "scene_score": 899982.8
+      "coverage_ratio": 0.5,
+      "energy": 30.23,
+      "scene_score": 34.88
     }
   }
 }

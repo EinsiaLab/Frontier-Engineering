@@ -168,7 +168,7 @@ def _simulate_scene(
             return False, {"success": False, "reason": "collision_dynamic_obstacle"}
 
     coverage_ratio = float(np.mean(visited)) if len(visited) > 0 else 1.0
-    scene_score = (coverage_ratio**2) * 1e6 - energy
+    scene_score = coverage_ratio * 100.0 - energy * 0.5
     return True, {
         "success": True,
         "coverage_ratio": coverage_ratio,

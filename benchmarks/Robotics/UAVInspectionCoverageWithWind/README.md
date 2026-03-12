@@ -44,10 +44,10 @@ Evaluator output:
 
 ```json
 {
-  "score": 612340.5,
+  "score": 28.85,
   "feasible": true,
   "details": {
-    "scene_1": {"success": true, "coverage_ratio": 0.8, "energy": 19.5, "scene_score": 639980.5}
+    "scene_1": {"success": true, "coverage_ratio": 0.5, "energy": 30.23, "scene_score": 34.88}
   }
 }
 ```
@@ -72,6 +72,6 @@ Evaluator output:
 
 - Primary objective: maximize `coverage_ratio`.
 - Tie-breaker: lower control energy.
-- Per-scene score: `(coverage_ratio^2) * 1e6 - energy`.
+- Per-scene score: `coverage_ratio * 100.0 - energy * 0.5`.
 - Final score: average over all scenes.
 - Any scene constraint violation (including dynamic-obstacle collision) => `feasible=false`, `score=null`.
