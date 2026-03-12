@@ -1,0 +1,155 @@
+{
+  "task": "task3_multispectral_focusing",
+  "spec": {
+    "shape": 72,
+    "spacing": 1e-05,
+    "wavelengths": [
+      4.5e-07,
+      5.2e-07,
+      5.9e-07,
+      6.6e-07
+    ],
+    "waist_radius": 0.00013,
+    "layer_z": [
+      0.0,
+      0.18,
+      0.36
+    ],
+    "output_z": 0.62,
+    "target_centers": [
+      [
+        -0.00031199999999999994,
+        -0.000104
+      ],
+      [
+        -0.000104,
+        0.000234
+      ],
+      [
+        0.000117,
+        -0.000234
+      ],
+      [
+        0.00029899999999999995,
+        0.000104
+      ]
+    ],
+    "target_spectral_ratios": [
+      0.3,
+      0.24,
+      0.26,
+      0.2
+    ],
+    "steps": 24,
+    "lr": 0.075,
+    "roi_radius_m": 3.0000000000000004e-05,
+    "valid_mean_target_efficiency_min": 0.004,
+    "valid_mean_crosstalk_max": 0.88,
+    "valid_mean_score_min": 0.12,
+    "score_eff_target": 0.06,
+    "score_spectral_scale": 0.1,
+    "better_score_margin": 0.1,
+    "better_shape_margin": 0.04,
+    "reference_steps": 60,
+    "reference_lr": 0.045
+  },
+  "timing_seconds": {
+    "baseline": 46.107,
+    "reference": 160.852
+  },
+  "baseline": {
+    "valid": true,
+    "mean_target_efficiency": 0.005247919996331106,
+    "mean_crosstalk": 0.7827527855757864,
+    "mean_shape_cosine": 0.2965333614413708,
+    "efficiency_score": 0.08746533327218511,
+    "isolation_score": 0.21724721442421357,
+    "spectral_score": 0.13816335899167248,
+    "spectral_ratio_mae": 0.1979318533108098,
+    "mean_score": 0.13594106460413422,
+    "pred_spectral_ratios": [
+      0.030133862882959783,
+      0.41255148733436325,
+      0.1340024304953592,
+      0.423312219287195
+    ],
+    "per_wavelength": [
+      {
+        "wavelength": 4.5e-07,
+        "target_efficiency": 0.00012961410680049687,
+        "designated_crosstalk": 0.9884744878953808,
+        "shape_cosine": 0.10342540355003343,
+        "shape_l1": 0.00033070679057317436
+      },
+      {
+        "wavelength": 5.2e-07,
+        "target_efficiency": 0.004157403622771945,
+        "designated_crosstalk": 0.7454136276634309,
+        "shape_cosine": 0.38570768777561265,
+        "shape_l1": 0.00027062137088203697
+      },
+      {
+        "wavelength": 5.9e-07,
+        "target_efficiency": 0.0040808948658402145,
+        "designated_crosstalk": 0.8331475761952136,
+        "shape_cosine": 0.22033652682104177,
+        "shape_l1": 0.0003099804924068222
+      },
+      {
+        "wavelength": 6.6e-07,
+        "target_efficiency": 0.012623767389911769,
+        "designated_crosstalk": 0.5639754505491205,
+        "shape_cosine": 0.47666382761879544,
+        "shape_l1": 0.0002759150496717422
+      }
+    ]
+  },
+  "reference": {
+    "oracle_backend": "slmsuite_seeded_independent_finetune",
+    "better_than_baseline": true,
+    "mean_target_efficiency": 0.023167162033237827,
+    "mean_crosstalk": 0.04159085655139037,
+    "mean_shape_cosine": 0.7712594454865489,
+    "efficiency_score": 0.38611936722063045,
+    "isolation_score": 0.9584091434486096,
+    "spectral_score": 0.9996032343634276,
+    "spectral_ratio_mae": 3.9684436888384744e-05,
+    "mean_score": 0.6282001428307953,
+    "pred_spectral_ratios": [
+      0.2999891092546064,
+      0.2400495028810886,
+      0.2599315218716168,
+      0.20002986599268816
+    ],
+    "per_wavelength": [
+      {
+        "wavelength": 4.5e-07,
+        "target_efficiency": 0.03277457675901557,
+        "designated_crosstalk": 0.002327450564215273,
+        "shape_cosine": 0.7913253296419328,
+        "shape_l1": 0.00014183459570740408
+      },
+      {
+        "wavelength": 5.2e-07,
+        "target_efficiency": 0.017958569274381612,
+        "designated_crosstalk": 0.04203089676286515,
+        "shape_cosine": 0.7539787649872063,
+        "shape_l1": 0.0001534857418778841
+      },
+      {
+        "wavelength": 5.9e-07,
+        "target_efficiency": 0.01782332687762757,
+        "designated_crosstalk": 0.03558192129030781,
+        "shape_cosine": 0.773749783222692,
+        "shape_l1": 0.0001516463743017819
+      },
+      {
+        "wavelength": 6.6e-07,
+        "target_efficiency": 0.024112175221926553,
+        "designated_crosstalk": 0.08642315758817327,
+        "shape_cosine": 0.7659839040943646,
+        "shape_l1": 0.0001616894069808464
+      }
+    ]
+  }
+}

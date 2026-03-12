@@ -1,0 +1,30 @@
+{
+  "task": "task02_fourier_pattern_holography",
+  "valid": true,
+  "valid_thresholds": {
+    "score_pct_min": 20.0,
+    "energy_in_target_min": 0.45,
+    "dark_suppression_min": 0.6
+  },
+  "baseline": {
+    "nmse": 4.016415430544533,
+    "energy_in_target": 0.555759932260389,
+    "dark_suppression": 0.7114496535206065,
+    "score_pct": 32.64571443630872
+  },
+  "oracle": {
+    "nmse": 1.9549726225114192,
+    "energy_in_target": 0.6230565685444746,
+    "dark_suppression": 0.7487827361389082,
+    "score_pct": 65.14784767148012,
+    "method": "slmsuite WGS-Kim",
+    "iterations": 80,
+    "feedback_exponent": 0.78
+  },
+  "delta": {
+    "score_pct_gain": 32.5021332351714,
+    "nmse_drop": 2.0614428080331137,
+    "energy_gain": 0.06729663628408555,
+    "dark_suppression_gain": 0.037333082618301705
+  }
+}
