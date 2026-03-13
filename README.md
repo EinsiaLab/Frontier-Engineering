@@ -411,6 +411,8 @@ The table below lists the current coverage of domain tasks in the Benchmark. We 
       <td>@ahydchh</td>
       <td>@ahydchh</td>
       <td>EOQ lot-sizing optimization under supply disruptions</td>
+    </tr>
+    <tr>
       <td rowspan="3"><b>PyPortfolioOpt</b></td>
       <td><code>robust_mvo_rebalance</code></td>
       <td>Completed</td>
@@ -431,6 +433,8 @@ The table below lists the current coverage of domain tasks in the Benchmark. We 
       <td>@ahydchh</td>
       <td>@ahydchh</td>
       <td>Discrete lot-constrained rebalancing with mixed-integer optimization</td>
+    </tr>
+    <tr>
       <td rowspan="7"><b>JobShop</b></td>
       <td><code>abz</code></td>
       <td>Completed</td>

@@ -397,6 +397,8 @@
       <td>@ahydchh</td>
       <td>@ahydchh</td>
       <td>供应中断场景下的 EOQ 批量优化</td>
+    </tr>
+    <tr>
       <td rowspan="3"><b>PyPortfolioOpt</b></td>
       <td><code>robust_mvo_rebalance</code></td>
       <td>已完成</td>
@@ -417,6 +419,8 @@
       <td>@ahydchh</td>
       <td>@ahydchh</td>
       <td>带整数手数约束的离散再平衡混合整数优化</td>
+    </tr>
+    <tr>
       <td rowspan="7"><b>JobShop</b></td>
       <td><code>abz</code></td>
       <td>已完成</td>
