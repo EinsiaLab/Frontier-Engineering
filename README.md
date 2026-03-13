@@ -248,6 +248,119 @@ The table below lists the current coverage of domain tasks in the Benchmark. We 
       <td>BER analysis under Rayleigh fading with importance sampling for deep fade events</td>
     </tr>
     <tr>
+      <td rowspan="16"><b>Optics</b></td>
+      <td><code>adaptive_constrained_dm_control</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>Constrained deformable mirror control</td>
+    </tr>
+    <tr>
+      <td><code>adaptive_temporal_smooth_control</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>Temporal smoothness versus correction quality</td>
+    </tr>
+    <tr>
+      <td><code>adaptive_energy_aware_control</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>Energy-aware adaptive optics control</td>
+    </tr>
+    <tr>
+      <td><code>adaptive_fault_tolerant_fusion</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>Fault-tolerant multi-WFS fusion</td>
+    </tr>
+    <tr>
+      <td><code>phase_weighted_multispot_single_plane</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>Single-plane weighted multispot phase DOE</td>
+    </tr>
+    <tr>
+      <td><code>phase_fourier_pattern_holography</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>Fourier pattern holography</td>
+    </tr>
+    <tr>
+      <td><code>phase_dammann_uniform_orders</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>Dammann grating uniform diffraction orders</td>
+    </tr>
+    <tr>
+      <td><code>phase_large_scale_weighted_spot_array</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>Large-scale weighted spot array synthesis</td>
+    </tr>
+    <tr>
+      <td><code>fiber_wdm_channel_power_allocation</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>WDM channel and launch power allocation</td>
+    </tr>
+    <tr>
+      <td><code>fiber_mcs_power_scheduling</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>Joint MCS and power scheduling</td>
+    </tr>
+    <tr>
+      <td><code>fiber_dsp_mode_scheduling</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>Receiver DSP mode scheduling</td>
+    </tr>
+    <tr>
+      <td><code>fiber_guardband_spectrum_packing</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>Spectrum packing with guard-band constraints</td>
+    </tr>
+    <tr>
+      <td><code>holographic_multifocus_power_ratio</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>Multi-focus power ratio control</td>
+    </tr>
+    <tr>
+      <td><code>holographic_multiplane_focusing</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>Multi-plane holographic focusing</td>
+    </tr>
+    <tr>
+      <td><code>holographic_multispectral_focusing</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>Multispectral holographic focusing</td>
+    </tr>
+    <tr>
+      <td><code>holographic_polarization_multiplexing</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>Polarization-multiplexed holography</td>
+    </tr>
+    <tr>
       <td><b>Computer Systems</b></td>
       <td><code>Malloc Lab</code></td>
       <td>Completed</td>

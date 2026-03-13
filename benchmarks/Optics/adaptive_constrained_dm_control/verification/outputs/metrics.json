@@ -1,0 +1,44 @@
+{
+  "task": "task1_constrained_dm_control",
+  "benchmark_profile": "v3_delay_and_model_mismatch",
+  "candidate_module": "/DATA_EDS2/haohan.chi.2311/Frontier-Engineering/benchmarks/Optics/adaptive_constrained_dm_control/baseline/init.py",
+  "oracle_backend": "scipy.optimize.lsq_linear (bounded ridge least squares)",
+  "saturation_weight": 0.5,
+  "actuator_lag": 0.72,
+  "slope_delay_noise": 0.004,
+  "score_mode": "0_to_1_higher_is_better",
+  "score_anchors": {
+    "mean_rms_good": 1.35,
+    "mean_rms_bad": 2.1,
+    "worst_rms_good": 2.1,
+    "worst_rms_bad": 3.1,
+    "strehl_good": 0.24,
+    "strehl_bad": 0.08,
+    "sat_good": 0.02,
+    "sat_bad": 0.35
+  },
+  "score_weights": {
+    "mean_rms": 0.2,
+    "worst_rms": 0.1,
+    "strehl": 0.15,
+    "saturation": 0.55
+  },
+  "baseline": {
+    "mean_rms": 1.7005646608755822,
+    "worst_rms": 2.800322020952102,
+    "mean_strehl": 0.1532599910289216,
+    "mean_saturation_ratio": 0.937340425531915,
+    "raw_cost_lower_is_better": 2.7926853833651046,
+    "score_0_to_1_higher_is_better": 0.20516512992698066,
+    "score_percent": 20.516512992698065
+  },
+  "reference": {
+    "mean_rms": 1.7202996281445673,
+    "worst_rms": 2.8324831183586205,
+    "mean_strehl": 0.14996698273027606,
+    "mean_saturation_ratio": 0.013617021276595745,
+    "raw_cost_lower_is_better": 2.3602454270073823,
+    "score_0_to_1_higher_is_better": 0.7435991669679822,
+    "score_percent": 74.35991669679822
+  }
+}
