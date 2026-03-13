@@ -363,6 +363,40 @@
       <td><a href="https://github.com/AGI4Engineering/EngDesign.git">EngDesign</a></td>
     </tr>
     <tr>
+      <td rowspan="5"><b>InventoryOptimization</b></td>
+      <td><code>tree_gsm_safety_stock</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>树形多级安全库存配置（GSM）</td>
+    </tr>
+    <tr>
+      <td><code>general_meio</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>通用拓扑 MEIO（仿真驱动目标）</td>
+    </tr>
+    <tr>
+      <td><code>joint_replenishment</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>多 SKU 共享订货成本下的联合补货优化</td>
+    </tr>
+    <tr>
+      <td><code>finite_horizon_dp</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>有限期随机库存控制（时变策略）</td>
+    </tr>
+    <tr>
+      <td><code>disruption_eoqd</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>供应中断场景下的 EOQ 批量优化</td>
       <td rowspan="3"><b>PyPortfolioOpt</b></td>
       <td><code>robust_mvo_rebalance</code></td>
       <td>已完成</td>

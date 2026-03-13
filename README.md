@@ -377,6 +377,40 @@ The table below lists the current coverage of domain tasks in the Benchmark. We 
       <td><a href="https://github.com/AGI4Engineering/EngDesign.git">EngDesign</a></td>
     </tr>
     <tr>
+      <td rowspan="5"><b>InventoryOptimization</b></td>
+      <td><code>tree_gsm_safety_stock</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>Tree-structured multi-echelon safety-stock placement (GSM)</td>
+    </tr>
+    <tr>
+      <td><code>general_meio</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>General-topology MEIO with simulation-based objective</td>
+    </tr>
+    <tr>
+      <td><code>joint_replenishment</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>Multi-SKU joint replenishment with shared setup cost</td>
+    </tr>
+    <tr>
+      <td><code>finite_horizon_dp</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>Finite-horizon stochastic inventory control via time-varying policy</td>
+    </tr>
+    <tr>
+      <td><code>disruption_eoqd</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>EOQ lot-sizing optimization under supply disruptions</td>
       <td rowspan="3"><b>PyPortfolioOpt</b></td>
       <td><code>robust_mvo_rebalance</code></td>
       <td>Completed</td>
