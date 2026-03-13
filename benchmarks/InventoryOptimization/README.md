@@ -49,7 +49,7 @@ Each task uses the same structure:
   - Why: multi-echelon network, simulation-driven objective, and strong robustness/balance requirements across stress scenarios.
 
 ## Run All Evaluations
-Run this from `tasks/`:
+Run this from `benchmarks/InventoryOptimization/`:
 
 ```bash
 for d in tree_gsm_safety_stock general_meio joint_replenishment finite_horizon_dp disruption_eoqd; do
@@ -57,3 +57,48 @@ for d in tree_gsm_safety_stock general_meio joint_replenishment finite_horizon_d
   python "$d/verification/evaluate.py"
 done
 ```
+
+## frontier_eval Unified Task Integration
+Each subtask now includes benchmark-local unified metadata under:
+
+- `<subtask>/frontier_eval/initial_program.txt`
+- `<subtask>/frontier_eval/candidate_destination.txt`
+- `<subtask>/frontier_eval/eval_command.txt`
+- `<subtask>/frontier_eval/agent_files.txt`
+- `<subtask>/frontier_eval/readonly_files.txt`
+- `<subtask>/frontier_eval/artifact_files.txt`
+- `<subtask>/frontier_eval/constraints.txt`
+- `<subtask>/frontier_eval/run_eval.py`
+
+Run unified task from repository root (driver in `frontier-eval-2`, benchmark runtime in `stock`):
+
+```bash
+/path/to/frontier-eval-2/bin/python -m frontier_eval \
+  task=unified \
+  task.benchmark=InventoryOptimization/tree_gsm_safety_stock \
+  task.runtime.conda_env=stock \
+  algorithm=openevolve \
+  algorithm.iterations=0
+```
+
+Run all 5 subtasks:
+
+```bash
+for d in tree_gsm_safety_stock general_meio joint_replenishment finite_horizon_dp disruption_eoqd; do
+  /path/to/frontier-eval-2/bin/python -m frontier_eval \
+    task=unified \
+    task.benchmark=InventoryOptimization/$d \
+    task.runtime.conda_env=stock \
+    algorithm=openevolve \
+    algorithm.iterations=0
+done
+```
+
+## Runtime Notes
+Measured on local verification run (`stock` env), one evaluation per subtask:
+
+- `tree_gsm_safety_stock`: about 3-4s
+- `general_meio`: about 20-25s (longer task, simulation-heavy)
+- `joint_replenishment`: about 1s
+- `finite_horizon_dp`: about 6s
+- `disruption_eoqd`: about 3s

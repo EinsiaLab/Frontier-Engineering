@@ -49,7 +49,7 @@ pip install stockpyl numpy scipy
   - 难点：多级网络、仿真驱动目标、压力场景鲁棒性和节点服务平衡同时约束。
 
 ## 一键运行全部评估
-在 `tasks/` 目录下执行：
+在 `benchmarks/InventoryOptimization/` 目录下执行：
 
 ```bash
 for d in tree_gsm_safety_stock general_meio joint_replenishment finite_horizon_dp disruption_eoqd; do
@@ -57,3 +57,48 @@ for d in tree_gsm_safety_stock general_meio joint_replenishment finite_horizon_d
   python "$d/verification/evaluate.py"
 done
 ```
+
+## 接入 frontier_eval Unified Task
+每个子任务都已在自身目录下提供 unified 元数据：
+
+- `<子任务>/frontier_eval/initial_program.txt`
+- `<子任务>/frontier_eval/candidate_destination.txt`
+- `<子任务>/frontier_eval/eval_command.txt`
+- `<子任务>/frontier_eval/agent_files.txt`
+- `<子任务>/frontier_eval/readonly_files.txt`
+- `<子任务>/frontier_eval/artifact_files.txt`
+- `<子任务>/frontier_eval/constraints.txt`
+- `<子任务>/frontier_eval/run_eval.py`
+
+在仓库根目录运行（`frontier-eval-2` 作为驱动环境，`stock` 作为任务运行环境）：
+
+```bash
+/path/to/frontier-eval-2/bin/python -m frontier_eval \
+  task=unified \
+  task.benchmark=InventoryOptimization/tree_gsm_safety_stock \
+  task.runtime.conda_env=stock \
+  algorithm=openevolve \
+  algorithm.iterations=0
+```
+
+运行全部 5 个子任务：
+
+```bash
+for d in tree_gsm_safety_stock general_meio joint_replenishment finite_horizon_dp disruption_eoqd; do
+  /path/to/frontier-eval-2/bin/python -m frontier_eval \
+    task=unified \
+    task.benchmark=InventoryOptimization/$d \
+    task.runtime.conda_env=stock \
+    algorithm=openevolve \
+    algorithm.iterations=0
+done
+```
+
+## 运行时长说明
+以下为本地 `stock` 环境单次评测耗时（近似值）：
+
+- `tree_gsm_safety_stock`：约 3-4 秒
+- `general_meio`：约 20-25 秒（耗时较长，仿真较重）
+- `joint_replenishment`：约 1 秒
+- `finite_horizon_dp`：约 6 秒
+- `disruption_eoqd`：约 3 秒
