@@ -27,6 +27,26 @@ pip install -r benchmarks/PyPortfolioOpt/requirements.txt
 pip install -r ../requirements.txt
 ```
 
+## 运行方式
+
+在仓库根目录执行：
+
+```bash
+conda run -n pyportfolioopt python benchmarks/PyPortfolioOpt/robust_mvo_rebalance/verification/evaluate.py
+```
+
+使用 `frontier_eval` unified 任务运行：
+
+```bash
+conda run -n frontier-eval-2 python -m frontier_eval \
+  task=unified \
+  task.benchmark=PyPortfolioOpt/robust_mvo_rebalance \
+  task.runtime.conda_env=pyportfolioopt \
+  algorithm.iterations=0
+```
+
+耗时说明：该评测每次会求解多个凸优化问题，明显慢于 smoke 任务。`algorithm.iterations=0` 的单次运行通常约 8-15 秒，总耗时会随迭代次数近似线性增长。
+
 ## 目录结构
 
 ```text
@@ -35,6 +55,14 @@ pip install -r ../requirements.txt
 ├── README_zh-CN.md
 ├── Task.md
 ├── Task_zh-CN.md
+├── frontier_eval
+│   ├── initial_program.txt
+│   ├── candidate_destination.txt
+│   ├── eval_command.txt
+│   ├── agent_files.txt
+│   ├── readonly_files.txt
+│   ├── artifact_files.txt
+│   └── constraints.txt
 ├── baseline
 │   └── init.py
 └── verification

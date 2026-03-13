@@ -23,6 +23,26 @@ If you are running commands from this subfolder, use:
 pip install -r ../requirements.txt
 ```
 
+## Run
+
+From repository root:
+
+```bash
+conda run -n pyportfolioopt python benchmarks/PyPortfolioOpt/discrete_rebalance_mip/verification/evaluate.py
+```
+
+Run with `frontier_eval` unified task:
+
+```bash
+conda run -n frontier-eval-2 python -m frontier_eval \
+  task=unified \
+  task.benchmark=PyPortfolioOpt/discrete_rebalance_mip \
+  task.runtime.conda_env=pyportfolioopt \
+  algorithm.iterations=0
+```
+
+Runtime note: this task solves mixed-integer programs (MIP), so runtime variance is higher. `algorithm.iterations=0` is commonly around 8-20 seconds, but can be longer on slower CPUs.
+
 ## Directory Structure
 
 ```text
@@ -31,6 +51,14 @@ pip install -r ../requirements.txt
 ├── README_zh-CN.md
 ├── Task.md
 ├── Task_zh-CN.md
+├── frontier_eval
+│   ├── initial_program.txt
+│   ├── candidate_destination.txt
+│   ├── eval_command.txt
+│   ├── agent_files.txt
+│   ├── readonly_files.txt
+│   ├── artifact_files.txt
+│   └── constraints.txt
 ├── baseline
 │   └── init.py
 └── verification

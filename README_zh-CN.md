@@ -250,6 +250,28 @@
       <td><a href="https://github.com/AGI4Engineering/EngDesign.git">EngDesign</a></td>
     </tr>
     <tr>
+      <td rowspan="3"><b>PyPortfolioOpt</b></td>
+      <td><code>robust_mvo_rebalance</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>含行业/因子/换手约束的鲁棒均值方差再平衡</td>
+    </tr>
+    <tr>
+      <td><code>cvar_stress_control</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>在收益与暴露约束下进行 CVaR 压力控制配置</td>
+    </tr>
+    <tr>
+      <td><code>discrete_rebalance_mip</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>带整数手数约束的离散再平衡混合整数优化</td>
+    </tr>
+    <tr>
       <td rowspan="3"><b>StructuralOptimization</b></td>
       <td><code>ISCSO2015</code></td>
       <td>已完成</td>

@@ -1,11 +1,13 @@
+import argparse
 import importlib.util
+import json
 from pathlib import Path
 
 import numpy as np
 
 
 ROOT = Path(__file__).resolve().parents[1]
-BASELINE_PATH = ROOT / "baseline" / "init.py"
+DEFAULT_CANDIDATE_PATH = ROOT / "baseline" / "init.py"
 REFERENCE_PATH = ROOT / "verification" / "reference.py"
 
 
@@ -122,8 +124,8 @@ def _score_instance(instance: dict, lots_cand: np.ndarray, lots_ref: np.ndarray)
     }
 
 
-def main() -> None:
-    baseline = _load_module(BASELINE_PATH, "baseline_solution")
+def _evaluate_candidate(candidate_path: Path) -> dict:
+    baseline = _load_module(candidate_path, "candidate_solution")
     reference = _load_module(REFERENCE_PATH, "reference_solution")
 
     seeds = list(range(2226, 2236))
@@ -146,9 +148,58 @@ def main() -> None:
 
         lp_bounds.append(float(lp_out["objective"]))
 
-    avg_score = float(np.mean([r["score"] for r in rows]))
-    avg_obj_ref = float(np.mean([r["obj_ref"] for r in rows]))
-    avg_obj_lp = float(np.mean(lp_bounds))
+    return {
+        "rows": rows,
+        "lp_bounds": lp_bounds,
+        "avg_score": float(np.mean([r["score"] for r in rows])),
+        "avg_obj_ref": float(np.mean([r["obj_ref"] for r in rows])),
+        "avg_obj_lp": float(np.mean(lp_bounds)),
+    }
+
+
+def _parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Evaluate discrete_rebalance_mip candidate."
+    )
+    parser.add_argument(
+        "candidate",
+        nargs="?",
+        default=str(DEFAULT_CANDIDATE_PATH),
+        help="Path to candidate Python file.",
+    )
+    parser.add_argument(
+        "--metrics-out",
+        type=str,
+        default=None,
+        help="Optional JSON path for frontier_eval metrics output.",
+    )
+    parser.add_argument(
+        "--artifacts-out",
+        type=str,
+        default=None,
+        help="Optional JSON path for additional artifacts output.",
+    )
+    return parser.parse_args()
+
+
+def _write_json(path: str, payload: dict) -> None:
+    out_path = Path(path).expanduser().resolve()
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2, default=str) + "\n",
+        encoding="utf-8",
+    )
+
+
+def main() -> None:
+    args = _parse_args()
+    candidate_path = Path(args.candidate).expanduser().resolve()
+    result = _evaluate_candidate(candidate_path)
+    rows = result["rows"]
+    lp_bounds = result["lp_bounds"]
+    avg_score = float(result["avg_score"])
+    avg_obj_ref = float(result["avg_obj_ref"])
+    avg_obj_lp = float(result["avg_obj_lp"])
 
     print("=== Task 03 Evaluation ===")
     for r in rows:
@@ -164,6 +215,25 @@ def main() -> None:
         f"average_lp_relaxation_objective_lower_bound: {avg_obj_lp:.2f} "
         f"(reference average objective: {avg_obj_ref:.2f})"
     )
+
+    metrics = {
+        "combined_score": avg_score,
+        "valid": 1.0,
+        "baseline_average_score_100": avg_score,
+        "num_instances": float(len(rows)),
+        "average_lp_relaxation_objective_lower_bound": avg_obj_lp,
+        "reference_average_objective": avg_obj_ref,
+    }
+    artifacts = {
+        "candidate_path": str(candidate_path),
+        "rows": rows,
+        "lp_bounds": lp_bounds,
+    }
+
+    if args.metrics_out:
+        _write_json(args.metrics_out, metrics)
+    if args.artifacts_out:
+        _write_json(args.artifacts_out, artifacts)
 
 
 if __name__ == "__main__":

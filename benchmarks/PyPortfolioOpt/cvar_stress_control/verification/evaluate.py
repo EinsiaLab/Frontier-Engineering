@@ -1,11 +1,13 @@
+import argparse
 import importlib.util
+import json
 from pathlib import Path
 
 import numpy as np
 
 
 ROOT = Path(__file__).resolve().parents[1]
-BASELINE_PATH = ROOT / "baseline" / "init.py"
+DEFAULT_CANDIDATE_PATH = ROOT / "baseline" / "init.py"
 REFERENCE_PATH = ROOT / "verification" / "reference.py"
 
 
@@ -138,8 +140,8 @@ def _score_instance(instance: dict, w_cand: np.ndarray, w_ref: np.ndarray) -> di
     }
 
 
-def main() -> None:
-    baseline = _load_module(BASELINE_PATH, "baseline_solution")
+def _evaluate_candidate(candidate_path: Path) -> dict:
+    baseline = _load_module(candidate_path, "candidate_solution")
     reference = _load_module(REFERENCE_PATH, "reference_solution")
 
     seeds = list(range(2126, 2136))
@@ -154,7 +156,52 @@ def main() -> None:
         row["seed"] = seed
         rows.append(row)
 
-    avg_score = float(np.mean([r["score"] for r in rows]))
+    return {
+        "rows": rows,
+        "avg_score": float(np.mean([r["score"] for r in rows])),
+    }
+
+
+def _parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Evaluate cvar_stress_control candidate."
+    )
+    parser.add_argument(
+        "candidate",
+        nargs="?",
+        default=str(DEFAULT_CANDIDATE_PATH),
+        help="Path to candidate Python file.",
+    )
+    parser.add_argument(
+        "--metrics-out",
+        type=str,
+        default=None,
+        help="Optional JSON path for frontier_eval metrics output.",
+    )
+    parser.add_argument(
+        "--artifacts-out",
+        type=str,
+        default=None,
+        help="Optional JSON path for additional artifacts output.",
+    )
+    return parser.parse_args()
+
+
+def _write_json(path: str, payload: dict) -> None:
+    out_path = Path(path).expanduser().resolve()
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2, default=str) + "\n",
+        encoding="utf-8",
+    )
+
+
+def main() -> None:
+    args = _parse_args()
+    candidate_path = Path(args.candidate).expanduser().resolve()
+    result = _evaluate_candidate(candidate_path)
+    rows = result["rows"]
+    avg_score = float(result["avg_score"])
 
     print("=== Task 02 Evaluation ===")
     for r in rows:
@@ -166,6 +213,22 @@ def main() -> None:
     print("---")
     print(f"baseline_average_score: {avg_score:.2f}/100")
     print("reference_theoretical_upper_bound: 100.00/100")
+
+    metrics = {
+        "combined_score": avg_score,
+        "valid": 1.0,
+        "baseline_average_score_100": avg_score,
+        "num_instances": float(len(rows)),
+    }
+    artifacts = {
+        "candidate_path": str(candidate_path),
+        "rows": rows,
+    }
+
+    if args.metrics_out:
+        _write_json(args.metrics_out, metrics)
+    if args.artifacts_out:
+        _write_json(args.artifacts_out, artifacts)
 
 
 if __name__ == "__main__":

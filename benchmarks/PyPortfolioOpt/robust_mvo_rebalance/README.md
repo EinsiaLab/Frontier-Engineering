@@ -28,6 +28,26 @@ If you are running commands from this subfolder, use:
 pip install -r ../requirements.txt
 ```
 
+## Run
+
+From repository root:
+
+```bash
+conda run -n pyportfolioopt python benchmarks/PyPortfolioOpt/robust_mvo_rebalance/verification/evaluate.py
+```
+
+Run with `frontier_eval` unified task:
+
+```bash
+conda run -n frontier-eval-2 python -m frontier_eval \
+  task=unified \
+  task.benchmark=PyPortfolioOpt/robust_mvo_rebalance \
+  task.runtime.conda_env=pyportfolioopt \
+  algorithm.iterations=0
+```
+
+Runtime note: this evaluator solves multiple convex programs per run and is slower than smoke tasks. A single `algorithm.iterations=0` run is typically around 8-15 seconds, and total time grows roughly linearly with iterations.
+
 ## Directory Structure
 
 ```text
@@ -36,6 +56,14 @@ pip install -r ../requirements.txt
 ├── README_zh-CN.md
 ├── Task.md
 ├── Task_zh-CN.md
+├── frontier_eval
+│   ├── initial_program.txt
+│   ├── candidate_destination.txt
+│   ├── eval_command.txt
+│   ├── agent_files.txt
+│   ├── readonly_files.txt
+│   ├── artifact_files.txt
+│   └── constraints.txt
 ├── baseline
 │   └── init.py
 └── verification

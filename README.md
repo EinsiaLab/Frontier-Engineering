@@ -264,6 +264,28 @@ The table below lists the current coverage of domain tasks in the Benchmark. We 
       <td><a href="https://github.com/AGI4Engineering/EngDesign.git">EngDesign</a></td>
     </tr>
     <tr>
+      <td rowspan="3"><b>PyPortfolioOpt</b></td>
+      <td><code>robust_mvo_rebalance</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>Robust mean-variance rebalancing with sector/factor/turnover constraints</td>
+    </tr>
+    <tr>
+      <td><code>cvar_stress_control</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>CVaR stress-controlled portfolio allocation under return and exposure constraints</td>
+    </tr>
+    <tr>
+      <td><code>discrete_rebalance_mip</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>Discrete lot-constrained rebalancing with mixed-integer optimization</td>
+    </tr>
+    <tr>
       <td rowspan="3"><b>StructuralOptimization</b></td>
       <td><code>ISCSO2015</code></td>
       <td>Completed</td>
