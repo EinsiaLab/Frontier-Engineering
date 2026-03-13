@@ -17,7 +17,9 @@ Small family of dense 20x20 instances from genetic-algorithm research; typically
   - `pip install -r JobShop/requirements.txt`
 - `baseline/init.py`: Python standard library only.
 - `verification/reference.py` and `verification/evaluate.py`:
-  use local `job_shop_lib` source code in this repository and OR-Tools (`ortools`) from `JobShop/requirements.txt`.
+  use the `job_shop_lib` Python package and OR-Tools (`ortools`).
+  Benchmark instance data is vendored at `JobShop/data/benchmark_instances.json`, sourced from
+  https://github.com/Pabloo22/job_shop_lib.git.
 
 ## Current directory structure
 

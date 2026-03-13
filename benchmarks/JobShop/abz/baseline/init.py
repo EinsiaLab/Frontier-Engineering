@@ -9,9 +9,9 @@ Baseline constraints:
 from __future__ import annotations
 
 import argparse
+import os
 import json
 import re
-import sys
 import time
 from pathlib import Path
 from typing import Any
@@ -26,23 +26,27 @@ def _natural_key(name: str) -> list[object]:
 
 
 def _benchmark_json_path() -> Path:
-    # Preferred local path in this repository (legacy layout).
-    benchmark_root = Path(__file__).resolve().parents[3]
-    local_path = benchmark_root / "job_shop_lib" / "benchmarking" / "benchmark_instances.json"
-    if local_path.is_file():
-        return local_path
+    env_path = str(os.environ.get("JOBSHOP_BENCHMARK_JSON", "")).strip()
+    if env_path:
+        candidate = Path(env_path).expanduser().resolve()
+        if candidate.is_file():
+            return candidate
+        raise FileNotFoundError(
+            f"JOBSHOP_BENCHMARK_JSON points to a missing file: {candidate}"
+        )
 
-    # Fallback to installed package data (for environments without in-repo job_shop_lib source).
-    for entry in sys.path:
-        if not entry:
-            continue
-        pkg_path = Path(entry) / "job_shop_lib" / "benchmarking" / "benchmark_instances.json"
-        if pkg_path.is_file():
-            return pkg_path
+    candidates = [
+        Path(__file__).resolve().parents[2] / "data" / "benchmark_instances.json",
+        Path(__file__).resolve().parents[1] / "data" / "benchmark_instances.json",
+    ]
+    for candidate in candidates:
+        if candidate.is_file():
+            return candidate
 
     raise FileNotFoundError(
-        "benchmark_instances.json not found. Tried local path "
-        f"{local_path} and installed-package lookup via sys.path."
+        "benchmark_instances.json not found under JobShop/data. "
+        "Expected one of: "
+        + ", ".join(str(path) for path in candidates)
     )
 
 

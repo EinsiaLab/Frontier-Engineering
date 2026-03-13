@@ -17,7 +17,9 @@
   - `pip install -r JobShop/requirements.txt`
 - `baseline/init.py`：仅依赖 Python 标准库。
 - `verification/reference.py` 与 `verification/evaluate.py`：
-  使用仓库内本地 `job_shop_lib` 源码，并依赖 `JobShop/requirements.txt` 中的 OR-Tools（`ortools`）。
+  使用 `job_shop_lib` Python 包与 OR-Tools（`ortools`）。
+  基准实例数据已随仓库提供在 `JobShop/data/benchmark_instances.json`，来源于
+  https://github.com/Pabloo22/job_shop_lib.git。
 
 ## 当前目录结构
 

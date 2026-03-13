@@ -181,6 +181,10 @@ def main() -> int:
 
     benchmark_dir = Path(args.benchmark_dir).resolve()
     family = benchmark_dir.name
+    vendored_json = (Path(__file__).resolve().parents[1] / "data" / "benchmark_instances.json").resolve()
+    if vendored_json.is_file():
+        # Ensure baseline/init.py can locate vendored benchmark data in unified sandbox runs.
+        os.environ.setdefault("JOBSHOP_BENCHMARK_JSON", str(vendored_json))
     metrics_out = Path(args.metrics_out).resolve() if args.metrics_out else (benchmark_dir / "metrics.json")
     artifacts_out = (
         Path(args.artifacts_out).resolve() if args.artifacts_out else (benchmark_dir / "artifacts.json")

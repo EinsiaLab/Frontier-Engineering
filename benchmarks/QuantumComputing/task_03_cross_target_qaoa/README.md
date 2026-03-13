@@ -4,18 +4,16 @@ This file focuses on run commands and directory layout.
 For task definition (goal, I/O, scoring), see [TASK.md](TASK.md).
 
 ## Environment
-Use the requested interpreter:
 
 ```bash
-/data_storage/chihh2311/.conda/envs/mqt/bin/python
+pip install mqt.bench
 ```
 
 ## Run
 From this task directory:
 
 ```bash
-cd /DATA_EDS2/haohan.chi.2311/bench/agent_evolve_quantum_tasks/task_03_cross_target_qaoa
-/data_storage/chihh2311/.conda/envs/mqt/bin/python verification/evaluate.py
+python verification/evaluate.py
 ```
 
 Optional arguments:

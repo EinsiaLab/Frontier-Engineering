@@ -40,8 +40,10 @@
 - 在仓库根目录安装统一依赖配置：
   - `pip install -r JobShop/requirements.txt`
 - baseline（`baseline/init.py`）：仅依赖 Python 标准库。
-- reference + evaluate 使用仓库内本地 `job_shop_lib` 源码，
-  并依赖 `JobShop/requirements.txt` 中的 OR-Tools（`ortools`）。
+- reference + evaluate 使用 `job_shop_lib` 的 Python 包与 OR-Tools（`ortools`）。
+- 基准实例数据文件已随仓库提供：`JobShop/data/benchmark_instances.json`。
+  该文件来源于 `job_shop_lib` 项目：
+  https://github.com/Pabloo22/job_shop_lib.git
 
 ## `evaluate.py` 参数说明
 
@@ -76,18 +78,13 @@ python JobShop/ta/verification/evaluate.py --max-instances 2 --reference-time-li
 
 ## Unified 运行方式（双环境）
 
-推荐使用：
-
-- `frontier_eval` 主进程：`frontier-eval-2`
-- JobShop 评测 Python：`/data_storage/chihh2311/.conda/envs/jobshop/bin/python`
-
 单个家族运行示例（以 `abz` 为例）：
 
 ```bash
-/data_storage/chihh2311/.conda/envs/frontier-eval-2/bin/python -m frontier_eval \
+/path/to/envs/frontier-eval-2/bin/python -m frontier_eval \
   task=unified \
   task.benchmark=JobShop/abz \
-  task.runtime.python_path=/data_storage/chihh2311/.conda/envs/jobshop/bin/python \
+  task.runtime.python_path=/path/to/envs/jobshop/bin/python \
   task.runtime.use_conda_run=false \
   algorithm.iterations=0
 ```
@@ -96,10 +93,10 @@ python JobShop/ta/verification/evaluate.py --max-instances 2 --reference-time-li
 
 ```bash
 for fam in abz ft la orb swv ta yn; do
-  /data_storage/chihh2311/.conda/envs/frontier-eval-2/bin/python -m frontier_eval \
+  /path/to/envs/frontier-eval-2/bin/python -m frontier_eval \
     task=unified \
     task.benchmark=JobShop/${fam} \
-    task.runtime.python_path=/data_storage/chihh2311/.conda/envs/jobshop/bin/python \
+    task.runtime.python_path=/path/to/envs/jobshop/bin/python \
     task.runtime.use_conda_run=false \
     +task.runtime.env.JOBSHOP_EVAL_MAX_INSTANCES=1 \
     +task.runtime.env.JOBSHOP_REFERENCE_TIME_LIMIT=1 \
@@ -131,3 +128,14 @@ done
 其中 `LA/SWV/TA` 更容易出现长耗时，特别是 `TA`。
 建议开发调试阶段先设置 `JOBSHOP_EVAL_MAX_INSTANCES` 与较小的
 `JOBSHOP_REFERENCE_TIME_LIMIT`。
+
+## 为什么这个 benchmark 仍然很难
+
+- baseline 分数在 `80` 左右并不代表“接近最优”。当 `target = optimum` 时，
+  `gap% = 100 * (100 / score - 1)`，所以 score=`80` 仍约有 `25%` 的差距。
+- baseline 往往先拿到“容易的局部收益”，但后续提升需要在多工件、多机器上做
+  全局组合优化，难度明显上升。
+- 在高分区继续提分通常代价很高：从 80+ 提升到 90+，一般需要更强的搜索策略
+  和更长计算时间。
+- 当 `optimum` 未知时，`best-known score` 使用的是 `upper_bound`，因此分数高
+  也不等于已经接近真实最优解。

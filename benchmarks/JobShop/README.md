@@ -40,8 +40,10 @@ This folder organizes 7 classic JSSP benchmark families into a uniform training/
 - Install shared dependencies from repository root:
   - `pip install -r JobShop/requirements.txt`
 - Baseline (`baseline/init.py`): Python standard library only.
-- Reference + evaluation scripts use local `job_shop_lib` source code in this repository
-  and OR-Tools (`ortools`) from `JobShop/requirements.txt`.
+- Reference + evaluation scripts use the `job_shop_lib` Python package and OR-Tools (`ortools`).
+- Benchmark instance data is vendored in this repository at
+  `JobShop/data/benchmark_instances.json`, sourced from:
+  https://github.com/Pabloo22/job_shop_lib.git
 
 ## `evaluate.py` arguments
 
@@ -131,3 +133,14 @@ A rough upper bound is `instance_count x 10s + modeling/IO overhead`:
 `LA/SWV/TA` are the most time-consuming in practice, especially `TA`.
 For development loops, use smaller `JOBSHOP_EVAL_MAX_INSTANCES` and
 `JOBSHOP_REFERENCE_TIME_LIMIT`.
+
+## Why this benchmark is still hard
+
+- A baseline score around `80` is not "near-optimal". When `target = optimum`,
+  `gap% = 100 * (100 / score - 1)`, so score `80` still means about `25%` gap.
+- The baseline quickly captures easy local improvements, but the remaining gains
+  require global combinatorial optimization across all jobs/machines.
+- Improvements near high-score regions are expensive: moving from low/mid-80s
+  to low/mid-90s usually needs much stronger search and more runtime.
+- When `optimum` is unknown, `best-known score` uses `upper_bound`, so a high
+  score there still does not prove the solution is close to true optimum.
