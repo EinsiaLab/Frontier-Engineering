@@ -377,6 +377,56 @@ The table below lists the current coverage of domain tasks in the Benchmark. We 
       <td><a href="https://github.com/AGI4Engineering/EngDesign.git">EngDesign</a></td>
     </tr>
     <tr>
+      <td rowspan="7"><b>JobShop</b></td>
+      <td><code>abz</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>Classical JSSP ABZ family (Adams, Balas, Zawack 1988)</td>
+    </tr>
+    <tr>
+      <td><code>ft</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>Classical JSSP FT family (Fisher and Thompson 1963)</td>
+    </tr>
+    <tr>
+      <td><code>la</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>Classical JSSP LA family (Lawrence 1984)</td>
+    </tr>
+    <tr>
+      <td><code>orb</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>Classical JSSP ORB family (Applegate and Cook 1991)</td>
+    </tr>
+    <tr>
+      <td><code>swv</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>Classical JSSP SWV family (Storer, Wu, Vaccari 1992)</td>
+    </tr>
+    <tr>
+      <td><code>ta</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>Classical JSSP TA family (Taillard 1993)</td>
+    </tr>
+    <tr>
+      <td><code>yn</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>Classical JSSP YN family (Yamada and Nakano 1992)</td>
+    </tr>
+    <tr>
       <td rowspan="3"><b>StructuralOptimization</b></td>
       <td><code>ISCSO2015</code></td>
       <td>Completed</td>

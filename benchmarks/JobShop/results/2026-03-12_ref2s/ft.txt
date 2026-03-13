@@ -1,0 +1,16 @@
+Family: FT (Fisher & Thompson, 1963) (ft)
+Columns: instance | baseline_ms | reference_ms | optimum | lower_bound | best_score(b/r) | lb_score(b/r)
+ft06     |          88 | 55          | 55      | 55          |  62.50/100.00 |  62.50/100.00
+ft10     |        1074 | 930         | 930     | 930         |  86.59/100.00 |  86.59/100.00
+ft20     |        1267 | 1165        | 1165    | 1165        |  91.95/100.00 |  91.95/100.00
+
+Summary
+- instances: 3
+- reference failures: 0
+- avg baseline runtime (s): 0.0011
+- avg reference runtime (s): 0.9019
+- avg best-known score   (baseline/reference): 80.35 / 100.00
+- avg lower-bound score  (baseline/reference): 80.35 / 100.00
+- avg optimality gap %   (baseline/reference, known optimum only): 28.08 / 0.00
+- theoretical score ceiling under score_lb formula: 100.00
+elapsed_seconds=5

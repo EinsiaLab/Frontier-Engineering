@@ -363,6 +363,56 @@
       <td><a href="https://github.com/AGI4Engineering/EngDesign.git">EngDesign</a></td>
     </tr>
     <tr>
+      <td rowspan="7"><b>JobShop</b></td>
+      <td><code>abz</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>经典 JSSP 的 ABZ 家族（Adams, Balas, Zawack，1988）</td>
+    </tr>
+    <tr>
+      <td><code>ft</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>经典 JSSP 的 FT 家族（Fisher & Thompson，1963）</td>
+    </tr>
+    <tr>
+      <td><code>la</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>经典 JSSP 的 LA 家族（Lawrence，1984）</td>
+    </tr>
+    <tr>
+      <td><code>orb</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>经典 JSSP 的 ORB 家族（Applegate & Cook，1991）</td>
+    </tr>
+    <tr>
+      <td><code>swv</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>经典 JSSP 的 SWV 家族（Storer、Wu、Vaccari，1992）</td>
+    </tr>
+    <tr>
+      <td><code>ta</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>经典 JSSP 的 TA 家族（Taillard，1993）</td>
+    </tr>
+    <tr>
+      <td><code>yn</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>经典 JSSP 的 YN 家族（Yamada & Nakano，1992）</td>
+    </tr>
+    <tr>
       <td rowspan="3"><b>StructuralOptimization</b></td>
       <td><code>ISCSO2015</code></td>
       <td>已完成</td>

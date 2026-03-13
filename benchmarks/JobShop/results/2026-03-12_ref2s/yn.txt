@@ -1,0 +1,17 @@
+Family: YN (Yamada & Nakano, 1992) (yn)
+Columns: instance | baseline_ms | reference_ms | optimum | lower_bound | best_score(b/r) | lb_score(b/r)
+yn1      |        1196 | 937         | 884     | 884         |  73.91/94.34  |  73.91/94.34 
+yn2      |        1256 | 993         | -       | 870         |  71.97/91.04  |  69.27/87.61 
+yn3      |        1042 | 958         | -       | 859         |  85.60/93.11  |  82.44/89.67 
+yn4      |        1273 | 1040        | -       | 929         |  76.04/93.08  |  72.98/89.33 
+
+Summary
+- instances: 4
+- reference failures: 0
+- avg baseline runtime (s): 0.0078
+- avg reference runtime (s): 2.3775
+- avg best-known score   (baseline/reference): 76.88 / 92.89
+- avg lower-bound score  (baseline/reference): 74.65 / 90.24
+- avg optimality gap %   (baseline/reference, known optimum only): 35.29 / 6.00
+- theoretical score ceiling under score_lb formula: 100.00
+elapsed_seconds=13
