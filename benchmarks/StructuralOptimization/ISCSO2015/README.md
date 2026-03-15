@@ -1,89 +1,14 @@
 # ISCSO 2015 — 45-Bar 2D Truss Size + Shape Optimization
 
-This folder contains the task specification, a Python-based FEM evaluator, and a baseline optimization solution for the ISCSO 2015 structural optimization benchmark.
-
-## Key Files and Roles
-
-- `Task.md` / `Task_zh-CN.md`
-  - Full problem specification: background, mathematical formulation, physical model, constraints, and I/O format.
-
-- `references/problem_data.json`
-  - Complete problem data: node coordinates, bar connectivity, material properties, load cases, support conditions, and constraint limits.
-
-- `verification/evaluator.py`
-  - **[Core]** Evaluation script entry point. Runs a candidate program, reads `submission.json`, performs FEM analysis, checks constraints, and returns a score.
-
-- `verification/fem_truss2d.py`
-  - Pure Python 2D truss FEM solver using the Direct Stiffness Method. Dependencies: `numpy` only.
-
-- `verification/requirements.txt`
-  - Python dependencies for the evaluation environment.
-
-- `verification/docker/Dockerfile`
-  - Containerized evaluation environment for reproducibility.
-
-- `baseline/random_search.py`
-  - Simple random search baseline. Fast and straightforward approach for quick results.
-  
-- `baseline/differential_evolution.py`
-  - Advanced optimization script using `scipy.optimize.differential_evolution`. More sophisticated but slower.
-
-## Baseline Performance
-
-### Simple Baseline (Random Search)
-- **Weight**: 3820.19 kg
-- **Feasible**: Yes (all constraints satisfied)
-- **Algorithm**: Random Search (1000 evaluations, seed=42)
-- **Runtime**: ~4 seconds
-
-### Advanced Baseline (Differential Evolution)
-- **Weight**: 2902.88 kg
-- **Feasible**: Yes (all constraints satisfied)
-- **Algorithm**: Differential Evolution (maxiter=10, popsize=30, seed=42)
-- **Runtime**: ~105 seconds
-
-The simple baseline provides a quick reference point, while the advanced baseline demonstrates better performance with more computational effort. Better results can be achieved with more iterations, larger optimization budgets, or problem-specific heuristics.
-
 ## Quick Start
 
-### 1. Run the Baseline Solution
-
 ```bash
-cd benchmarks/StructuralOptimization/ISCSO2015
-python baseline/differential_evolution.py
+python scripts/init.py
+python verification/evaluator.py scripts/init.py
 ```
 
-This produces `submission.json` in the current directory.
+## Baseline
 
-### 2. Evaluate a Submission
-
-```bash
-python verification/evaluator.py baseline/differential_evolution.py
-```
-
-Or evaluate a pre-existing `submission.json` directly:
-
-```bash
-python verification/evaluator.py --test submission.json
-```
-
-### 3. Run with Docker
-
-```bash
-cd verification/docker
-docker build -t iscso2015-eval .
-docker run -v $(pwd)/../../:/workspace iscso2015-eval python /workspace/baseline/differential_evolution.py
-```
-
-## Typical Workflow
-
-1. Write or modify an optimization script that outputs `submission.json`.
-2. Run the evaluator to check feasibility and score.
-3. Iterate to improve the objective (minimize weight) while maintaining feasibility.
-
-## Scoring
-
-- **Feasible solutions**: Score = structural weight (kg). Lower is better.
-- **Infeasible solutions**: Score = +Infinity.
-- All stress and displacement constraints must be satisfied across all load cases.
-
+- **Algorithm**: Stress Ratio Method
+- **Result**: 2473.82 kg
+- **Human best**: 1751.5 kg

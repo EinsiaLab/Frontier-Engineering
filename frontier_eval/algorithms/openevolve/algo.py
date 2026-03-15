@@ -161,6 +161,17 @@ class OpenEvolveAlgorithm(Algorithm):
         self._oe_OpenEvolve = OpenEvolve
 
     async def run(self, task: Task) -> None:
+        # OpenEvolve evaluates candidates in a `ProcessPoolExecutor`. On Linux the default
+        # start method is `fork`, which is incompatible with CUDA if the parent process has
+        # already initialized CUDA (PyTorch raises "Cannot re-initialize CUDA in forked subprocess").
+        # Use `spawn` to make GPU evaluators (e.g., car_aerodynamics_sensing) work reliably.
+        import multiprocessing as mp
+
+        try:
+            mp.set_start_method("spawn", force=True)
+        except Exception:
+            pass
+
         algo_cfg = self.cfg.algorithm
         llm_cfg = self.cfg.llm
 
@@ -317,7 +328,12 @@ class OpenEvolveAlgorithm(Algorithm):
             / "openevolve"
             / "openevolve_entrypoint.py"
         ).resolve()
+        task_cfg_view = OmegaConf.to_container(getattr(self.cfg, "task", None), resolve=True)
+        task_cfg_payload: dict[str, Any] = task_cfg_view if isinstance(task_cfg_view, dict) else {}
+        task_cfg_payload = dict(task_cfg_payload)
+        task_cfg_payload.setdefault("name", task.NAME)
         os.environ["FRONTIER_EVAL_TASK_NAME"] = task.NAME
+        os.environ["FRONTIER_EVAL_TASK_CFG_JSON"] = json.dumps(task_cfg_payload, ensure_ascii=False)
         os.environ["FRONTIER_EVAL_EVALUATOR_TIMEOUT_S"] = str(getattr(config.evaluator, "timeout", 300))
         os.environ.setdefault("FRONTIER_ENGINEERING_ROOT", str(self.repo_root))
 

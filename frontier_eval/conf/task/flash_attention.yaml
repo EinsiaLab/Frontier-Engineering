@@ -1,0 +1,2 @@
+name: flash_attention
+kernel_python: ${oc.env:FRONTIER_EVAL_FLASH_ATTENTION_PYTHON,python}

@@ -1,0 +1,39 @@
+diff --git a/third_party/ShinkaEvolve/shinka/database/display.py b/third_party/ShinkaEvolve/shinka/database/display.py
+index 508bdb8..def9622 100644
+--- a/third_party/ShinkaEvolve/shinka/database/display.py
++++ b/third_party/ShinkaEvolve/shinka/database/display.py
+@@ -144,13 +144,20 @@ class DatabaseDisplay:
+         island_display = (
+             f"I-{program.island_idx}" if program.island_idx is not None else "N/A"
+         )
++        patch_name = None
++        patch_type = None
++        if program.metadata:
++            patch_name = program.metadata.get("patch_name")
++            patch_type = program.metadata.get("patch_type")
++        patch_name_display = (patch_name or "[dim]N/A[/dim]")[:30]
++        patch_type_display = patch_type or "[dim]N/A[/dim]"
+         table.add_row(
+             f"Best: {best_score_str}",
+             island_display,
+             status_display,
+             score_display,
+-            program.metadata.get("patch_name", "[dim]N/A[/dim]")[:30],
+-            program.metadata.get("patch_type", "[dim]N/A[/dim]"),
++            patch_name_display,
++            patch_type_display,
+             f"{program.complexity:.1f}",
+             cost_display,
+             time_display,
+diff --git a/third_party/ShinkaEvolve/shinka/llm/providers/pricing.csv b/third_party/ShinkaEvolve/shinka/llm/providers/pricing.csv
+index b6fac0d..6f5464b 100644
+--- a/third_party/ShinkaEvolve/shinka/llm/providers/pricing.csv
++++ b/third_party/ShinkaEvolve/shinka/llm/providers/pricing.csv
+@@ -54,6 +54,7 @@ fugu-mini-fh,fugu,0.0,0.0,,,," False"," 0"," 0"
+ x-ai/grok-4,openrouter,N/A,N/A,,,," True"," 1"," 1"
+ x-ai/grok-4-fast,openrouter,N/A,N/A,,,," True"," 1"," 1"
+ qwen/qwen3-coder,openrouter,N/A,N/A,,,," False"," 0"," 0"
++qwen/qwen3-coder-next,openrouter,N/A,N/A,,,," False"," 0"," 0"
+ qwen/qwen3-235b-a22b-2507,openrouter,N/A,N/A,,,," False"," 0",0
+ qwen/qwen3-32b,openrouter,N/A,N/A,,,," False"," 0",0
+ openai/gpt-oss-120b,openrouter,N/A,N/A,,,," True"," 1"," 1"

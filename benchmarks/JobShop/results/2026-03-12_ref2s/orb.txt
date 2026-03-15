@@ -1,0 +1,23 @@
+Family: ORB (Applegate & Cook, 1991) (orb)
+Columns: instance | baseline_ms | reference_ms | optimum | lower_bound | best_score(b/r) | lb_score(b/r)
+orb01    |        1478 | 1059        | 1059    | 1059        |  71.65/100.00 |  71.65/100.00
+orb02    |        1175 | 888         | 888     | 888         |  75.57/100.00 |  75.57/100.00
+orb03    |        1179 | 1005        | 1005    | 1005        |  85.24/100.00 |  85.24/100.00
+orb04    |        1236 | 1005        | 1005    | 1005        |  81.31/100.00 |  81.31/100.00
+orb05    |        1152 | 887         | 887     | 887         |  77.00/100.00 |  77.00/100.00
+orb06    |        1190 | 1010        | 1010    | 1010        |  84.87/100.00 |  84.87/100.00
+orb07    |         504 | 397         | 397     | 397         |  78.77/100.00 |  78.77/100.00
+orb08    |        1107 | 899         | 899     | 899         |  81.21/100.00 |  81.21/100.00
+orb09    |        1262 | 934         | 934     | 934         |  74.01/100.00 |  74.01/100.00
+orb10    |        1113 | 944         | 944     | 944         |  84.82/100.00 |  84.82/100.00
+
+Summary
+- instances: 10
+- reference failures: 0
+- avg baseline runtime (s): 0.0011
+- avg reference runtime (s): 1.3544
+- avg best-known score   (baseline/reference): 79.45 / 100.00
+- avg lower-bound score  (baseline/reference): 79.45 / 100.00
+- avg optimality gap %   (baseline/reference, known optimum only): 26.30 / 0.00
+- theoretical score ceiling under score_lb formula: 100.00
+elapsed_seconds=17
