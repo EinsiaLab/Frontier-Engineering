@@ -1,0 +1,7 @@
+Transportation/CapacitatedVehicleRouting constraints:
+1) Candidate code is `baseline/init.py`; keep the public function `solve(instance) -> list[list[int]]` signature compatible with `verification/evaluate.py`.
+2) Do not modify evaluator logic (`verification/evaluate.py`).
+3) Keep task contracts in `Task.md` / `Task_zh-CN.md` unchanged.
+4) The candidate must be deterministic and executable with pure Python + numpy only.
+5) Evaluation score is read from `output/comparison.json` (`baseline_final_score`).
+6) Score formula: min(1.0, 784.0 / total_distance); higher is better.
