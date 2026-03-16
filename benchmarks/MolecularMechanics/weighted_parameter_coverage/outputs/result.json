@@ -1,0 +1,47 @@
+{
+  "absolute_theoretical_upper_bound": 27.940924,
+  "baseline_reference_score": 9.077764,
+  "baseline_reference_selected_candidate_ids": [
+    "mol_008",
+    "mol_010",
+    "mol_014",
+    "mol_024",
+    "mol_025",
+    "mol_026",
+    "mol_046",
+    "mol_050"
+  ],
+  "best_known_lower_bound": 24.579023,
+  "budget_respected": true,
+  "certified_upper_bound": 24.579023,
+  "covered_feature_count": 79,
+  "exact_optimal_score": 24.579023,
+  "exact_optimal_selected_candidate_ids": [
+    "mol_022",
+    "mol_032",
+    "mol_033",
+    "mol_040",
+    "mol_042",
+    "mol_043",
+    "mol_046",
+    "mol_050"
+  ],
+  "gap_to_certified_upper_bound": 15.501259,
+  "gap_to_exact_optimal": 15.501259,
+  "invalid_candidate_ids": [],
+  "relative_gap_to_certified_upper_bound": 0.63067,
+  "relative_gap_to_exact_optimal": 0.63067,
+  "score": 9.077764,
+  "selected_candidate_ids": [
+    "mol_008",
+    "mol_010",
+    "mol_014",
+    "mol_024",
+    "mol_025",
+    "mol_026",
+    "mol_046",
+    "mol_050"
+  ],
+  "task_name": "rare_parameter_coverage_demo",
+  "valid": true
+}

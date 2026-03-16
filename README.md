@@ -263,6 +263,28 @@ The table below lists the current coverage of domain tasks in the Benchmark. We 
       <td>Staged fast-charge optimization under a reduced SPMe-T-Aging style electrochemical, thermal, plating, and aging model</td>
     </tr>
     <tr>
+      <td rowspan="3"><b>MolecularMechanics</b></td>
+      <td><code>weighted_parameter_coverage</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>Rare force-field parameter coverage under a molecule budget</td>
+    </tr>
+    <tr>
+      <td><code>diverse_conformer_portfolio</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>Low-energy, high-diversity conformer portfolio selection</td>
+    </tr>
+    <tr>
+      <td><code>torsion_profile_fitting</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>Force-field torsion-scale fitting against target energy profiles</td>
+    </tr>
+    <tr>
       <td rowspan="16"><b>Optics</b></td>
       <td><code>adaptive_constrained_dm_control</code></td>
       <td>Completed</td>

@@ -249,6 +249,28 @@
       <td>在降阶 SPMe-T-Aging 风格的电化学、热、析锂和老化模型下优化分段快充策略</td>
     </tr>
     <tr>
+      <td rowspan="3"><b>MolecularMechanics</b></td>
+      <td><code>weighted_parameter_coverage</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>给定分子预算下的稀有力场参数覆盖优化</td>
+    </tr>
+    <tr>
+      <td><code>diverse_conformer_portfolio</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>低能量且高多样性的构象组合选择</td>
+    </tr>
+    <tr>
+      <td><code>torsion_profile_fitting</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>面向目标能量曲线的扭转参数缩放拟合</td>
+    </tr>
+    <tr>
       <td rowspan="16"><b>Optics</b></td>
       <td><code>adaptive_constrained_dm_control</code></td>
       <td>已完成</td>
