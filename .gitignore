@@ -17,3 +17,4 @@ benchmarks/Astrodynamics/MannedLunarLanding/outputlog.txt
 *.h5ad.tmp.*
 rawdata/
 /leaderboard/
+/Kai/
