@@ -9,7 +9,7 @@ from pathlib import Path
 
 TASKS = [
     {
-        "slug": "EOQMOQ",
+        "slug": "EOQWithMinimumOrderQuantity",
         "title": "EOQ with Minimum Order Quantity",
         "short": "Optimize annual cost for deterministic EOQ instances with a hard minimum order quantity.",
         "kind": "eoq_moq",
@@ -22,7 +22,7 @@ TASKS = [
         ],
     },
     {
-        "slug": "EOQAllUnitsDiscount",
+        "slug": "EOQWithAllUnitsDiscounts",
         "title": "EOQ with All-Units Discounts",
         "short": "Choose an order quantity under piecewise all-units discount pricing.",
         "kind": "eoq_all_units",
@@ -35,7 +35,7 @@ TASKS = [
         ],
     },
     {
-        "slug": "EOQIncrementalDiscount",
+        "slug": "EOQWithIncrementalDiscounts",
         "title": "EOQ with Incremental Discounts",
         "short": "Choose an order quantity under incremental quantity discounts.",
         "kind": "eoq_incremental",
@@ -48,7 +48,7 @@ TASKS = [
         ],
     },
     {
-        "slug": "RQPoissonServiceLevel",
+        "slug": "PoissonRQServiceLevel",
         "title": "Poisson (r,Q) with Service-Level Constraint",
         "short": "Select reorder point and lot size for Poisson-demand (r,Q) instances with a hard cycle-service-level target.",
         "kind": "rq_poisson",
@@ -61,7 +61,7 @@ TASKS = [
         ],
     },
     {
-        "slug": "RQNormalServiceLevel95",
+        "slug": "NormalRQServiceLevel95",
         "title": "Normal (r,Q) with 95% Service-Level Constraint",
         "short": "Select reorder point and lot size for Normal-demand (r,Q) instances with a hard cycle-service-level target.",
         "kind": "rq_normal",

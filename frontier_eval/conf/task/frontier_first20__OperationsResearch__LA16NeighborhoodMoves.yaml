@@ -1,8 +1,0 @@
-defaults:
-  - unified
-
-benchmark: OperationsResearch/LA16NeighborhoodMoves
-
-runtime:
-  use_conda_run: false
-  python_path: /mnt/shared-storage-user/p1-shared/luotianwei/Frontier-Engineering/.venv/bin/python

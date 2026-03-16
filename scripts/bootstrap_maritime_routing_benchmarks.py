@@ -8,8 +8,8 @@ from pathlib import Path
 
 TASKS = [
     {
-        "slug": "ShipWeatherRoutingFuel",
-        "title": "Ship Weather Routing Fuel",
+        "slug": "FuelMinimizingShipWeatherRouting",
+        "title": "Fuel-Minimizing Ship Weather Routing",
         "short": "Route a ship across a frozen coastal grid while minimizing total fuel consumption under synthetic wind and current fields.",
         "source_manifest": """\
 # Source Manifest
@@ -318,8 +318,8 @@ REFERENCE_TIME_H = 20.501439186435814
 """,
     },
     {
-        "slug": "DynamicCurrentTimeRouting",
-        "title": "Dynamic Current Time Routing",
+        "slug": "DynamicCurrentMinimumTimeRouting",
+        "title": "Dynamic-Current Minimum-Time Routing",
         "short": "Route a ship across a frozen coastal grid while minimizing travel time under deterministic current and depth fields.",
         "source_manifest": """\
 # Source Manifest
@@ -991,7 +991,7 @@ def main() -> None:
         write(root / "scripts" / "init.py", render(INIT_TEMPLATE, **values))
         write(root / "baseline" / "solution.py", render(BASELINE_TEMPLATE, **values))
         write(root / "runtime" / "problem.py", task["runtime"])
-        evaluator_template = EVALUATOR_FUEL if task["slug"] == "ShipWeatherRoutingFuel" else EVALUATOR_TIME
+        evaluator_template = EVALUATOR_FUEL if task["slug"] == "FuelMinimizingShipWeatherRouting" else EVALUATOR_TIME
         write(root / "verification" / "evaluator.py", render(evaluator_template, **values))
         write(root / "verification" / "requirements.txt", "")
         for relative, content in frontier_eval_files().items():

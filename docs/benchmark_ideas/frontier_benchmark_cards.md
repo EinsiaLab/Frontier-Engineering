@@ -166,7 +166,7 @@ Selection policy:
 - Recommended integration: `unified`
 - Main risk: The benchmark is synthetic rather than tied to a public robotics map dataset
 
-### 15. Multi-Robot Priority Planning
+### 15. Multi-Robot Prioritized Planning
 - Domain: Motion planning
 - Upstream: `caelan/motion-planners`
 - Canonical source: Official repo plus fixed-seed multi-agent grid instances
@@ -179,7 +179,7 @@ Selection policy:
 
 ## P2 Priority
 
-### 16. Cantilever Topology Optimization
+### 16. Cantilever Compliance Topology Optimization
 - Domain: Structural optimization
 - Upstream: pyMOTO
 - Canonical source: pyMOTO official examples and standard FEM setup

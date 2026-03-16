@@ -6,33 +6,33 @@ See also: `docs/benchmark_ideas/frontier_first20_quality_audit.md` for the conso
 
 ## Implemented and Smoke-Tested
 
-These benchmarks have been created and passed direct evaluator runs. `EOQMOQ`, `CantileverTopologyOptimization`, `MultiRobotPriorityPlanning`, `DuckDBQueryRewrite`, and `ShipWeatherRoutingFuel` also passed `frontier_eval task=unified` smoke runs when forced to use the repository `.venv` Python.
+These benchmarks have been created and passed direct evaluator runs. `EOQWithMinimumOrderQuantity`, `CantileverComplianceTopologyOptimization`, `MultiRobotPrioritizedPlanning`, `DuckDBQueryRewrite`, and `FuelMinimizingShipWeatherRouting` also passed `frontier_eval task=unified` smoke runs when forced to use the repository `.venv` Python.
 
 Under `benchmarks/OperationsResearch/`:
 
-1. `EOQMOQ`
-2. `EOQAllUnitsDiscount`
-3. `EOQIncrementalDiscount`
-4. `RQPoissonServiceLevel`
-5. `RQNormalServiceLevel95`
-6. `FT10DispatchRule`
-7. `LA16DispatchRule`
-8. `FT10NeighborhoodMoves`
-9. `LA16NeighborhoodMoves`
-19. `ShipWeatherRoutingFuel`
-20. `DynamicCurrentTimeRouting`
+1. `EOQWithMinimumOrderQuantity`
+2. `EOQWithAllUnitsDiscounts`
+3. `EOQWithIncrementalDiscounts`
+4. `PoissonRQServiceLevel`
+5. `NormalRQServiceLevel95`
+6. `FT10DispatchingRuleOptimization`
+7. `LA16DispatchingRuleOptimization`
+8. `FT10NeighborhoodMoveSelection`
+9. `LA16NeighborhoodMoveSelection`
+19. `FuelMinimizingShipWeatherRouting`
+20. `DynamicCurrentMinimumTimeRouting`
 
 Under `benchmarks/StructuralOptimization/`:
 
-16. `CantileverTopologyOptimization`
+16. `CantileverComplianceTopologyOptimization`
 17. `MBBBeamTopologyOptimization`
 18. `BridgeTopologyOptimization`
 
 Under `benchmarks/Robotics/`:
 
-13. `GridObstaclePathPlanning`
-14. `NarrowPassagePathPlanning`
-15. `MultiRobotPriorityPlanning`
+13. `GridPathPlanningWithObstacles`
+14. `NarrowPassagePlanning`
+15. `MultiRobotPrioritizedPlanning`
 
 Under `benchmarks/ComputerSystems/`:
 

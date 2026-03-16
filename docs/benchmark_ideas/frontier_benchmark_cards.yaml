@@ -177,7 +177,7 @@ cards:
     risk: "The benchmark is synthetic rather than tied to a public robotics map dataset."
   - rank: 15
     priority: "P1"
-    title: "Multi-Robot Priority Planning"
+    title: "Multi-Robot Prioritized Planning"
     domain: "Motion planning"
     upstream: "caelan/motion-planners"
     source: "Official repo plus fixed-seed multi-agent grid instances."
@@ -189,7 +189,7 @@ cards:
     risk: "Collision checking and tie-breaking must remain deterministic."
   - rank: 16
     priority: "P2"
-    title: "Cantilever Topology Optimization"
+    title: "Cantilever Compliance Topology Optimization"
     domain: "Structural optimization"
     upstream: "pyMOTO"
     source: "pyMOTO official examples and standard FEM setup."

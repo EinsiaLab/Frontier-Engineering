@@ -28,20 +28,20 @@ The quality gate used here follows the current `frontier-benchmark-contributor` 
 
 The following tasks originally exposed full reference paths through agent-visible `runtime/problem.py` files. This is now fixed by keeping only scalar reference metrics in the public runtime.
 
-- `OperationsResearch/ShipWeatherRoutingFuel`
-- `OperationsResearch/DynamicCurrentTimeRouting`
-- `Robotics/GridObstaclePathPlanning`
-- `Robotics/NarrowPassagePathPlanning`
+- `OperationsResearch/FuelMinimizingShipWeatherRouting`
+- `OperationsResearch/DynamicCurrentMinimumTimeRouting`
+- `Robotics/GridPathPlanningWithObstacles`
+- `Robotics/NarrowPassagePlanning`
 
 ### 2. Missing provenance manifests
 
 The following tasks originally lacked `references/source_manifest.md`. Provenance files and source notes were added to task docs.
 
-- `OperationsResearch/EOQMOQ`
-- `OperationsResearch/EOQAllUnitsDiscount`
-- `OperationsResearch/EOQIncrementalDiscount`
-- `OperationsResearch/RQPoissonServiceLevel`
-- `OperationsResearch/RQNormalServiceLevel95`
+- `OperationsResearch/EOQWithMinimumOrderQuantity`
+- `OperationsResearch/EOQWithAllUnitsDiscounts`
+- `OperationsResearch/EOQWithIncrementalDiscounts`
+- `OperationsResearch/PoissonRQServiceLevel`
+- `OperationsResearch/NormalRQServiceLevel95`
 
 ### 3. Baseline-equivalence scoring bias
 
@@ -51,26 +51,26 @@ The following tasks originally lacked `references/source_manifest.md`. Provenanc
 
 | Benchmark | Combined Score | Valid |
 | --- | ---: | ---: |
-| `OperationsResearch/EOQMOQ` | `1.000000` | `1.0` |
-| `OperationsResearch/EOQAllUnitsDiscount` | `1.000000` | `1.0` |
-| `OperationsResearch/EOQIncrementalDiscount` | `1.000000` | `1.0` |
-| `OperationsResearch/RQPoissonServiceLevel` | `1.000000` | `1.0` |
-| `OperationsResearch/RQNormalServiceLevel95` | `1.000000` | `1.0` |
-| `OperationsResearch/FT10DispatchRule` | `0.865922` | `1.0` |
-| `OperationsResearch/LA16DispatchRule` | `0.747036` | `1.0` |
-| `OperationsResearch/FT10NeighborhoodMoves` | `0.914454` | `1.0` |
-| `OperationsResearch/LA16NeighborhoodMoves` | `0.859873` | `1.0` |
+| `OperationsResearch/EOQWithMinimumOrderQuantity` | `1.000000` | `1.0` |
+| `OperationsResearch/EOQWithAllUnitsDiscounts` | `1.000000` | `1.0` |
+| `OperationsResearch/EOQWithIncrementalDiscounts` | `1.000000` | `1.0` |
+| `OperationsResearch/PoissonRQServiceLevel` | `1.000000` | `1.0` |
+| `OperationsResearch/NormalRQServiceLevel95` | `1.000000` | `1.0` |
+| `OperationsResearch/FT10DispatchingRuleOptimization` | `0.865922` | `1.0` |
+| `OperationsResearch/LA16DispatchingRuleOptimization` | `0.747036` | `1.0` |
+| `OperationsResearch/FT10NeighborhoodMoveSelection` | `0.914454` | `1.0` |
+| `OperationsResearch/LA16NeighborhoodMoveSelection` | `0.859873` | `1.0` |
 | `ComputerSystems/DuckDBIndexSelection` | `0.998004` | `1.0` |
 | `ComputerSystems/DuckDBQueryRewrite` | `1.000472` | `1.0` |
 | `ComputerSystems/DuckDBPreAggregationSelection` | `1.000000` | `1.0` |
-| `Robotics/GridObstaclePathPlanning` | `0.875000` | `1.0` |
-| `Robotics/NarrowPassagePathPlanning` | `0.944444` | `1.0` |
-| `Robotics/MultiRobotPriorityPlanning` | `1.000000` | `1.0` |
-| `StructuralOptimization/CantileverTopologyOptimization` | `1.000000` | `1.0` |
+| `Robotics/GridPathPlanningWithObstacles` | `0.875000` | `1.0` |
+| `Robotics/NarrowPassagePlanning` | `0.944444` | `1.0` |
+| `Robotics/MultiRobotPrioritizedPlanning` | `1.000000` | `1.0` |
+| `StructuralOptimization/CantileverComplianceTopologyOptimization` | `1.000000` | `1.0` |
 | `StructuralOptimization/MBBBeamTopologyOptimization` | `1.000000` | `1.0` |
 | `StructuralOptimization/BridgeTopologyOptimization` | `1.000000` | `1.0` |
-| `OperationsResearch/ShipWeatherRoutingFuel` | `0.402275` | `1.0` |
-| `OperationsResearch/DynamicCurrentTimeRouting` | `0.619596` | `1.0` |
+| `OperationsResearch/FuelMinimizingShipWeatherRouting` | `0.402275` | `1.0` |
+| `OperationsResearch/DynamicCurrentMinimumTimeRouting` | `0.619596` | `1.0` |
 
 ## `eval_single.sh` Status
 
@@ -80,7 +80,7 @@ Attempted command shape:
 PYTHON_BIN=/mnt/shared-storage-user/p1-shared/luotianwei/Frontier-Engineering/.venv/bin/python \
 ./eval_single.sh \
   task=unified \
-  task.benchmark=OperationsResearch/EOQMOQ \
+  task.benchmark=OperationsResearch/EOQWithMinimumOrderQuantity \
   task.runtime.use_conda_run=false \
   task.runtime.python_path=/mnt/shared-storage-user/p1-shared/luotianwei/Frontier-Engineering/.venv/bin/python
 ```

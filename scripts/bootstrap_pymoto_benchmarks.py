@@ -10,7 +10,7 @@ from pathlib import Path
 TASKS = [
     {
         "domain": "StructuralOptimization",
-        "slug": "CantileverTopologyOptimization",
+        "slug": "CantileverComplianceTopologyOptimization",
         "title": "Cantilever Compliance Topology Optimization",
         "short": "Minimize compliance on a frozen cantilever beam using pyMOTO's SIMP formulation and a fixed material budget.",
         "geometry": "cantilever",

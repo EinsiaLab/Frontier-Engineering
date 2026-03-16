@@ -9,7 +9,7 @@ from pathlib import Path
 
 TASKS = [
     {
-        "slug": "FT10DispatchRule",
+        "slug": "FT10DispatchingRuleOptimization",
         "title": "FT10 Dispatching Rule Optimization",
         "short": "Optimize a greedy dispatching rule on the canonical FT10 Fisher-Thompson 10x10 job shop instance.",
         "instance_name": "ft10",
@@ -17,7 +17,7 @@ TASKS = [
         "task_kind": "dispatch",
     },
     {
-        "slug": "LA16DispatchRule",
+        "slug": "LA16DispatchingRuleOptimization",
         "title": "LA16 Dispatching Rule Optimization",
         "short": "Optimize a greedy dispatching rule on the canonical LA16 Lawrence 10x10 job shop instance.",
         "instance_name": "la16",
@@ -25,7 +25,7 @@ TASKS = [
         "task_kind": "dispatch",
     },
     {
-        "slug": "FT10NeighborhoodMoves",
+        "slug": "FT10NeighborhoodMoveSelection",
         "title": "FT10 Neighborhood Move Selection",
         "short": "Guide an adjacent-swap local search on the canonical FT10 Fisher-Thompson 10x10 job shop instance.",
         "instance_name": "ft10",
@@ -33,7 +33,7 @@ TASKS = [
         "task_kind": "move",
     },
     {
-        "slug": "LA16NeighborhoodMoves",
+        "slug": "LA16NeighborhoodMoveSelection",
         "title": "LA16 Neighborhood Move Selection",
         "short": "Guide an adjacent-swap local search on the canonical LA16 Lawrence 10x10 job shop instance.",
         "instance_name": "la16",
