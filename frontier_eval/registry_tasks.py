@@ -29,6 +29,7 @@ from frontier_eval.tasks.wireless_channel_simulation import HighReliableSimulati
 from frontier_eval.tasks.flash_attention import FlashAttentionTask
 from frontier_eval.tasks.topology_optimization import TopologyOptimizationTask
 from frontier_eval.tasks.unified import UnifiedTask
+from frontier_eval.tasks.muon_tomography import MuonTomographyTask
 
 _TASKS: dict[str, Type[Task]] = {
     SmokeTask.NAME: SmokeTask,
@@ -54,6 +55,7 @@ _TASKS: dict[str, Type[Task]] = {
     FlashAttentionTask.NAME: FlashAttentionTask,
     TopologyOptimizationTask.NAME: TopologyOptimizationTask,
     UnifiedTask.NAME: UnifiedTask,
+    MuonTomographyTask.NAME: MuonTomographyTask,
 }
 
 
