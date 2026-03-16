@@ -14,6 +14,7 @@ from frontier_eval.tasks.predict_modality import PredictModalityTask
 from frontier_eval.tasks.trimul import TriMulTask
 from frontier_eval.tasks.smoke import SmokeTask
 from frontier_eval.tasks.muon_tomography import MuonTomographyTask
+from frontier_eval.tasks.proton_therapy_planning import ProtonTherapyPlanningTask
 
 _TASKS: dict[str, Type[Task]] = {
     SmokeTask.NAME: SmokeTask,
@@ -27,6 +28,7 @@ _TASKS: dict[str, Type[Task]] = {
     MLATask.NAME: MLATask,
     MallocLabTask.NAME: MallocLabTask,
     MuonTomographyTask.NAME: MuonTomographyTask,
+    ProtonTherapyPlanningTask.NAME: ProtonTherapyPlanningTask,
 }
 
 
