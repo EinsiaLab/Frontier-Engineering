@@ -1,0 +1,38 @@
+version: 1
+
+tasks:
+  - frontier_first20__OperationsResearch__EOQMOQ
+  - frontier_first20__OperationsResearch__EOQAllUnitsDiscount
+  - frontier_first20__OperationsResearch__EOQIncrementalDiscount
+  - frontier_first20__OperationsResearch__RQPoissonServiceLevel
+  - frontier_first20__OperationsResearch__RQNormalServiceLevel95
+  - frontier_first20__OperationsResearch__FT10DispatchRule
+  - frontier_first20__OperationsResearch__LA16DispatchRule
+  - frontier_first20__OperationsResearch__FT10NeighborhoodMoves
+  - frontier_first20__OperationsResearch__LA16NeighborhoodMoves
+  - frontier_first20__ComputerSystems__DuckDBIndexSelection
+  - frontier_first20__ComputerSystems__DuckDBQueryRewrite
+  - frontier_first20__ComputerSystems__DuckDBPreAggregationSelection
+  - frontier_first20__Robotics__GridObstaclePathPlanning
+  - frontier_first20__Robotics__NarrowPassagePathPlanning
+  - frontier_first20__Robotics__MultiRobotPriorityPlanning
+  - frontier_first20__StructuralOptimization__CantileverTopologyOptimization
+  - frontier_first20__StructuralOptimization__MBBBeamTopologyOptimization
+  - frontier_first20__StructuralOptimization__BridgeTopologyOptimization
+  - frontier_first20__OperationsResearch__ShipWeatherRoutingFuel
+  - frontier_first20__OperationsResearch__DynamicCurrentTimeRouting
+
+algorithms:
+  - name: shinkaevolve
+    overrides:
+      - algorithm.max_generations=5
+
+common_overrides:
+  - llm.temperature=0.7
+  - llm.timeout=60
+
+run:
+  name: frontier_first20_shinkaevolve5
+  base_dir: runs/batch
+  max_parallel: 4
+  fail_fast: false
