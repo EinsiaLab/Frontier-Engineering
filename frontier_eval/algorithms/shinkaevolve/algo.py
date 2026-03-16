@@ -72,6 +72,48 @@ def _hms_from_seconds(seconds: int) -> str:
     return f"{h:02d}:{m:02d}:{s:02d}"
 
 
+def _infer_shinka_language(program_path: Path) -> str:
+    suffix = program_path.suffix.lower()
+    suffix_to_language = {
+        ".c": "cpp",
+        ".cc": "cpp",
+        ".cpp": "cpp",
+        ".cxx": "cpp",
+        ".cu": "cuda",
+        ".h": "cpp",
+        ".hh": "cpp",
+        ".hpp": "cpp",
+        ".hxx": "cpp",
+        ".jl": "julia",
+        ".json": "json",
+        ".json5": "json5",
+        ".py": "python",
+        ".pyw": "python",
+        ".rs": "rust",
+        ".swift": "swift",
+    }
+    language = suffix_to_language.get(suffix)
+    if language is None:
+        raise ValueError(
+            f"Cannot infer ShinkaEvolve language from initial program suffix: {program_path.name}"
+        )
+    return language
+
+
+def _find_shinka_main_file(*dirs: Path, lang_ext: str) -> Path | None:
+    seen: set[Path] = set()
+    for directory in dirs:
+        candidates = [directory / f"main.{lang_ext}"]
+        candidates.extend(sorted(directory.glob("main.*")))
+        for candidate in candidates:
+            if candidate in seen:
+                continue
+            seen.add(candidate)
+            if candidate.is_file():
+                return candidate
+    return None
+
+
 def _extract_best_metrics(output_root: Path) -> tuple[dict[str, Any] | None, Path | None]:
     best_correct_score: float | None = None
     best_correct_metrics: dict[str, Any] | None = None
@@ -117,6 +159,7 @@ class ShinkaEvolveAlgorithm(Algorithm):
             from shinka.core import EvolutionConfig, EvolutionRunner
             from shinka.database import DatabaseConfig
             from shinka.launch import LocalJobConfig
+            from shinka.utils.languages import get_language_extension
         except Exception as e:  # pragma: no cover
             raise RuntimeError(
                 "ShinkaEvolve is not importable.\n"
@@ -131,6 +174,7 @@ class ShinkaEvolveAlgorithm(Algorithm):
         self._se_EvolutionRunner = EvolutionRunner
         self._se_DatabaseConfig = DatabaseConfig
         self._se_LocalJobConfig = LocalJobConfig
+        self._se_get_language_extension = get_language_extension
 
     async def run(self, task: Task) -> None:
         algo_cfg = self.cfg.algorithm
@@ -175,6 +219,7 @@ class ShinkaEvolveAlgorithm(Algorithm):
             )
 
         initial_program = task.initial_program_path()
+        inferred_language = _infer_shinka_language(initial_program)
         evaluator_file = (
             self.repo_root
             / "frontier_eval"
@@ -217,7 +262,7 @@ class ShinkaEvolveAlgorithm(Algorithm):
         evo_kwargs: dict[str, Any] = {
             "init_program_path": str(initial_program),
             "results_dir": str(shinka_dir),
-            "language": "python",
+            "language": inferred_language,
             "use_text_feedback": use_text_feedback,
             "num_generations": int(num_generations),
             "max_parallel_jobs": int(max_parallel),
@@ -236,6 +281,8 @@ class ShinkaEvolveAlgorithm(Algorithm):
         _deep_merge_dict(evo_kwargs, evo_overrides)
         if evo_kwargs.get("llm_models") is None:
             evo_kwargs.pop("llm_models", None)
+        selected_language = str(evo_kwargs.get("language") or inferred_language).strip()
+        lang_ext = self._se_get_language_extension(selected_language)
 
         evo_config = self._se_EvolutionConfig(**evo_kwargs)
 
@@ -293,17 +340,16 @@ class ShinkaEvolveAlgorithm(Algorithm):
 
             best_program_path = None
             if best_dir is not None:
-                candidates = [
-                    best_dir / "main.py",
-                    best_dir.parent / "main.py",
-                ]
-                for candidate in candidates:
-                    if candidate.is_file():
-                        best_program_path = candidate
-                        break
+                best_program_path = _find_shinka_main_file(
+                    best_dir,
+                    best_dir.parent,
+                    shinka_dir / "best",
+                    lang_ext=lang_ext,
+                )
 
             (shinka_dir / "best").mkdir(parents=True, exist_ok=True)
             info = {
+                "language": selected_language,
                 "metrics": best_metrics,
                 "results_dir": str(best_dir) if best_dir is not None else "",
                 "program_path": str(best_program_path) if best_program_path else "",

@@ -63,9 +63,11 @@
     2. python -m frontier_eval task=<task_name> algorithm.iterations=0 # 与框架的适配验证。注意，请在README中说明任务注册的task_name
 2. 请注意不要包含私人信息的文件，例如:.env、API keys、IDE 配置（.vscode/）、临时文件（*.log, temp/, __pycache__/）、个人测试脚本，同时请检查提交的内容中是否包含绝对路径，避免出现复现问题和个人隐私泄露。
 
-3. **单文件闭包（Baseline，必需）**：`scripts/init.py`（以及可选的 `baseline/solution.py`）必须自包含，便于 OpenEvolve 等算法进行单文件优化。
-   - 不要 `import` 本仓库 `benchmarks/` 下的其他 Python 代码（例如任务目录下的其它 `.py` 文件）。
-   - 允许导入 Python 标准库和 `verification/requirements.txt` 中声明的第三方依赖。
+3. **EVOLVE-BLOCK 标记（ShinkaEvolve / ABMCTS 必需）**：被 Agent 演化（evolve）的文件（例如 `scripts/init.py`，或类似 `malloclab-handout/mm.c` 这类语言特定的 baseline）必须包含 `EVOLVE-BLOCK-START` 与 `EVOLVE-BLOCK-END` 标记，用于定义*唯一*允许修改的代码区域。
+   - 请保留标记行本身不变，并将标记之外的代码视为只读（CLI/I/O 契约、约束检查、评测器胶水代码等）。
+   - 按语言使用正确的注释形式：
+     - Python：`# EVOLVE-BLOCK-START` / `# EVOLVE-BLOCK-END`
+     - C/C++/CUDA/Rust/Swift：`// EVOLVE-BLOCK-START` / `// EVOLVE-BLOCK-END`
 
 ### 贡献流程
 
@@ -114,15 +116,15 @@
       <td>登月软着陆轨迹优化</td>
     </tr>
     <tr>
-      <td><b>ElectronicDesignAutomation</b></td>
-      <td><code>IntegrationPhysicalDesignOptimization</code></td>
-      <td>开发中</td>
+      <td><b>ParticlePhysics</b></td>
+      <td><code>MuonTomography</code></td>
+      <td>已完成</td>
+      <td>@SeanDF333</td>
       <td>@ahydchh</td>
-      <td>@ahydchh</td>
-      <td>芯片宏单元布局优化</td>
+      <td>考虑缪子通量、预算与开挖约束的探测器布局优化</td>
     </tr>
     <tr>
-      <td rowspan="2"><b>Kernel Engineering</b></td>
+      <td rowspan="3"><b>Kernel Engineering</b></td>
       <td><code>MLA</code></td>
       <td>已完成</td>
       <td>@ahydchh</td>
@@ -135,6 +137,13 @@
       <td>@ahydchh</td>
       <td>@ahydchh</td>
       <td>GPUMode 三角乘法</td>
+    </tr>
+    <tr>
+      <td><code>FlashAttention</code></td>
+      <td>已完成</td>
+      <td>@Geniusyingmanji</td>
+      <td>@ahydchh</td>
+      <td>为 GPU 执行优化因果型 scaled dot-product attention 前向内核</td>
     </tr>
     <tr>
       <td rowspan="3"><b>Single Cell Analysis</b></td>
@@ -159,6 +168,28 @@
       <td>OpenProblems 模态预测（NeurIPS 2021，RNA→ADT）</td>
     </tr>
     <tr>
+      <td rowspan="3"><b>QuantumComputing</b></td>
+      <td><code>routing qftentangled</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>路由导向优化</td>
+    </tr>
+    <tr>
+      <td><code>clifford t synthesis</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>Clifford+T 综合优化</td>
+    </tr>
+    <tr>
+      <td><code>cross target qaoa</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>跨目标鲁棒优化</td>
+    </tr>
+    <tr>
       <td rowspan="3"><b>Cryptographic</b></td>
       <td><code>AES-128 CTR</code></td>
       <td>已完成</td>
@@ -181,6 +212,156 @@
       <td>Secure Hash Algorithm 3 256-bit</td>
     </tr>
     <tr>
+      <td rowspan="3"><b>CommunicationEngineering</b></td>
+      <td><code>LDPCErrorFloor</code></td>
+      <td>已完成</td>
+      <td>@WayneJin0918</td>
+      <td>@ahydchh</td>
+      <td>使用重要性采样估计LDPC码错误地板，针对trapping sets</td>
+    </tr>
+    <tr>
+      <td><code>PMDSimulation</code></td>
+      <td>已完成</td>
+      <td>@WayneJin0918</td>
+      <td>@ahydchh</td>
+      <td>极化模色散（PMD）仿真</td>
+    </tr>
+    <tr>
+      <td><code>RayleighFadingBER</code></td>
+      <td>已完成</td>
+      <td>@WayneJin0918</td>
+      <td>@ahydchh</td>
+      <td>瑞利衰落信道误码率分析，使用重要性采样模拟深衰落事件</td>
+    </tr>
+    <tr>
+      <td rowspan="2"><b>EnergyStorage</b></td>
+      <td><code>BatteryFastChargingProfile</code></td>
+      <td>已完成</td>
+      <td>@kunkun04</td>
+      <td>@ahydchh</td>
+      <td>在电压、温升和退化约束下优化锂离子电池快充电流曲线</td>
+    </tr>
+    <tr>
+      <td><code>BatteryFastChargingSPMe</code></td>
+      <td>已完成</td>
+      <td>@kunkun04</td>
+      <td>@ahydchh</td>
+      <td>在降阶 SPMe-T-Aging 风格的电化学、热、析锂和老化模型下优化分段快充策略</td>
+    </tr>
+    <tr>
+      <td rowspan="16"><b>Optics</b></td>
+      <td><code>adaptive_constrained_dm_control</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>受约束可变形镜（DM）控制</td>
+    </tr>
+    <tr>
+      <td><code>adaptive_temporal_smooth_control</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>时序平滑与补偿质量折中</td>
+    </tr>
+    <tr>
+      <td><code>adaptive_energy_aware_control</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>能耗感知自适应光学控制</td>
+    </tr>
+    <tr>
+      <td><code>adaptive_fault_tolerant_fusion</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>容错多波前传感器融合</td>
+    </tr>
+    <tr>
+      <td><code>phase_weighted_multispot_single_plane</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>单平面加权多焦点相位 DOE</td>
+    </tr>
+    <tr>
+      <td><code>phase_fourier_pattern_holography</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>傅里叶图案全息</td>
+    </tr>
+    <tr>
+      <td><code>phase_dammann_uniform_orders</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>Dammann 光栅均匀级次优化</td>
+    </tr>
+    <tr>
+      <td><code>phase_large_scale_weighted_spot_array</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>大规模加权焦点阵列合成</td>
+    </tr>
+    <tr>
+      <td><code>fiber_wdm_channel_power_allocation</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>WDM 信道与发射功率分配</td>
+    </tr>
+    <tr>
+      <td><code>fiber_mcs_power_scheduling</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>MCS 与功率联合调度</td>
+    </tr>
+    <tr>
+      <td><code>fiber_dsp_mode_scheduling</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>接收端 DSP 模式调度</td>
+    </tr>
+    <tr>
+      <td><code>fiber_guardband_spectrum_packing</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>带保护带约束的频谱打包</td>
+    </tr>
+    <tr>
+      <td><code>holographic_multifocus_power_ratio</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>多焦点功率比控制</td>
+    </tr>
+    <tr>
+      <td><code>holographic_multiplane_focusing</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>多平面全息聚焦</td>
+    </tr>
+    <tr>
+      <td><code>holographic_multispectral_focusing</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>多光谱全息聚焦</td>
+    </tr>
+    <tr>
+      <td><code>holographic_polarization_multiplexing</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>偏振复用全息</td>
+    </tr>
+    <tr>
       <td><b>Computer Systems</b></td>
       <td><code>Malloc Lab</code></td>
       <td>已完成</td>
@@ -197,7 +378,115 @@
       <td><a href="https://github.com/AGI4Engineering/EngDesign.git">EngDesign</a></td>
     </tr>
     <tr>
-      <td rowspan="2"><b>StructuralOptimization</b></td>
+      <td rowspan="5"><b>InventoryOptimization</b></td>
+      <td><code>tree_gsm_safety_stock</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>树形多级安全库存配置（GSM）</td>
+    </tr>
+    <tr>
+      <td><code>general_meio</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>通用拓扑 MEIO（仿真驱动目标）</td>
+    </tr>
+    <tr>
+      <td><code>joint_replenishment</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>多 SKU 共享订货成本下的联合补货优化</td>
+    </tr>
+    <tr>
+      <td><code>finite_horizon_dp</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>有限期随机库存控制（时变策略）</td>
+    </tr>
+    <tr>
+      <td><code>disruption_eoqd</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>供应中断场景下的 EOQ 批量优化</td>
+    </tr>
+    <tr>
+      <td rowspan="3"><b>PyPortfolioOpt</b></td>
+      <td><code>robust_mvo_rebalance</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>含行业/因子/换手约束的鲁棒均值方差再平衡</td>
+    </tr>
+    <tr>
+      <td><code>cvar_stress_control</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>在收益与暴露约束下进行 CVaR 压力控制配置</td>
+    </tr>
+    <tr>
+      <td><code>discrete_rebalance_mip</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>带整数手数约束的离散再平衡混合整数优化</td>
+    </tr>
+    <tr>
+      <td rowspan="7"><b>JobShop</b></td>
+      <td><code>abz</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>经典 JSSP 的 ABZ 家族（Adams, Balas, Zawack，1988）</td>
+    </tr>
+    <tr>
+      <td><code>ft</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>经典 JSSP 的 FT 家族（Fisher & Thompson，1963）</td>
+    </tr>
+    <tr>
+      <td><code>la</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>经典 JSSP 的 LA 家族（Lawrence，1984）</td>
+    </tr>
+    <tr>
+      <td><code>orb</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>经典 JSSP 的 ORB 家族（Applegate & Cook，1991）</td>
+    </tr>
+    <tr>
+      <td><code>swv</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>经典 JSSP 的 SWV 家族（Storer、Wu、Vaccari，1992）</td>
+    </tr>
+    <tr>
+      <td><code>ta</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>经典 JSSP 的 TA 家族（Taillard，1993）</td>
+    </tr>
+    <tr>
+      <td><code>yn</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>经典 JSSP 的 YN 家族（Yamada & Nakano，1992）</td>
+    </tr>
+    <tr>
+      <td rowspan="3"><b>StructuralOptimization</b></td>
       <td><code>ISCSO2015</code></td>
       <td>已完成</td>
       <td>@yks23</td>
@@ -210,6 +499,49 @@
       <td>@yks23</td>
       <td>@yks23</td>
       <td>284 杆 3D 桁架尺寸优化</td>
+    </tr>
+    <tr>
+      <td><code>TopologyOptimization</code></td>
+      <td>已完成</td>
+      <td>@Geniusyingmanji</td>
+      <td>@ahydchh</td>
+      <td>连续、体积约束的合规最小化, 连续、体积约束的合规最小化</td>
+    </tr>
+    <tr>
+      <td rowspan="5"><b>Robotics</b></td>
+      <td><code>DynamicObstacleAvoidanceNavigation</code></td>
+      <td>已完成</td>
+      <td>@MichaelCaoo</td>
+      <td>@yks23</td>
+      <td>在二维环境中控制差分轮机器人从起点到终点</td>
+    </tr>
+    <tr>
+      <td><code>QuadrupedGaitOptimization</code></td>
+      <td>已完成</td>
+      <td>@MichaelCaoo</td>
+      <td>@yks23</td>
+      <td>通过优化 8 个步态参数，最大化宇树 A1 仿真四足机器人的前向运动速度</td>
+    </tr>
+    <tr>
+      <td><code>RobotArmCycleTimeOptimization</code></td>
+      <td>已完成</td>
+      <td>@MichaelCaoo</td>
+      <td>@yks23</td>
+      <td>使七自由度 KUKA LBR iiwa 机械臂从起始构型运动到目标构型的轨迹时间最短，同时保证全程无碰撞</td>
+    </tr>
+    <tr>
+      <td><code>PIDTuning</code></td>
+      <td>已完成</td>
+      <td>@Geniusyingmanji</td>
+      <td>@ahydchh</td>
+      <td>二维四旋翼在多个飞行场景下调节级联 PID 控制器</td>
+    </tr>
+    <tr>
+      <td><code>UAVInspectionCoverageWithWind</code></td>
+      <td>已完成</td>
+      <td>@MichaelCaoo</td>
+      <td>@ahydchh</td>
+      <td>风场扰动下的无人机巡检</td>
     </tr>
     <tr>
       <td><b>Aerodynamics</b></td>
@@ -240,5 +572,5 @@
 
 欢迎加入我们的开发者社区！无论你是想讨论新的工程问题构想、寻找任务合作者，还是在贡献过程中遇到了技术问题，都可以在群里与我们随时交流。
 
-* 🟢 **飞书**: [点击这里加入我们的飞书讨论群](https://applink.feishu.cn/client/chat/chatter/add_by_link?link_token=a1cuff9f-347a-43ce-8825-79c2a38038c6)
+* 🟢 **飞书**: [点击这里加入我们的飞书讨论群](https://applink.feishu.cn/client/chat/chatter/add_by_link?link_token=21ak5858-60ba-44fd-9085-01f165c8771c)
 * 🔜 **Discord**: [点击这里加入我们的Discord社区](https://discord.gg/hxeVhZNN)

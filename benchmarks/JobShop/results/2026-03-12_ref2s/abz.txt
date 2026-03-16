@@ -1,0 +1,18 @@
+Family: ABZ (Adams, Balas & Zawack, 1988) (abz)
+Columns: instance | baseline_ms | reference_ms | optimum | lower_bound | best_score(b/r) | lb_score(b/r)
+abz5     |        1352 | 1234        | 1234    | 1234        |  91.27/100.00 |  91.27/100.00
+abz6     |        1097 | 943         | 943     | 943         |  85.96/100.00 |  85.96/100.00
+abz7     |         849 | 693         | 656     | 656         |  77.27/94.66  |  77.27/94.66 
+abz8     |         929 | 707         | -       | 645         |  71.58/94.06  |  69.43/91.23 
+abz9     |         887 | 716         | 678     | 678         |  76.44/94.69  |  76.44/94.69 
+
+Summary
+- instances: 5
+- reference failures: 0
+- avg baseline runtime (s): 0.0030
+- avg reference runtime (s): 1.6881
+- avg best-known score   (baseline/reference): 80.50 / 96.68
+- avg lower-bound score  (baseline/reference): 80.07 / 96.12
+- avg optimality gap %   (baseline/reference, known optimum only): 21.53 / 2.81
+- theoretical score ceiling under score_lb formula: 100.00
+elapsed_seconds=10

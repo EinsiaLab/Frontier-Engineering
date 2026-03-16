@@ -19,12 +19,17 @@ from frontier_eval.tasks.manned_lunar_landing import MannedLunarLandingTask
 from frontier_eval.tasks.perturbation_prediction import PerturbationPredictionTask
 from frontier_eval.tasks.predict_modality import PredictModalityTask
 from frontier_eval.tasks.robot_arm_cycle_time import RobotArmCycleTimeTask
+from frontier_eval.tasks.pid_tuning import PIDTuningTask
 from frontier_eval.tasks.quadruped_gait import QuadrupedGaitTask
 from frontier_eval.tasks.trimul import TriMulTask
+from frontier_eval.tasks.uav_inspection_coverage import UAVInspectionCoverageTask
 from frontier_eval.tasks.smoke import SmokeTask
 from frontier_eval.tasks.trimul import TriMulTask
 from frontier_eval.tasks.wireless_channel_simulation import HighReliableSimulationTask
+from frontier_eval.tasks.flash_attention import FlashAttentionTask
+from frontier_eval.tasks.topology_optimization import TopologyOptimizationTask
 from frontier_eval.tasks.unified import UnifiedTask
+from frontier_eval.tasks.muon_tomography import MuonTomographyTask
 
 _TASKS: dict[str, Type[Task]] = {
     SmokeTask.NAME: SmokeTask,
@@ -39,13 +44,18 @@ _TASKS: dict[str, Type[Task]] = {
     PerturbationPredictionTask.NAME: PerturbationPredictionTask,
     PredictModalityTask.NAME: PredictModalityTask,
     RobotArmCycleTimeTask.NAME: RobotArmCycleTimeTask,
+    PIDTuningTask.NAME: PIDTuningTask,
     QuadrupedGaitTask.NAME: QuadrupedGaitTask,
     DynamicObstacleNavigationTask.NAME: DynamicObstacleNavigationTask,
+    UAVInspectionCoverageTask.NAME: UAVInspectionCoverageTask,
     TriMulTask.NAME: TriMulTask,
     MLATask.NAME: MLATask,
     MallocLabTask.NAME: MallocLabTask,
     HighReliableSimulationTask.NAME: HighReliableSimulationTask,
+    FlashAttentionTask.NAME: FlashAttentionTask,
+    TopologyOptimizationTask.NAME: TopologyOptimizationTask,
     UnifiedTask.NAME: UnifiedTask,
+    MuonTomographyTask.NAME: MuonTomographyTask,
 }
 
 

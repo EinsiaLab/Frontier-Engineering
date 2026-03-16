@@ -10,6 +10,7 @@ Structural optimization is a core discipline in civil, aerospace, and mechanical
 | :--- | :--- | :---: | :--- |
 | `ISCSO2015` | 45-bar 2D truss size + shape optimization | 54 | Continuous, constrained, multi-load-case |
 | `ISCSO2023` | 284-member 3D truss sizing optimization | 284 | Continuous, constrained, multi-load-case |
+| `TopologyOptimization` | MBB beam 2D topology optimization (SIMP) | 1200 | Continuous, volume-constrained, compliance minimization |
 
 ## Why These Problems Are Suitable for Frontier-Engineering
 

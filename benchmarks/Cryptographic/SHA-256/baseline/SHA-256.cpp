@@ -1,3 +1,4 @@
+// EVOLVE-BLOCK-START
 #include <iostream>
 #include <string>
 #include <vector>
@@ -190,3 +191,4 @@ int main() {
     std::cout << sha.final_hash();
     return 0;
 }
+// EVOLVE-BLOCK-END

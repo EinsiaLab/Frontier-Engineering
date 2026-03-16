@@ -3,7 +3,7 @@
 Edit values inside `SUBMISSION` only.
 """
 
-
+# EVOLVE-BLOCK-START
 def _traj(points: list[tuple[int, int, int]]) -> list[dict[str, int]]:
     return [{"t": t, "x": x, "y": y} for (t, x, y) in points]
 
@@ -175,3 +175,4 @@ SUBMISSION = {
         },
     },
 }
+# EVOLVE-BLOCK-END

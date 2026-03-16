@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+# EVOLVE-BLOCK-START
 import sys
 from pathlib import Path
 from numpy.random import Generator, Philox
@@ -63,3 +64,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+# EVOLVE-BLOCK-END

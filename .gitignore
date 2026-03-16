@@ -8,6 +8,7 @@ third_party/*
 __pycache__/
 .pytest_cache/
 runs/
+runs_old/
 benchmarks/Astrodynamics/MannedLunarLanding/results.txt
 benchmarks/Astrodynamics/MannedLunarLanding/outputlog.txt
 .vscode
@@ -16,5 +17,12 @@ benchmarks/Astrodynamics/MannedLunarLanding/outputlog.txt
 *.h5ad.tmp
 *.h5ad.tmp.*
 rawdata/
+<<<<<<< HEAD
 /leaderboard/
 /Kai/
+=======
+*.log
+eval.sh
+eval_single.sh
+rerun_batch_tasks.sh
+>>>>>>> 3b415f018f5dcecd37f382fd2dc8ab98d38ab68f

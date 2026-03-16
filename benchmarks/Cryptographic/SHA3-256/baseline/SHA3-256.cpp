@@ -1,3 +1,4 @@
+// EVOLVE-BLOCK-START
 #include <iostream>
 #include <vector>
 #include <string>
@@ -184,3 +185,4 @@ int main(int argc, char* argv[]) {
     std::cout << hash_file(argv[1]); 
     return 0;
 }
+// EVOLVE-BLOCK-END
