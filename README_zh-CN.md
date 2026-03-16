@@ -124,6 +124,14 @@
       <td>芯片宏单元布局优化</td>
     </tr>
     <tr>
+      <td><b>ParticlePhysics</b></td>
+      <td><code>MuonTomography</code></td>
+      <td>已完成</td>
+      <td>@SeanDF333</td>
+      <td>@ahydchh</td>
+      <td>考虑缪子通量、预算与开挖约束的探测器布局优化</td>
+    </tr>
+    <tr>
       <td rowspan="3"><b>Kernel Engineering</b></td>
       <td><code>MLA</code></td>
       <td>已完成</td>

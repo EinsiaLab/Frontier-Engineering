@@ -138,6 +138,14 @@ The table below lists the current coverage of domain tasks in the Benchmark. We 
       <td>Chip macro placement optimization</td>
     </tr>
     <tr>
+      <td><b>ParticlePhysics</b></td>
+      <td><code>MuonTomography</code></td>
+      <td>Completed</td>
+      <td>@SeanDF333</td>
+      <td>@ahydchh</td>
+      <td>Muon detector placement optimization under flux, budget, and excavation constraints</td>
+    </tr>
+    <tr>
       <td rowspan="3"><b>Kernel Engineering</b></td>
       <td><code>MLA</code></td>
       <td>Completed</td>

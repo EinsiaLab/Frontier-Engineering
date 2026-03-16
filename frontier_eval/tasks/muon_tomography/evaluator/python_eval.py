@@ -45,10 +45,18 @@ def evaluate(program_path: str, *, repo_root: Path | None = None):
     """
     start = time.time()
     repo_root = _find_repo_root() if repo_root is None else repo_root.expanduser().resolve()
-    program_path = str(Path(program_path).expanduser().resolve())
+    program_path = Path(program_path).expanduser().resolve()
 
     work_dir = Path(tempfile.mkdtemp(prefix="fe_muon_")).resolve()
     artifacts: dict[str, str] = {}
+    output_candidates = [work_dir / "solution.json", program_path.parent / "solution.json"]
+    output_mtimes: dict[Path, int | None] = {}
+
+    for path in output_candidates:
+        try:
+            output_mtimes[path] = path.stat().st_mtime_ns if path.exists() else None
+        except OSError:
+            output_mtimes[path] = None
 
     try:
         # ==========================================
@@ -82,12 +90,24 @@ def evaluate(program_path: str, *, repo_root: Path | None = None):
         }
         metrics["program_returncode"] = float(proc.returncode)
 
-        results_path = work_dir / "solution.json"
-        if not results_path.exists():
+        results_path: Path | None = None
+        for candidate in output_candidates:
+            try:
+                if not candidate.exists():
+                    continue
+                previous_mtime = output_mtimes.get(candidate)
+                current_mtime = candidate.stat().st_mtime_ns
+                if previous_mtime is None or current_mtime != previous_mtime:
+                    results_path = candidate
+                    break
+            except OSError:
+                continue
+
+        if results_path is None:
             artifacts["error_message"] = "solution.json not generated"
             metrics["runtime_s"] = float(time.time() - start)
             return _wrap(metrics, artifacts)
-        
+
         artifacts["solution.json"] = results_path.read_text(encoding="utf-8", errors="replace")
 
         # ==========================================

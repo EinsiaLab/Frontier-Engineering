@@ -1,7 +1,8 @@
 import json
 import math
-import os
+from pathlib import Path
 
+# EVOLVE-BLOCK-START
 # ==========================================
 # 物理与目标常数定义
 # ==========================================
@@ -62,20 +63,26 @@ def generate_baseline():
         })
         
     return {"detectors": detectors}
+# EVOLVE-BLOCK-END
+
+
+def _output_path() -> Path:
+    # frontier_eval evaluates candidates from a temporary working directory,
+    # so the contract is to always write `solution.json` in the current cwd.
+    return Path("solution.json")
 
 if __name__ == "__main__":
     # 1. 生成数据
     solution_data = generate_baseline()
     
-    # 2. 确定输出路径 (保存在当前 baseline 目录下)
-    output_filename = "solution.json"
-    output_path = os.path.join(os.path.dirname(__file__), output_filename)
+    # 2. 确定输出路径（保存在当前工作目录下）
+    output_path = _output_path()
     
     # 3. 写入 JSON 文件
     try:
-        with open(output_path, 'w') as f:
+        with output_path.open("w", encoding="utf-8") as f:
             json.dump(solution_data, f, indent=2)
-        print(f"Baseline solution successfully generated: {output_path}")
+        print(f"Baseline solution successfully generated: {output_path.as_posix()}")
         print(f"Total detectors placed: {len(solution_data['detectors'])}")
     except Exception as e:
         print(f"Failed to generate baseline solution: {str(e)}")
