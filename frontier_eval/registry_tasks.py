@@ -30,6 +30,7 @@ from frontier_eval.tasks.flash_attention import FlashAttentionTask
 from frontier_eval.tasks.topology_optimization import TopologyOptimizationTask
 from frontier_eval.tasks.unified import UnifiedTask
 from frontier_eval.tasks.muon_tomography import MuonTomographyTask
+from frontier_eval.tasks.sabr_calibration.task import SABRCalibrationTask
 
 _TASKS: dict[str, Type[Task]] = {
     SmokeTask.NAME: SmokeTask,
@@ -56,6 +57,7 @@ _TASKS: dict[str, Type[Task]] = {
     TopologyOptimizationTask.NAME: TopologyOptimizationTask,
     UnifiedTask.NAME: UnifiedTask,
     MuonTomographyTask.NAME: MuonTomographyTask,
+    SABRCalibrationTask.NAME: SABRCalibrationTask,
 }
 
 
