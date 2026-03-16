@@ -249,6 +249,14 @@
       <td>在降阶 SPMe-T-Aging 风格的电化学、热、析锂和老化模型下优化分段快充策略</td>
     </tr>
     <tr>
+      <td><b>SustainableDataCenterControl</b></td>
+      <td><code>hand_written_control</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>通过 unified 评测链路接入的 SustainDC 联合控制任务，覆盖负载迁移、冷却与电池调度</td>
+    </tr>
+    <tr>
       <td rowspan="4"><b>ReactionOptimisation</b></td>
       <td><code>snar_multiobjective</code></td>
       <td>已完成</td>

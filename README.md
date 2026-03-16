@@ -263,6 +263,14 @@ The table below lists the current coverage of domain tasks in the Benchmark. We 
       <td>Staged fast-charge optimization under a reduced SPMe-T-Aging style electrochemical, thermal, plating, and aging model</td>
     </tr>
     <tr>
+      <td><b>SustainableDataCenterControl</b></td>
+      <td><code>hand_written_control</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>SustainDC joint control benchmark for load shifting, cooling, and battery dispatch through the unified evaluation pipeline</td>
+    </tr>
+    <tr>
       <td rowspan="4"><b>ReactionOptimisation</b></td>
       <td><code>snar_multiobjective</code></td>
       <td>Completed</td>
