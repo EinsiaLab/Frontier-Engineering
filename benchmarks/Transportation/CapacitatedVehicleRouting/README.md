@@ -46,7 +46,7 @@ score = min(1.0, 784 / total_distance)
 | Known optimal  | 784   |
 | Source         | Augerat et al. (1995), confirmed by multiple exact solvers |
 
-Baseline (nearest-neighbour greedy) achieves ≈ 900–950 → score ≈ 0.83–0.87.
+Baseline (nearest-neighbour greedy) achieves distance = 1145 → score ≈ 0.685.
 
 ## Quick Start
 
