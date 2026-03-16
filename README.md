@@ -263,6 +263,35 @@ The table below lists the current coverage of domain tasks in the Benchmark. We 
       <td>Staged fast-charge optimization under a reduced SPMe-T-Aging style electrochemical, thermal, plating, and aging model</td>
     </tr>
     <tr>
+      <td rowspan="4"><b>ReactionOptimisation</b></td>
+      <td><code>snar_multiobjective</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>Continuous-flow SnAr reaction optimization with a Pareto trade-off between productivity and waste</td>
+    </tr>
+    <tr>
+      <td><code>mit_case1_mixed</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>Mixed-variable reaction yield maximization with continuous process settings and a categorical catalyst</td>
+    </tr>
+    <tr>
+      <td><code>reizman_suzuki_pareto</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>Reizman Suzuki emulator Pareto optimization over catalyst choice and operating conditions</td>
+    </tr>
+    <tr>
+      <td><code>dtlz2_pareto</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>DTLZ2 Pareto-front approximation task integrated through the unified evaluation pipeline</td>
+    </tr>
+    <tr>
       <td rowspan="3"><b>MolecularMechanics</b></td>
       <td><code>weighted_parameter_coverage</code></td>
       <td>Completed</td>

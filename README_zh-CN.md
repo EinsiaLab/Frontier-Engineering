@@ -249,6 +249,35 @@
       <td>在降阶 SPMe-T-Aging 风格的电化学、热、析锂和老化模型下优化分段快充策略</td>
     </tr>
     <tr>
+      <td rowspan="4"><b>ReactionOptimisation</b></td>
+      <td><code>snar_multiobjective</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>连续流 SnAr 反应优化，在产能和废物之间做 Pareto 权衡</td>
+    </tr>
+    <tr>
+      <td><code>mit_case1_mixed</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>连续工艺变量与离散催化剂联合的混合变量收率最大化</td>
+    </tr>
+    <tr>
+      <td><code>reizman_suzuki_pareto</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>Reizman Suzuki 仿真器上的催化剂/工艺联合 Pareto 优化</td>
+    </tr>
+    <tr>
+      <td><code>dtlz2_pareto</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>通过 unified 评测链路接入的 DTLZ2 Pareto 前沿逼近任务</td>
+    </tr>
+    <tr>
       <td rowspan="3"><b>MolecularMechanics</b></td>
       <td><code>weighted_parameter_coverage</code></td>
       <td>已完成</td>
