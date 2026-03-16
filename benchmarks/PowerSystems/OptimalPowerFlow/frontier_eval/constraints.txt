@@ -1,0 +1,8 @@
+PowerSystems/OptimalPowerFlow constraints:
+1) Candidate code is `baseline/init.py`; keep the public function `solve(instance) -> list[float]` signature compatible with `verification/evaluate.py`.
+2) Do not modify evaluator logic (`verification/evaluate.py`).
+3) Keep task contracts in `Task.md` / `Task_zh-CN.md` unchanged.
+4) The candidate must be executable with pure Python + numpy + scipy only.
+5) Evaluation score is read from `output/comparison.json` (`baseline_final_score`).
+6) Score formula: min(1.0, 7892.76 / total_cost_$/h); higher is better.
+7) Solution must satisfy: power balance (|sum(Pg)-259| <= 0.5 MW), generation limits, and DC line thermal limits.
