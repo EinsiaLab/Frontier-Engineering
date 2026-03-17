@@ -1,0 +1,121 @@
+{
+  "task": "task4_polarization_multiplexing",
+  "spec": {
+    "shape": 40,
+    "spacing": 1e-05,
+    "wavelength": 7e-07,
+    "waist_radius": 9e-05,
+    "layer_z": [
+      0.08,
+      0.2
+    ],
+    "output_z": 0.54,
+    "pattern_x_centers": [
+      [
+        -0.000171,
+        -0.00011700000000000001
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.000171,
+        0.00011700000000000001
+      ]
+    ],
+    "pattern_x_ratios": [
+      0.5,
+      0.3,
+      0.2
+    ],
+    "pattern_y_centers": [
+      [
+        -0.000171,
+        0.00011700000000000001
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.000171,
+        -0.00011700000000000001
+      ]
+    ],
+    "pattern_y_ratios": [
+      0.25,
+      0.35,
+      0.4
+    ],
+    "steps": 24,
+    "lr": 0.045,
+    "roi_radius_m": 3.0000000000000004e-05,
+    "valid_match_min": 0.32,
+    "valid_separation_min": 0.42,
+    "valid_score_min": 0.16,
+    "score_eff_target": 0.2,
+    "score_ratio_scale": 0.1,
+    "better_score_margin": 0.1,
+    "better_sep_margin": 0.1,
+    "reference_steps": 60,
+    "reference_lr": 0.04
+  },
+  "timing_seconds": {
+    "baseline": 97.549,
+    "reference": 242.777
+  },
+  "baseline": {
+    "valid": true,
+    "match_x": 0.7324468056148115,
+    "match_y": 0.774631833434875,
+    "mean_match": 0.7535393195248432,
+    "separation_x": 0.5005446355461398,
+    "separation_y": 0.5004780249487494,
+    "separation": 0.5005113302474447,
+    "own_efficiency": 0.05591853895024597,
+    "efficiency_score": 0.27959269475122983,
+    "ratio_mae_x": 0.14233887769697132,
+    "ratio_mae_y": 0.07795389941293547,
+    "mean_ratio_mae": 0.1101463885549534,
+    "ratio_score": 0.33238415501967994,
+    "pred_ratio_x": [
+      0.286491683454543,
+      0.4402533289982369,
+      0.2732549875472201
+    ],
+    "pred_ratio_y": [
+      0.2765816833049175,
+      0.4403491658144857,
+      0.2830691508805968
+    ],
+    "score": 0.3930904253391093
+  },
+  "reference": {
+    "oracle_backend": "slmsuite_dual_seed+torchoptics_finetune",
+    "better_than_baseline": true,
+    "match_x": 0.7830835219082156,
+    "match_y": 0.8335378217332028,
+    "mean_match": 0.8083106718207091,
+    "separation_x": 0.9417569323477751,
+    "separation_y": 0.8635660910395335,
+    "separation": 0.9026615116936543,
+    "own_efficiency": 0.10753347405144759,
+    "efficiency_score": 0.5376673702572379,
+    "ratio_mae_x": 0.16480359432959116,
+    "ratio_mae_y": 0.13729666509787408,
+    "mean_ratio_mae": 0.1510501297137326,
+    "ratio_score": 0.22079926417239118,
+    "pred_ratio_x": [
+      0.6811748419965539,
+      0.052794608505613266,
+      0.26603054949783295
+    ],
+    "pred_ratio_y": [
+      0.26596352286003355,
+      0.14405500235318877,
+      0.5899814747867775
+    ],
+    "score": 0.5920325283388849
+  }
+}

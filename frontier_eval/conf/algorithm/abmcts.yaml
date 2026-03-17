@@ -1,0 +1,68 @@
+name: abmcts
+
+# Search budget (number of candidate programs to generate)
+iterations: 0
+batch_size: 1
+
+# TreeQuest AB-MCTS variant:
+# - a: ABMCTSA (lightweight; no extra deps)
+# - m: ABMCTSM (requires `treequest[abmcts-m]`)
+variant: a
+
+# Evaluation (passed to tasks via env `FRONTIER_EVAL_EVALUATOR_TIMEOUT_S`)
+evaluator_timeout_s: 300
+
+# Guardrails
+max_code_length: 20000
+artifact_char_limit: 12000
+max_llm_attempts: 6
+seed: 0
+
+# Reward shaping: TreeQuest expects rewards in [0, 1].
+# This adapter still selects the best program by raw `combined_score`.
+reward:
+  transform: signed_log1p_sigmoid   # signed_log1p_sigmoid | clip_01
+  center: baseline                  # baseline | zero | <float as string>
+  scale: 1.0
+  invalid_reward: 0.0
+
+# TreeQuest actions (e.g., different LLMs / prompts).
+# Each action can optionally override llm.model / temperature / max_tokens.
+actions:
+  - name: default
+    model: null
+    temperature: null
+    max_tokens: null
+
+# TreeQuest native parameters (passed through).
+tq:
+  a:
+    dist_type: gaussian             # gaussian | beta
+    model_selection_strategy: multiarm_bandit_thompson
+    reward_average_priors: null
+    prior_config: null              # e.g. {dist_type: beta, prior: {a: 1.0, b: 1.0}}
+  m:
+    enable_pruning: true
+    model_selection_strategy: multiarm_bandit_thompson
+    reward_average_priors: null
+    min_subtree_size_for_pruning: 4
+    same_score_proportion_threshold: 0.75
+    max_process_workers: 1
+    advanced:
+      validate_reward_range: true
+      prior_mu_alpha_sigma: 0.2
+      prior_sigma_alpha_sigma: 0.2
+      prior_sigma_y_sigma: 0.3
+
+# Logging
+trace:
+  enabled: true
+render:
+  enabled: false
+  format: json
+
+prompt:
+  # Optional: override the system prompt for code generation.
+  system: ""
+  root: ""
+  mutate: ""

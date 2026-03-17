@@ -9,6 +9,8 @@
  * NOTE TO STUDENTS: Replace this header comment with your own header
  * comment that gives a high level description of your solution.
  */
+
+// EVOLVE-BLOCK-START
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -85,3 +87,5 @@ void *mm_realloc(void *ptr, size_t size) {
   mm_free(oldptr);
   return newptr;
 }
+
+// EVOLVE-BLOCK-END

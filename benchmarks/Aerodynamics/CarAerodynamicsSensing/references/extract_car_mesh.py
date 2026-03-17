@@ -29,9 +29,20 @@ def load_case_points(data_dir: Path, case_id: int) -> np.ndarray:
 
 
 def main() -> None:
+    task_root = Path(__file__).resolve().parents[1]
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--data-dir", type=Path, required=True)
-    parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument(
+        "--data-dir",
+        type=Path,
+        default=task_root / "data" / "physense_car_data",
+        help="Dataset root directory containing pressure_files/ and velocity_files/.",
+    )
+    parser.add_argument(
+        "--output",
+        type=Path,
+        default=Path(__file__).resolve().parent / "car_surface_points.npy",
+        help="Output .npy path for the reference surface point set.",
+    )
     parser.add_argument("--case-id", type=int, default=DEFAULT_CASE_ID)
     args = parser.parse_args()
 

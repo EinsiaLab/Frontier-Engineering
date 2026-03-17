@@ -1,180 +1,124 @@
 # ISCSO 2015 — 45-Bar 2D Truss Size + Shape Optimization
 
-## 1. Background
+## Problem
 
-Structural optimization is a fundamental discipline in engineering that aims to design structures with minimum weight while satisfying safety constraints. The **International Student Competition in Structural Optimization (ISCSO)**, organized by Bright Optimizer, provides challenging real-world structural optimization problems annually.
+Minimize weight of 2D planar truss structure:
+- **Structure**: 20 nodes, 45 members, span 20 m (20000 mm)
+- **Design variables**: 54 total
+  - 45 area variables: `A_1, A_2, ..., A_45` (one per member)
+  - 9 shape variables: `y_2, y_4, y_6, y_8, y_10, y_12, y_14, y_16, y_18` (y-coordinates of top-chord nodes)
+- **Load case**: Single load case with 3 vertical forces
+  - Node 15: 60 kips (266.9 kN) downward
+  - Node 17: 80 kips (355.9 kN) downward
+  - Node 19: 60 kips (266.9 kN) downward
+- **Constraints**: 
+  - Stress: `|σ_i| ≤ 30 ksi` (206.8 MPa) for all members
+  - Displacement: `|δ_j| ≤ 2.0 in` (50.8 mm) for all free DOFs
+- **Evaluation limit**: Maximum 7,000 FEM evaluations
 
-The ISCSO 2015 problem is a **2D planar truss** optimization problem involving simultaneous **size optimization** (cross-sectional areas) and **shape optimization** (node positions). This combined optimization makes the problem significantly harder than pure sizing problems, as the geometry changes affect both member lengths and the structural stiffness matrix.
+## Parameters
 
-## 2. Problem Description
+### Material Properties
+- **Elastic modulus**: E = 30,000 ksi = 206.8 GPa
+- **Density**: ρ = 0.283 lb/in³ = 7.86e-6 kg/mm³
 
-The structure is a **45-bar planar truss** spanning 20 meters, consisting of:
+### Constraints
+- **Stress limit**: 30 ksi = 206.8 MPa (tension and compression)
+- **Displacement limit**: ±2.0 in = ±50.8 mm (horizontal and vertical)
 
-- **20 nodes**: 11 bottom-chord nodes (fixed geometry) and 9 top-chord nodes (variable y-coordinates)
-- **45 members**: bottom chord (10), top chord (8), verticals (9), left diagonals (9), right diagonals (9)
-- **2 load cases**: concentrated midspan load and distributed load
+### Supports
+- **Node 1**: Pinned support (fixes x and y displacements, left end)
+- **Node 20**: Roller support (fixes y displacement only, right end)
 
-The task is to minimize the total structural weight by optimizing:
-1. Cross-sectional areas of all 45 members
-2. Vertical (y) coordinates of the 9 top-chord nodes
+### Node Numbering
+- Nodes 1-20: Sequential numbering
+- **Bottom chord**: Nodes 1, 3, 5, 7, 9, 11, 13, 15, 17, 19 (odd numbers)
+- **Top chord**: Nodes 2, 4, 6, 8, 10, 12, 14, 16, 18 (even numbers, shape variables)
 
-subject to stress and displacement constraints under all load cases.
+### Variable Bounds
+- **Area variables** (`A_1` to `A_45`):
+  - Range: 0.1 to 15.0 in² (64.5 to 9677 mm²)
+  - Discrete values: `{0.1, 0.2, 0.3, ..., 14.9, 15.0}` in²
+  - Step size: 0.1 in² (64.5 mm²)
+- **Shape variables** (`y_2, y_4, ..., y_18`):
+  - Range: 100 to 1400 in (2540 to 35560 mm)
+  - Discrete integers: `{100, 101, 102, ..., 1399, 1400}` in
+  - Step size: 1 in (25.4 mm)
 
-### 2.1 Structural Layout
+## Design Variables
 
+The solution vector has 54 elements in this order:
 ```
-    11---12---13---14---15---16---17---18---19       (top chord, variable y)
-   /|\  /|\  /|\  /|\  /|\  /|\  /|\  /|\  /|\
-  / | \/ | \/ | \/ | \/ | \/ | \/ | \/ | \/ | \
- /  | /\ | /\ | /\ | /\ | /\ | /\ | /\ | /\ |  \
-0---1----2----3----4----5----6----7----8----9---10    (bottom chord, y=0)
-^                                              o
-pin                                          roller
+x = [A_1, A_2, ..., A_45, y_2, y_4, y_6, y_8, y_10, y_12, y_14, y_16, y_18]
 ```
 
-- Nodes 0 and 10 are supports (node 0: pinned; node 10: roller)
-- Top-chord nodes 11–19 are positioned directly above bottom-chord nodes 1–9
-- The y-coordinates of nodes 11–19 are design variables
+- **First 45 elements**: Cross-sectional areas for members 1-45
+  - `A_i ∈ {0.1, 0.2, ..., 15.0}` in² (discrete, step 0.1 in²)
+- **Last 9 elements**: y-coordinates for top-chord nodes 2, 4, 6, 8, 10, 12, 14, 16, 18
+  - `y_j ∈ {100, 101, ..., 1400}` in (discrete integers)
 
-## 3. Mathematical Formulation
+**Important**: The optimization must start from a **random initial point** in the design space.
 
-### 3.1 Design Variables
+## Objective Function
 
-Total dimension: **54**
-
+Minimize structural weight:
 ```
-x = [A_0, A_1, ..., A_44, y_11, y_12, ..., y_19]
-```
-
-- `A_i` (i = 0..44): cross-sectional area of member i, in mm²
-- `y_j` (j = 11..19): y-coordinate of top-chord node j, in mm
-
-### 3.2 Variable Bounds
-
-| Variable | Lower Bound | Upper Bound | Unit |
-| :--- | ---: | ---: | :--- |
-| A_i (cross-sectional area) | 10.0 | 10000.0 | mm² |
-| y_j (node y-coordinate) | 500.0 | 4000.0 | mm |
-
-### 3.3 Objective Function
-
-Minimize total structural weight:
-
-```
-W(x) = sum_{i=0}^{44} rho * L_i(x) * A_i
+W(x) = Σ (ρ * L_i(x) * A_i)
 ```
 
 where:
-- `rho = 7.86e-6 kg/mm³` (steel density)
-- `L_i(x)` is the length of member i (depends on node coordinates, hence on shape variables)
-- `A_i` is the cross-sectional area of member i
+- `ρ = 0.283 lb/in³` = 7.86e-6 kg/mm³ (material density)
+- `L_i(x)` = length of member i (depends on shape variables)
+- `A_i` = cross-sectional area of member i
+- Sum is over all 45 members
 
-**Note**: Member lengths `L_i` depend on the shape variables `y_j`, making this a nonlinear objective.
+## Constraints
 
-### 3.4 Constraints
+For the single load case, all constraints must be satisfied:
 
-For **each** load case `k = 0, 1`:
-
-1. **Stress constraints** (all members):
-
-```
-|sigma_{i,k}(x)| <= sigma_allow = 172.4 MPa,  for i = 0..44
-```
+1. **Stress constraints** (all 45 members):
+   ```
+   |σ_i| ≤ 30 ksi = 206.8 MPa
+   ```
+   where `σ_i` is the axial stress in member i (positive = tension, negative = compression)
 
 2. **Displacement constraints** (all free DOFs):
+   ```
+   |δ_j| ≤ 2.0 in = 50.8 mm
+   ```
+   where `δ_j` is the displacement at free degree of freedom j
 
-```
-|delta_{j,k}(x)| <= delta_allow = 50.0 mm,  for all free DOFs j
-```
+A solution is **feasible** only if all constraints are satisfied (within tolerance 1e-6).
 
-3. **Variable bounds** (see Section 3.2)
+## Submission Format
 
-A solution is **feasible** if and only if ALL constraints are satisfied across ALL load cases.
-
-## 4. Physical Model
-
-The structure is a **2D planar truss** structure. The structural response (nodal displacements and member stresses) must be computed using appropriate structural analysis methods (e.g., finite element analysis) to evaluate constraint satisfaction.
-
-Key physical relationships:
-- Member stress depends on the applied loads, member cross-sectional areas, and structural geometry
-- Nodal displacements depend on the structural stiffness, which is a function of member areas and geometry
-- Both stress and displacement constraints must be satisfied simultaneously under all load cases
-
-## 5. Problem Data
-
-All problem data is stored in `references/problem_data.json`. Key parameters:
-
-### 5.1 Material Properties
-
-| Property | Value | Unit |
-| :--- | ---: | :--- |
-| Elastic modulus (E) | 200,000 | MPa |
-| Density (rho) | 7.86e-6 | kg/mm³ |
-
-### 5.2 Constraint Limits
-
-| Constraint | Value | Unit |
-| :--- | ---: | :--- |
-| Allowable stress (sigma_allow) | 172.4 | MPa |
-| Allowable displacement (delta_allow) | 50.0 | mm |
-
-### 5.3 Load Cases
-
-| Load Case | Description | Applied Loads |
-| :--- | :--- | :--- |
-| LC 0 | Concentrated midspan | 100 kN downward at node 5 |
-| LC 1 | Distributed | 50 kN downward at nodes 3, 5, 7 |
-
-### 5.4 Support Conditions
-
-| Node | Type | Fixed DOFs |
-| :--- | :--- | :--- |
-| 0 | Pinned | x, y |
-| 10 | Roller | y only |
-
-## 6. Input/Output Format
-
-### 6.1 Submission Format
-
-The solver must output a file named `submission.json` in the working directory:
+Output a JSON file at `temp/submission.json`:
 
 ```json
 {
   "benchmark_id": "iscso_2015",
-  "solution_vector": [A_0, A_1, ..., A_44, y_11, y_12, ..., y_19],
-  "algorithm": "<algorithm name>",
-  "num_evaluations": <integer>
+  "solution_vector": [A_1, A_2, ..., A_45, y_2, y_4, y_6, y_8, y_10, y_12, y_14, y_16, y_18],
+  "algorithm": "<your_algorithm_name>",
+  "num_evaluations": <number_of_fem_evaluations_used>
 }
 ```
 
-- `solution_vector`: array of 54 floating-point numbers
-  - Indices 0–44: cross-sectional areas (mm²)
-  - Indices 45–53: y-coordinates of nodes 11–19 (mm)
+**Requirements**:
+- `solution_vector`: Array of 54 numbers (45 areas + 9 shape coordinates)
+- `algorithm`: String describing your optimization method
+- `num_evaluations`: Integer ≤ 7,000 (number of times FEM was called)
 
-### 6.2 Evaluation Output
+**Note**: The evaluator independently tracks and validates the evaluation count limit.
 
-The evaluator returns:
+## Scoring
 
-```json
-{
-  "objective": <weight in kg>,
-  "feasible": <true/false>,
-  "max_stress_violation": <max (|sigma| - sigma_allow), 0 if feasible>,
-  "max_displacement_violation": <max (|delta| - delta_allow), 0 if feasible>,
-  "score": <weight if feasible, else Infinity>
-}
-```
+- **Feasible solution**: Score = structural weight (kg), **lower is better**
+- **Infeasible solution**: Score = +∞
 
-## 7. Scoring Criteria
+The final design must be feasible (no constraint violations allowed).
 
-1. **Feasibility check**: All stress and displacement constraints must be satisfied (within tolerance `tol = 1e-6`) across all load cases.
-2. **If infeasible**: `score = +Infinity`
-3. **If feasible**: `score = W(x)` (total structural weight in kg)
-4. **Ranking**: Lower score is better.
+## References
 
-## 8. References
-
-- ISCSO Competition: [http://www.brightoptimizer.com/](http://www.brightoptimizer.com/)
 - Problem data: `references/problem_data.json`
-- Evaluation code: `verification/evaluator.py`
-
+- Evaluator: `verification/evaluator.py`
+- FEM solver: `verification/fem_truss2d.py`

@@ -2,12 +2,13 @@ benchmarks/ElectronicDesignAutomation/IntegrationPhysicalDesignOptimization/data
 benchmarks/ElectronicDesignAutomation/IntegrationPhysicalDesignOptimization/env/
 benchmarks/ElectronicDesignAutomation/install
 *.zip
-third_party/openevolve/
+third_party/*
 .env
 .venv/
 __pycache__/
 .pytest_cache/
 runs/
+runs_old/
 benchmarks/Astrodynamics/MannedLunarLanding/results.txt
 benchmarks/Astrodynamics/MannedLunarLanding/outputlog.txt
 .vscode
@@ -16,3 +17,7 @@ benchmarks/Astrodynamics/MannedLunarLanding/outputlog.txt
 *.h5ad.tmp
 *.h5ad.tmp.*
 rawdata/
+*.log
+eval.sh
+eval_single.sh
+rerun_batch_tasks.sh

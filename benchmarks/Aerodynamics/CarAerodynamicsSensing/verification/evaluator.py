@@ -3,6 +3,7 @@
 
 import argparse
 import json
+import os
 import random
 import sys
 from pathlib import Path
@@ -11,8 +12,17 @@ from types import SimpleNamespace
 import numpy as np
 import torch
 
-DATA_DIR = Path("/data/physense_car_data")
-CKPT_PATH = Path("/data/physense_car_ckpt/physense_transolver_car_base.pth")
+TASK_ROOT = Path(__file__).resolve().parents[1]
+DATA_DIR = TASK_ROOT / "data" / "physense_car_data"
+CKPT_PATH = TASK_ROOT / "data" / "physense_car_ckpt" / "physense_transolver_car_base.pth"
+ALT_CKPT_PATH = (
+    TASK_ROOT
+    / "data"
+    / "physense_car_ckpt"
+    / "physense_transolver_car_best_base.pth"
+)
+if not CKPT_PATH.exists() and ALT_CKPT_PATH.exists():
+    CKPT_PATH = ALT_CKPT_PATH
 
 SENSOR_NUM = 30
 CASE_START = 76
@@ -25,11 +35,51 @@ P_MIN = -844.3360
 P_MAX = 602.6890
 
 
-def find_repo_root(start: Path) -> Path:
+def _is_frontier_repo_root(path: Path) -> bool:
+    return (path / "frontier_eval").is_dir() and (path / "benchmarks").is_dir()
+
+
+def find_frontier_engineering_root(start: Path) -> Path:
+    env = (os.environ.get("FRONTIER_ENGINEERING_ROOT") or "").strip()
+    if env:
+        return Path(env).expanduser().resolve()
+
     for parent in [start] + list(start.parents):
-        if (parent / "PhySense").is_dir() and (parent / "Frontier-Engineering").is_dir():
+        if _is_frontier_repo_root(parent):
             return parent
-    raise RuntimeError("Could not locate repo root containing PhySense and Frontier-Engineering.")
+
+    raise RuntimeError(
+        "Could not locate Frontier-Engineering repo root (missing `frontier_eval/` and `benchmarks/`)."
+    )
+
+
+def find_physense_car_dir(repo_root: Path) -> Path:
+    candidates: list[Path] = []
+    env = (os.environ.get("PHYSENSE_ROOT") or os.environ.get("PHYSENSE_REPO_ROOT") or "").strip()
+    if env:
+        candidates.append(Path(env).expanduser().resolve())
+    candidates += [
+        repo_root / "third_party" / "PhySense",
+        repo_root / "PhySense",
+        repo_root.parent / "PhySense",
+    ]
+
+    for base in candidates:
+        base = base.expanduser().resolve()
+        if base.name == "Car-Aerodynamics" and base.is_dir():
+            return base
+
+        car = (base / "Car-Aerodynamics").resolve()
+        if car.is_dir():
+            return car
+
+    raise RuntimeError(
+        "Could not find `PhySense/Car-Aerodynamics`.\n"
+        "Fix by cloning the PhySense repo into one of:\n"
+        "  <repo>/third_party/PhySense/Car-Aerodynamics\n"
+        "  <workspace>/PhySense/Car-Aerodynamics\n"
+        "or set env `PHYSENSE_ROOT=/path/to/PhySense` (or to the Car-Aerodynamics folder)."
+    )
 
 
 def load_case(case_id: int, data_dir: Path) -> tuple[np.ndarray, np.ndarray]:
@@ -105,11 +155,74 @@ def snap_to_case(ref_points: np.ndarray, case_pos: torch.Tensor) -> torch.Tensor
 
 
 def load_model(device: torch.device):
-    repo_root = find_repo_root(Path(__file__).resolve())
-    physense_car = repo_root / "PhySense" / "Car-Aerodynamics"
-    sys.path.insert(0, str(physense_car))
+    repo_root = find_frontier_engineering_root(Path(__file__).resolve())
+    physense_car = find_physense_car_dir(repo_root)
+    if str(physense_car) not in sys.path:
+        sys.path.insert(0, str(physense_car))
 
     from models import physense_transolver_car_walk
+
+    cls = getattr(physense_transolver_car_walk, "Physics_Attention_Irregular_Mesh", None)
+    if cls is not None and not getattr(cls, "_frontier_cublas_workaround_applied", False):
+        import torch.nn.functional as F
+
+        def _safe_forward(self, x: torch.Tensor) -> torch.Tensor:
+            B, N, _ = x.shape
+
+            fx_mid = (
+                self.in_project_fx(x)
+                .reshape(B, N, self.heads, self.dim_head)
+                .permute(0, 2, 1, 3)
+                .contiguous()
+            )  # (B, H, N, C)
+            x_mid = (
+                self.in_project_x(x)
+                .reshape(B, N, self.heads, self.dim_head)
+                .permute(0, 2, 1, 3)
+                .contiguous()
+            )  # (B, H, N, C)
+
+            slice_weights = self.softmax(self.in_project_slice(x_mid) / self.temperature)  # (B, H, N, G)
+            slice_norm = slice_weights.sum(2)  # (B, H, G)
+
+            G = int(slice_weights.shape[-1])
+            slice_token = torch.empty(
+                (B, self.heads, G, self.dim_head),
+                device=x.device,
+                dtype=x.dtype,
+            )
+            for b in range(B):
+                for h in range(self.heads):
+                    w_t = slice_weights[b, h].transpose(0, 1).contiguous()  # (G, N)
+                    slice_token[b, h] = w_t.mm(fx_mid[b, h])  # (G, C)
+
+            slice_token = slice_token / (slice_norm + 1e-5).unsqueeze(-1)
+
+            q_slice_token = self.to_q(slice_token)
+            k_slice_token = self.to_k(slice_token)
+            v_slice_token = self.to_v(slice_token)
+
+            out_slice_token = F.scaled_dot_product_attention(
+                q_slice_token,
+                k_slice_token,
+                v_slice_token,
+                dropout_p=0.1 if self.training else 0.0,
+            )
+
+            out_x = torch.empty(
+                (B, self.heads, N, self.dim_head),
+                device=x.device,
+                dtype=x.dtype,
+            )
+            for b in range(B):
+                for h in range(self.heads):
+                    out_x[b, h] = slice_weights[b, h].mm(out_slice_token[b, h])
+
+            out_x = out_x.permute(0, 2, 1, 3).contiguous().view(B, N, self.heads * self.dim_head)
+            return self.to_out(out_x)
+
+        cls.forward = _safe_forward
+        cls._frontier_cublas_workaround_applied = True
 
     model = physense_transolver_car_walk.Model(
         n_hidden=374,

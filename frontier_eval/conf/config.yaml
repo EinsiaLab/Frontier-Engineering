@@ -8,7 +8,7 @@ paths:
   repo_root: null
 
 run:
-  output_dir: runs/${task.name}/${algorithm.name}/${fe.basename:${llm.model}}/${now:%Y%m%d_%H%M%S}
+  output_dir: runs/${fe.task_run_label:${task}}/${algorithm.name}/${fe.basename:${llm.model}}/${now:%Y%m%d_%H%M%S}
 
 hydra:
   job:

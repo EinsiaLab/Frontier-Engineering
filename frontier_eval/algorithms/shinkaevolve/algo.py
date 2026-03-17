@@ -5,6 +5,8 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+import shutil
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -70,6 +72,48 @@ def _hms_from_seconds(seconds: int) -> str:
     return f"{h:02d}:{m:02d}:{s:02d}"
 
 
+def _infer_shinka_language(program_path: Path) -> str:
+    suffix = program_path.suffix.lower()
+    suffix_to_language = {
+        ".c": "cpp",
+        ".cc": "cpp",
+        ".cpp": "cpp",
+        ".cxx": "cpp",
+        ".cu": "cuda",
+        ".h": "cpp",
+        ".hh": "cpp",
+        ".hpp": "cpp",
+        ".hxx": "cpp",
+        ".jl": "julia",
+        ".json": "json",
+        ".json5": "json5",
+        ".py": "python",
+        ".pyw": "python",
+        ".rs": "rust",
+        ".swift": "swift",
+    }
+    language = suffix_to_language.get(suffix)
+    if language is None:
+        raise ValueError(
+            f"Cannot infer ShinkaEvolve language from initial program suffix: {program_path.name}"
+        )
+    return language
+
+
+def _find_shinka_main_file(*dirs: Path, lang_ext: str) -> Path | None:
+    seen: set[Path] = set()
+    for directory in dirs:
+        candidates = [directory / f"main.{lang_ext}"]
+        candidates.extend(sorted(directory.glob("main.*")))
+        for candidate in candidates:
+            if candidate in seen:
+                continue
+            seen.add(candidate)
+            if candidate.is_file():
+                return candidate
+    return None
+
+
 def _extract_best_metrics(output_root: Path) -> tuple[dict[str, Any] | None, Path | None]:
     best_correct_score: float | None = None
     best_correct_metrics: dict[str, Any] | None = None
@@ -115,6 +159,7 @@ class ShinkaEvolveAlgorithm(Algorithm):
             from shinka.core import EvolutionConfig, EvolutionRunner
             from shinka.database import DatabaseConfig
             from shinka.launch import LocalJobConfig
+            from shinka.utils.languages import get_language_extension
         except Exception as e:  # pragma: no cover
             raise RuntimeError(
                 "ShinkaEvolve is not importable.\n"
@@ -129,6 +174,7 @@ class ShinkaEvolveAlgorithm(Algorithm):
         self._se_EvolutionRunner = EvolutionRunner
         self._se_DatabaseConfig = DatabaseConfig
         self._se_LocalJobConfig = LocalJobConfig
+        self._se_get_language_extension = get_language_extension
 
     async def run(self, task: Task) -> None:
         algo_cfg = self.cfg.algorithm
@@ -173,6 +219,7 @@ class ShinkaEvolveAlgorithm(Algorithm):
             )
 
         initial_program = task.initial_program_path()
+        inferred_language = _infer_shinka_language(initial_program)
         evaluator_file = (
             self.repo_root
             / "frontier_eval"
@@ -180,25 +227,32 @@ class ShinkaEvolveAlgorithm(Algorithm):
             / "shinkaevolve"
             / "shinkaevolve_entrypoint.py"
         ).resolve()
+        task_cfg_view = OmegaConf.to_container(getattr(self.cfg, "task", None), resolve=True)
+        task_cfg_payload: dict[str, Any] = task_cfg_view if isinstance(task_cfg_view, dict) else {}
+        task_cfg_payload = dict(task_cfg_payload)
+        task_cfg_payload.setdefault("name", task.NAME)
 
         # Ensure Frontier Eval context is visible to Shinka's evaluation subprocesses.
         os.environ["FRONTIER_EVAL_TASK_NAME"] = task.NAME
+        os.environ["FRONTIER_EVAL_TASK_CFG_JSON"] = json.dumps(task_cfg_payload, ensure_ascii=False)
         os.environ["FRONTIER_EVAL_EVALUATOR_TIMEOUT_S"] = str(evaluator_timeout_s)
         os.environ.setdefault("FRONTIER_ENGINEERING_ROOT", str(self.repo_root))
         os.environ.setdefault("PYTHONUNBUFFERED", "1")
 
         # Best-effort: map Frontier's OpenAI-compatible config to Shinka's provider-specific env vars.
         if api_key:
-            os.environ.setdefault("OPENAI_API_KEY", api_key)
+            # ShinkaEvolve loads its own `.env` with `override=True`, so env vars may exist
+            # but be empty. When the user provides `llm.api_key`, treat it as authoritative.
+            os.environ["OPENAI_API_KEY"] = api_key
             if api_base:
-                os.environ.setdefault("OPENAI_API_BASE", api_base)
-                os.environ.setdefault("OPENAI_BASE_URL", api_base)
+                os.environ["OPENAI_API_BASE"] = api_base
+                os.environ["OPENAI_BASE_URL"] = api_base
             if "openrouter.ai" in api_base:
-                os.environ.setdefault("OPENROUTER_API_KEY", api_key)
+                os.environ["OPENROUTER_API_KEY"] = api_key
             if "deepseek" in api_base:
-                os.environ.setdefault("DEEPSEEK_API_KEY", api_key)
+                os.environ["DEEPSEEK_API_KEY"] = api_key
             if "anthropic" in api_base:
-                os.environ.setdefault("ANTHROPIC_API_KEY", api_key)
+                os.environ["ANTHROPIC_API_KEY"] = api_key
 
         se_overrides = _as_plain_mapping(getattr(algo_cfg, "se", None))
         evo_overrides = _as_plain_mapping(se_overrides.get("evo")) if isinstance(se_overrides, dict) else {}
@@ -208,7 +262,7 @@ class ShinkaEvolveAlgorithm(Algorithm):
         evo_kwargs: dict[str, Any] = {
             "init_program_path": str(initial_program),
             "results_dir": str(shinka_dir),
-            "language": "python",
+            "language": inferred_language,
             "use_text_feedback": use_text_feedback,
             "num_generations": int(num_generations),
             "max_parallel_jobs": int(max_parallel),
@@ -227,6 +281,8 @@ class ShinkaEvolveAlgorithm(Algorithm):
         _deep_merge_dict(evo_kwargs, evo_overrides)
         if evo_kwargs.get("llm_models") is None:
             evo_kwargs.pop("llm_models", None)
+        selected_language = str(evo_kwargs.get("language") or inferred_language).strip()
+        lang_ext = self._se_get_language_extension(selected_language)
 
         evo_config = self._se_EvolutionConfig(**evo_kwargs)
 
@@ -236,6 +292,21 @@ class ShinkaEvolveAlgorithm(Algorithm):
         }
         if job_type == "local":
             job_kwargs["time"] = _hms_from_seconds(evaluator_timeout_s)
+
+            # Shinka's local scheduler launches evaluations via `python ...` (PATH lookup).
+            # If `python` in PATH differs from the current interpreter (e.g., when running
+            # Frontier Eval via `conda run ...` without activating the env), evaluations may
+            # run in the wrong environment and miss deps (e.g., `anndata`), causing `valid=0`.
+            # Auto-pin the conda env unless the user explicitly overrides it.
+            if "conda_env" not in job_overrides:
+                conda_env = str(os.environ.get("CONDA_DEFAULT_ENV", "") or "").strip()
+                python_in_path = shutil.which("python")
+                if conda_env and python_in_path:
+                    try:
+                        if Path(python_in_path).resolve() != Path(sys.executable).resolve():
+                            job_kwargs["conda_env"] = conda_env
+                    except Exception:
+                        job_kwargs["conda_env"] = conda_env
         _deep_merge_dict(job_kwargs, job_overrides)
         job_config = self._se_LocalJobConfig(**job_kwargs)
 
@@ -269,17 +340,16 @@ class ShinkaEvolveAlgorithm(Algorithm):
 
             best_program_path = None
             if best_dir is not None:
-                candidates = [
-                    best_dir / "main.py",
-                    best_dir.parent / "main.py",
-                ]
-                for candidate in candidates:
-                    if candidate.is_file():
-                        best_program_path = candidate
-                        break
+                best_program_path = _find_shinka_main_file(
+                    best_dir,
+                    best_dir.parent,
+                    shinka_dir / "best",
+                    lang_ext=lang_ext,
+                )
 
             (shinka_dir / "best").mkdir(parents=True, exist_ok=True)
             info = {
+                "language": selected_language,
                 "metrics": best_metrics,
                 "results_dir": str(best_dir) if best_dir is not None else "",
                 "program_path": str(best_program_path) if best_program_path else "",

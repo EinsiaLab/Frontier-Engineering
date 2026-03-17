@@ -59,8 +59,8 @@ The evaluator also returns artifacts (stdout/stderr, `mla_bench.log`, error summ
 
 ```bash
 OPENAI_MODEL=qwen/qwen3-coder-next \
-FRONTIER_EVAL_MLA_PYTHON=/data_storage/chihh2311/.conda/envs/kernel/bin/python \
-/data_storage/chihh2311/.conda/envs/frontier-eval-2/bin/python -m frontier_eval \
+FRONTIER_EVAL_MLA_PYTHON=/path/to/envs/kernel/bin/python \
+/path/to/envs/frontier-eval-2/bin/python -m frontier_eval \
 task=mla \
 algorithm.iterations=20 \
 algorithm.oe.evaluator.timeout=1800

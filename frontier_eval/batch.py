@@ -6,6 +6,7 @@ import json
 import os
 import re
 import shlex
+import shutil
 import sys
 import time
 import uuid
@@ -101,6 +102,52 @@ def _as_str_list(value: Any, *, field_name: str) -> list[str]:
     return [str(x) for x in value]
 
 
+def _parse_csv_args(values: list[str]) -> list[str]:
+    items: list[str] = []
+    for raw in values or []:
+        for part in str(raw).split(","):
+            item = part.strip()
+            if item:
+                items.append(item)
+    seen: set[str] = set()
+    deduped: list[str] = []
+    for item in items:
+        if item in seen:
+            continue
+        seen.add(item)
+        deduped.append(item)
+    return deduped
+
+
+def _filter_summary_jsonl_in_place(summary_path: Path, *, exclude_tasks: set[str]) -> None:
+    if not summary_path.is_file():
+        return
+    kept_lines: list[str] = []
+    with summary_path.open("r", encoding="utf-8", errors="replace") as f:
+        for line_num, line in enumerate(f, start=1):
+            raw = line.strip()
+            if not raw:
+                continue
+            try:
+                obj = json.loads(raw)
+            except Exception:
+                kept_lines.append(line)
+                continue
+            if not isinstance(obj, dict):
+                kept_lines.append(line)
+                continue
+            task = obj.get("task", None)
+            if isinstance(task, str) and task in exclude_tasks:
+                continue
+            kept_lines.append(line)
+
+    tmp_path = summary_path.with_name(summary_path.name + ".tmp")
+    with tmp_path.open("w", encoding="utf-8") as f:
+        for line in kept_lines:
+            f.write(line if line.endswith("\n") else (line + "\n"))
+    tmp_path.replace(summary_path)
+
+
 def _parse_algorithms(raw_list: list[Any]) -> list[AlgorithmSpec]:
     algorithms: list[AlgorithmSpec] = []
     for item in raw_list:
@@ -169,18 +216,17 @@ def _unique_dir(path: Path) -> Path:
 def _build_runs(
     *,
     repo_root: Path,
+    batch_root: Path,
     tasks: list[str],
     algorithms: list[AlgorithmSpec],
     llms: list[LlmSpec],
     llm_default_config: str,
     common_overrides: list[str],
-    base_dir: Path,
-    batch_id: str,
     python_exe: str,
     extra_overrides: list[str],
+    unique_dirs: bool = True,
 ) -> list[RunSpec]:
-    base_dir = base_dir.expanduser()
-    batch_root = (repo_root / base_dir / batch_id).resolve()
+    batch_root = batch_root.expanduser().resolve()
     batch_root.mkdir(parents=True, exist_ok=True)
 
     for t in tasks:
@@ -195,7 +241,8 @@ def _build_runs(
             for llm in llms or [None]:
                 llm_name = "default_llm" if llm is None else llm.name
                 run_dir = batch_root / _safe_slug(task) / _safe_slug(algo.name) / _safe_slug(llm_name)
-                run_dir = _unique_dir(run_dir)
+                if unique_dirs:
+                    run_dir = _unique_dir(run_dir)
 
                 overrides: list[str] = [
                     f"task={task}",
@@ -335,6 +382,20 @@ def _extract_shinkaevolve_best_metrics(output_dir: Path) -> dict[str, Any] | Non
     return None
 
 
+def _extract_abmcts_best_metrics(output_dir: Path) -> dict[str, Any] | None:
+    info_path = output_dir / "abmcts" / "best" / "best_program_info.json"
+    if not info_path.is_file():
+        return None
+    try:
+        info = json.loads(info_path.read_text(encoding="utf-8", errors="replace"))
+    except Exception:
+        return None
+    metrics = info.get("metrics")
+    if isinstance(metrics, dict):
+        return metrics
+    return None
+
+
 async def _run_one(run: RunSpec) -> dict[str, Any]:
     start = time.time()
     run.output_dir.mkdir(parents=True, exist_ok=True)
@@ -370,6 +431,8 @@ async def _run_one(run: RunSpec) -> dict[str, Any]:
         metrics = _extract_openevolve_best_metrics(run.output_dir)
     elif run.algorithm.name == "shinkaevolve":
         metrics = _extract_shinkaevolve_best_metrics(run.output_dir)
+    elif run.algorithm.name == "abmcts":
+        metrics = _extract_abmcts_best_metrics(run.output_dir)
     record: dict[str, Any] = {
         "task": run.task,
         "algorithm": run.algorithm.name,
@@ -440,6 +503,34 @@ def main(argv: list[str] | None = None) -> None:
         required=True,
         help="Path to a matrix YAML file.",
     )
+    parser.add_argument(
+        "--in-place",
+        action="store_true",
+        help=(
+            "Rerun in an existing batch directory (instead of creating a new one). "
+            "Selected task directories will be deleted before running."
+        ),
+    )
+    parser.add_argument(
+        "--batch-root",
+        type=str,
+        default=None,
+        help=(
+            "Batch root directory to use with --in-place (default: parent directory of --matrix)."
+        ),
+    )
+    parser.add_argument(
+        "--tasks",
+        action="append",
+        default=[],
+        help="Only run these tasks (repeatable; supports comma-separated).",
+    )
+    parser.add_argument(
+        "--exclude-tasks",
+        action="append",
+        default=[],
+        help="Exclude these tasks (repeatable; supports comma-separated).",
+    )
     parser.add_argument("--dry-run", action="store_true", help="Print commands without running.")
     parser.add_argument(
         "--max-parallel",
@@ -485,9 +576,28 @@ def main(argv: list[str] | None = None) -> None:
     if not isinstance(matrix, dict):
         raise TypeError("matrix file must define a mapping at top-level")
 
-    tasks = _as_str_list(matrix.get("tasks"), field_name="tasks")
-    if not tasks:
+    matrix_tasks = _as_str_list(matrix.get("tasks"), field_name="tasks")
+    if not matrix_tasks:
         raise ValueError("matrix.tasks is required and must be non-empty")
+
+    include_tasks = _parse_csv_args(args.tasks)
+    exclude_tasks = _parse_csv_args(args.exclude_tasks)
+    matrix_task_set = set(matrix_tasks)
+
+    tasks = matrix_tasks
+    if include_tasks:
+        unknown = [t for t in include_tasks if t not in matrix_task_set]
+        if unknown:
+            raise ValueError(f"--tasks contains task(s) not present in matrix: {unknown}")
+        tasks = include_tasks
+    if exclude_tasks:
+        unknown = [t for t in exclude_tasks if t not in matrix_task_set]
+        if unknown:
+            raise ValueError(f"--exclude-tasks contains task(s) not present in matrix: {unknown}")
+        exclude_set = set(exclude_tasks)
+        tasks = [t for t in tasks if t not in exclude_set]
+    if not tasks:
+        raise ValueError("No tasks selected after applying --tasks/--exclude-tasks filters")
 
     raw_algos = matrix.get("algorithms")
     if not isinstance(raw_algos, list) or not raw_algos:
@@ -510,25 +620,55 @@ def main(argv: list[str] | None = None) -> None:
     max_parallel = int(args.max_parallel or run_cfg.get("max_parallel") or 1)
     fail_fast = bool(args.fail_fast or run_cfg.get("fail_fast") or False)
 
-    batch_name = str(run_cfg.get("name") or "batch")
-    batch_id = f"{_safe_slug(batch_name)}__{datetime.now().strftime('%Y%m%d_%H%M%S')}__{uuid.uuid4().hex[:8]}"
     extra_overrides = [str(x) for x in (args.override or [])]
 
-    batch_root = (repo_root / base_dir / batch_id).resolve()
-    batch_root.mkdir(parents=True, exist_ok=True)
-    OmegaConf.save(matrix_cfg, str(batch_root / "matrix_resolved.yaml"))
+    if args.in_place:
+        if not include_tasks:
+            raise ValueError("--in-place requires --tasks to explicitly list task(s) to rerun")
+        batch_root = Path(args.batch_root).expanduser().resolve() if args.batch_root else matrix_path.parent
+        batch_root = batch_root.expanduser().resolve()
+        if not batch_root.is_dir():
+            raise FileNotFoundError(f"batch root directory not found: {batch_root}")
+        try:
+            batch_root.resolve().relative_to(repo_root.resolve())
+        except Exception as e:
+            raise ValueError(f"--batch-root must be inside repo root: {repo_root}") from e
+
+        if not args.dry_run:
+            for task in tasks:
+                task_dir = (batch_root / _safe_slug(task)).resolve()
+                try:
+                    task_dir.relative_to(batch_root.resolve())
+                except Exception as e:
+                    raise ValueError(f"Refusing to delete outside batch root: {task_dir}") from e
+                if task_dir.is_symlink():
+                    raise ValueError(f"Refusing to delete symlinked task dir: {task_dir}")
+                if task_dir.exists() and not task_dir.is_dir():
+                    raise ValueError(f"Expected task path to be a directory: {task_dir}")
+                if task_dir.is_dir():
+                    shutil.rmtree(task_dir)
+
+            _filter_summary_jsonl_in_place(batch_root / "summary.jsonl", exclude_tasks=set(tasks))
+        unique_dirs = False
+    else:
+        batch_name = str(run_cfg.get("name") or "batch")
+        batch_id = f"{_safe_slug(batch_name)}__{datetime.now().strftime('%Y%m%d_%H%M%S')}__{uuid.uuid4().hex[:8]}"
+        batch_root = (repo_root / base_dir / batch_id).resolve()
+        batch_root.mkdir(parents=True, exist_ok=True)
+        OmegaConf.save(matrix_cfg, str(batch_root / "matrix_resolved.yaml"))
+        unique_dirs = True
 
     runs = _build_runs(
         repo_root=repo_root,
+        batch_root=batch_root,
         tasks=tasks,
         algorithms=algorithms,
         llms=llms,
         llm_default_config=llm_default_config,
         common_overrides=common_overrides,
-        base_dir=base_dir,
-        batch_id=batch_id,
         python_exe=str(args.python),
         extra_overrides=extra_overrides,
+        unique_dirs=unique_dirs,
     )
 
     print(f"Batch: {batch_root}")

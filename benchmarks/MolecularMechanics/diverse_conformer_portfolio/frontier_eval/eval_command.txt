@@ -1,0 +1,1 @@
+{python} {repo_root}/benchmarks/MolecularMechanics/frontier_eval/run_eval.py

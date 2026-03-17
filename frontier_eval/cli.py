@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import os
+import re
 from pathlib import Path
 
 import hydra
@@ -13,11 +14,50 @@ from frontier_eval.registry import get_algorithm, get_task
 
 
 def _register_omegaconf_resolvers() -> None:
+    def _safe_slug(value: str) -> str:
+        safe = re.sub(r"[^A-Za-z0-9._-]+", "_", str(value or "")).strip("._-")
+        return safe or "item"
+
     def _basename(value) -> str:
         s = str(value or "").rstrip("/")
         return s.rsplit("/", 1)[-1]
 
+    def _task_run_label(task_cfg) -> str:
+        name = "task"
+        benchmark = ""
+
+        try:
+            if isinstance(task_cfg, dict):
+                name = str(task_cfg.get("name", "task") or "task")
+                benchmark = str(task_cfg.get("benchmark", "") or "").strip()
+            else:
+                name = str(getattr(task_cfg, "name", "task") or "task")
+                benchmark = str(getattr(task_cfg, "benchmark", "") or "").strip()
+        except Exception:
+            pass
+
+        name_slug = _safe_slug(name)
+        if name_slug != "unified":
+            return name_slug
+
+        if not benchmark:
+            return "unified"
+
+        norm = benchmark.replace("\\", "/").strip("/")
+        parts = [p for p in norm.split("/") if p]
+        lowered = [p.lower() for p in parts]
+        if "benchmarks" in lowered:
+            idx = len(lowered) - 1 - lowered[::-1].index("benchmarks")
+            if idx + 1 < len(parts):
+                parts = parts[idx + 1 :]
+
+        part_slugs = [_safe_slug(p) for p in parts if p.strip()]
+        if not part_slugs:
+            return "unified"
+        return f"unified__{'__'.join(part_slugs)}"
+
     OmegaConf.register_new_resolver("fe.basename", _basename, replace=True)
+    OmegaConf.register_new_resolver("fe.task_run_label", _task_run_label, replace=True)
 
 
 _register_omegaconf_resolvers()

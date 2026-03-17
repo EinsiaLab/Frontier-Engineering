@@ -148,16 +148,18 @@ def build_fem_and_evaluate(
 
     for node_data in problem["nodes"]:
         nid = node_data["id"]
-        nodes[nid, 0] = node_data["x"]
-        nodes[nid, 1] = node_data["y"]
+        idx = nid - 1
+        nodes[idx, 0] = node_data["x"]
+        nodes[idx, 1] = node_data["y"]
 
     # Apply shape variables
     for idx, nid in enumerate(shape_node_ids):
-        nodes[nid, 1] = shape_vars[idx]
+        node_idx = nid - 1
+        nodes[node_idx, 1] = shape_vars[idx]
 
     # --- Build element connectivity ---
     elements = np.array(
-        [[b["node_i"], b["node_j"]] for b in problem["bars"]], dtype=int
+        [[b["node_i"] - 1, b["node_j"] - 1] for b in problem["bars"]], dtype=int
     )
 
     # --- Create FEM solver ---
@@ -191,8 +193,9 @@ def build_fem_and_evaluate(
         force_vec = np.zeros(2 * problem["num_nodes"])
         for load in lc["loads"]:
             nid = load["node"]
-            force_vec[2 * nid] += load["fx"]
-            force_vec[2 * nid + 1] += load["fy"]
+            idx = nid - 1
+            force_vec[2 * idx] += load["fx"]
+            force_vec[2 * idx + 1] += load["fy"]
 
         try:
             displacements, stresses, lengths = fem.solve(areas, force_vec)
@@ -298,9 +301,12 @@ def evaluate(program_path: str, *, repo_root: Path | None = None) -> Any:
         metrics["program_returncode"] = float(proc.returncode)
 
         # 3. Read submission
-        submission_path = work_dir / "submission.json"
+        submission_path = work_dir / "temp" / "submission.json"
         if not submission_path.exists():
-            artifacts["error_message"] = "submission.json not generated"
+            # Fallback to old location for backward compatibility
+            submission_path = work_dir / "submission.json"
+        if not submission_path.exists():
+            artifacts["error_message"] = "submission.json not generated (checked temp/submission.json and submission.json)"
             metrics["runtime_s"] = float(time.time() - start)
             return _wrap(metrics, artifacts)
 
@@ -371,5 +377,9 @@ if __name__ == "__main__":
         print(json.dumps(result, indent=2))
     else:
         result = evaluate(sys.argv[1])
-        print(json.dumps(result, indent=2))
+        if hasattr(result, "metrics"):
+            output = {"metrics": result.metrics, "artifacts": result.artifacts}
+        else:
+            output = result
+        print(json.dumps(output, indent=2))
 
