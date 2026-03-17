@@ -1,4 +1,5 @@
 {
+<<<<<<< Updated upstream
   "benchmark_id": "lightweight_broadband_absorber_8_18ghz",
   "task_name": "LightweightBroadbandAbsorber",
   "description": "Lightweight broadband CNTs@Nd-BaM/PE absorber optimization across 8.2-18 GHz with minimum bandwidth constraint",
@@ -8,16 +9,34 @@
   "backing": "PEC",
   "d_mm_min": 1.0,
   "d_mm_max": 5.0,
+=======
+  "benchmark_id": "lightweight_broadband_absorber_2_18ghz",
+  "task_name": "LightweightBroadbandAbsorber",
+  "description": "Lightweight broadband absorber optimization across 2-18 GHz with minimum bandwidth constraint",
+  "freq_ghz_min": 2.0,
+  "freq_ghz_max": 18.0,
+  "num_freq_points": 321,
+  "backing": "PEC",
+  "d_mm_min": 1.0,
+  "d_mm_max": 6.0,
+>>>>>>> Stashed changes
   "phi_min": 0.0,
   "phi_max": 1.0,
   "phi_sum_tolerance": 1e-6,
   "rl_threshold_db": -10.0,
   "min_eab_ghz": 4.0,
   "normalization": {
+<<<<<<< Updated upstream
     "eab10_ghz":     { "min": 0.0,  "max": 9.8 },
     "abs_rl_min_db": { "min": 0.0,  "max": 60.0 },
     "thickness_mm":  { "min": 1.0,  "max": 5.0 },
     "density":       { "min": 0.9,  "max": 5.5 },
+=======
+    "eab10_ghz":     { "min": 0.0,  "max": 16.0 },
+    "abs_rl_min_db": { "min": 0.0,  "max": 40.0 },
+    "thickness_mm":  { "min": 1.0,  "max": 6.0 },
+    "density":       { "min": 1.0,  "max": 8.0 },
+>>>>>>> Stashed changes
     "cost":          { "min": 1.0,  "max": 4.0 }
   },
   "weights": {
@@ -27,5 +46,9 @@
     "density": 0.5,
     "cost": 0.05
   },
+<<<<<<< Updated upstream
   "notes": "Frequency range 8.2-18 GHz matches the waveguide VNA measurement band used in the reference study (Wang et al., Materials 2024). EAB max is 9.8 GHz (full band). Density penalty dominant (0.5) for lightweight optimization. EAB < 4.0 GHz => infeasible."
+=======
+  "notes": "Density penalty is dominant (0.5) to incentivize lightweight designs. EAB < 4.0 GHz => infeasible (score=0). All metrics normalized to [0,1]."
+>>>>>>> Stashed changes
 }

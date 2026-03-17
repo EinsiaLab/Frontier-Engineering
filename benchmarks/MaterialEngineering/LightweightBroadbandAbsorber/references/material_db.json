@@ -1,5 +1,6 @@
 {
   "matrix": {
+<<<<<<< Updated upstream
     "eps_real": 2.3,
     "eps_imag": 0.02,
     "mu_real": 1.0,
@@ -40,5 +41,30 @@
     "mixing_rule": "Linear volume-fraction mixing. Actual composites exhibit non-linear effects (percolation threshold, interfacial polarization) not captured by this approximation.",
     "sign_convention": "eps_r = eps_real - j*eps_imag (negative imaginary part). Same for permeability.",
     "key_mechanism": "The synergy between CNTs (dielectric loss via conductive network and electronic polarization) and Nd-BaM (magnetic loss via natural ferromagnetic resonance and eddy current loss) achieves magnetoelectric complementarity. Debye relaxation analysis (Cole-Cole semicircles) confirms that the 2:1 ratio maximizes polarization relaxation loss."
+=======
+    "eps_real": 3.0, "eps_imag": 0.1, "mu_real": 1.0, "mu_imag": 0.0,
+    "density": 1.2, "cost_proxy": 1.0,
+    "description": "Epoxy resin matrix"
+  },
+  "dielectric_filler": {
+    "eps_real": 15.0, "eps_imag": 4.0, "mu_real": 1.0, "mu_imag": 0.0,
+    "density": 1.8, "cost_proxy": 2.5,
+    "description": "High-loss carbon-based dielectric filler (e.g., MWCNTs). Enhanced dielectric loss for broadband absorption."
+  },
+  "magnetic_filler": {
+    "eps_real": 6.0, "eps_imag": 0.8, "mu_real": 2.2, "mu_imag": 0.6,
+    "density": 7.8, "cost_proxy": 3.0,
+    "description": "Ferrite-type magnetic filler (e.g., carbonyl iron). Strong magnetic loss for impedance matching."
+  },
+  "lightweight_magnetic_filler": {
+    "eps_real": 5.0, "eps_imag": 0.5, "mu_real": 1.5, "mu_imag": 0.3,
+    "density": 3.2, "cost_proxy": 4.0,
+    "description": "Lightweight magnetic filler (e.g., hollow Fe3O4 microspheres). Lower density but weaker magnetic loss."
+  },
+  "_notes": {
+    "electromagnetic_parameters": "All values are frequency-independent constant approximations. Real materials exhibit significant dispersion across 2-18 GHz.",
+    "mixing_rule": "Linear volume-fraction mixing. Future versions may adopt Maxwell-Garnett or Bruggeman.",
+    "sign_convention": "eps_r = eps_real - j*eps_imag (negative imaginary part). Same for permeability."
+>>>>>>> Stashed changes
   }
 }

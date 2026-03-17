@@ -1,8 +1,17 @@
 {
+<<<<<<< Updated upstream
   "benchmark_id": "lightweight_broadband_absorber_8_18ghz",
   "d_mm": 2.0243,
   "phi_magnetic_absorber": 0.0752,
   "phi_conductive_filler": 0.1787,
   "phi_lightweight_magnetic": 0.0744,
   "phi_matrix": 0.6717
+=======
+  "benchmark_id": "lightweight_broadband_absorber_2_18ghz",
+  "d_mm": 1.4238,
+  "phi_dielectric": 0.453,
+  "phi_magnetic": 0.119,
+  "phi_lightweight_magnetic": 0.3072,
+  "phi_matrix": 0.1208
+>>>>>>> Stashed changes
 }
