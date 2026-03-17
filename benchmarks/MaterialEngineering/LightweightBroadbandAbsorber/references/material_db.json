@@ -1,0 +1,44 @@
+{
+  "matrix": {
+    "eps_real": 2.3,
+    "eps_imag": 0.02,
+    "mu_real": 1.0,
+    "mu_imag": 0.0,
+    "density": 0.95,
+    "cost_proxy": 1.0,
+    "description": "Polyethylene (PE) matrix. Non-magnetic thermoplastic polymer used as binder via hot-pressing. Exhibits negligible electromagnetic loss."
+  },
+  "magnetic_absorber": {
+    "eps_real": 14.0,
+    "eps_imag": 8.0,
+    "mu_real": 1.35,
+    "mu_imag": 0.25,
+    "density": 5.1,
+    "cost_proxy": 2.5,
+    "description": "Nd0.15-doped M-type barium ferrite (Nd0.15-BaM). Prepared via sol-gel self-propagating combustion and sintered at 850C. Nd3+ doping enhances magneto-crystalline anisotropy and lattice distortion, improving both magnetic and dielectric loss."
+  },
+  "conductive_filler": {
+    "eps_real": 18.0,
+    "eps_imag": 12.0,
+    "mu_real": 1.0,
+    "mu_imag": 0.0,
+    "density": 1.7,
+    "cost_proxy": 3.5,
+    "description": "Carbon nanotubes (CNTs), 8 wt% composited on Nd-BaM surface. Form conductive networks that dissipate electromagnetic waves via electronic polarization and resistive heating. Significantly enhance dielectric loss and widen absorption bandwidth."
+  },
+  "lightweight_magnetic": {
+    "eps_real": 7.0,
+    "eps_imag": 2.5,
+    "mu_real": 1.15,
+    "mu_imag": 0.12,
+    "density": 2.8,
+    "cost_proxy": 4.0,
+    "description": "Hollow Nd-BaM microspheres or BaM-coated cenospheres. Reduced density variant of Nd-BaM with weaker but still present magnetic loss. Trades electromagnetic performance for significant weight reduction."
+  },
+  "_notes": {
+    "data_source": "Electromagnetic parameters are approximated from VNA waveguide measurements (8.2-18 GHz) reported in Wang et al., Materials 2024, 17, 3433. The PE:CNTs@Nd0.15-BaM=2:1 sample exhibited eps'~5-7, eps''~2-4, mu'~1.2-1.5, mu''~0.1-0.4 across the band. Values here represent frequency-independent effective averages.",
+    "mixing_rule": "Linear volume-fraction mixing. Actual composites exhibit non-linear effects (percolation threshold, interfacial polarization) not captured by this approximation.",
+    "sign_convention": "eps_r = eps_real - j*eps_imag (negative imaginary part). Same for permeability.",
+    "key_mechanism": "The synergy between CNTs (dielectric loss via conductive network and electronic polarization) and Nd-BaM (magnetic loss via natural ferromagnetic resonance and eddy current loss) achieves magnetoelectric complementarity. Debye relaxation analysis (Cole-Cole semicircles) confirms that the 2:1 ratio maximizes polarization relaxation loss."
+  }
+}

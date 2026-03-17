@@ -1,0 +1,26 @@
+Baseline Execution Log
+======================
+Command: python verification/evaluator.py baseline/solution.py
+Date: 2026-03-17
+Method: Random search (3000 samples, seed=42)
+Material system: CNTs@Nd0.15-BaM/PE with hollow Nd-BaM microspheres
+
+Evaluation Result:
+{
+  "valid": 1,
+  "feasible": 1,
+  "combined_score": 0.4741,
+  "rl_min_db": -49.08,
+  "eab10_ghz": 5.25,
+  "thickness_mm": 2.0243,
+  "density": 1.5337,
+  "cost_proxy": 1.7827,
+  "runtime_sec": 1.467
+}
+
+Notes:
+- combined_score > 0, baseline is feasible.
+- EAB = 5.25 GHz (exceeds 4.0 GHz hard constraint).
+- RL_min = -49.08 dB (deep absorption, consistent with paper's -58 dB at optimal ratio).
+- Density = 1.53 g/cm3 (lightweight design achieved).
+- Material parameters based on Wang et al., Materials 2024, 17, 3433.
