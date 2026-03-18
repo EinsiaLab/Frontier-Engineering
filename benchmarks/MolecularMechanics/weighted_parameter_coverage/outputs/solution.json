@@ -1,0 +1,14 @@
+{
+  "predicted_score": 9.077764,
+  "selected_candidate_ids": [
+    "mol_008",
+    "mol_010",
+    "mol_014",
+    "mol_024",
+    "mol_025",
+    "mol_026",
+    "mol_046",
+    "mol_050"
+  ],
+  "solver": "individual_feature_count"
+}

@@ -1,0 +1,6 @@
+README.md
+Task.md
+task.py
+baseline/solution.py
+verification/reference.py
+verification/evaluate.py

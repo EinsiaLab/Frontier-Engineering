@@ -121,12 +121,19 @@ English | [简体中文](README_zh-CN.md)
       <td>登月软着陆轨迹优化</td>
     </tr>
     <tr>
-      <td><b>ElectronicDesignAutomation</b></td>
-      <td><code>IntegrationPhysicalDesignOptimization</code></td>
-      <td>开发中</td>
+      <td rowspan="2"><b>ParticlePhysics</b></td>
+      <td><code>MuonTomography</code></td>
+      <td>已完成</td>
+      <td>@SeanDF333</td>
       <td>@ahydchh</td>
+      <td>考虑缪子通量、预算与开挖约束的探测器布局优化</td>
+    </tr>
+    <tr>
+      <td><code>ProtonTherapyPlanning</code></td>
+      <td>已完成</td>
+      <td>@SeanDF333</td>
       <td>@ahydchh</td>
-      <td>芯片宏单元布局优化</td>
+      <td>在肿瘤覆盖、危及器官保护与束流成本约束下优化 IMPT 剂量权重</td>
     </tr>
     <tr>
       <td rowspan="3"><b>Kernel Engineering</b></td>
@@ -237,6 +244,80 @@ English | [简体中文](README_zh-CN.md)
       <td>@WayneJin0918</td>
       <td>@ahydchh</td>
       <td>瑞利衰落信道误码率分析，使用重要性采样模拟深衰落事件</td>
+    </tr>
+    <tr>
+      <td rowspan="2"><b>EnergyStorage</b></td>
+      <td><code>BatteryFastChargingProfile</code></td>
+      <td>已完成</td>
+      <td>@kunkun04</td>
+      <td>@ahydchh</td>
+      <td>在电压、温升和退化约束下优化锂离子电池快充电流曲线</td>
+    </tr>
+    <tr>
+      <td><code>BatteryFastChargingSPMe</code></td>
+      <td>已完成</td>
+      <td>@kunkun04</td>
+      <td>@ahydchh</td>
+      <td>在降阶 SPMe-T-Aging 风格的电化学、热、析锂和老化模型下优化分段快充策略</td>
+    </tr>
+    <tr>
+      <td><b>SustainableDataCenterControl</b></td>
+      <td><code>hand_written_control</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>通过 unified 评测链路接入的 SustainDC 联合控制任务，覆盖负载迁移、冷却与电池调度</td>
+    </tr>
+    <tr>
+      <td rowspan="4"><b>ReactionOptimisation</b></td>
+      <td><code>snar_multiobjective</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>连续流 SnAr 反应优化，在产能和废物之间做 Pareto 权衡</td>
+    </tr>
+    <tr>
+      <td><code>mit_case1_mixed</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>连续工艺变量与离散催化剂联合的混合变量收率最大化</td>
+    </tr>
+    <tr>
+      <td><code>reizman_suzuki_pareto</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>Reizman Suzuki 仿真器上的催化剂/工艺联合 Pareto 优化</td>
+    </tr>
+    <tr>
+      <td><code>dtlz2_pareto</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>通过 unified 评测链路接入的 DTLZ2 Pareto 前沿逼近任务</td>
+    </tr>
+    <tr>
+      <td rowspan="3"><b>MolecularMechanics</b></td>
+      <td><code>weighted_parameter_coverage</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>给定分子预算下的稀有力场参数覆盖优化</td>
+    </tr>
+    <tr>
+      <td><code>diverse_conformer_portfolio</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>低能量且高多样性的构象组合选择</td>
+    </tr>
+    <tr>
+      <td><code>torsion_profile_fitting</code></td>
+      <td>已完成</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>面向目标能量曲线的扭转参数缩放拟合</td>
     </tr>
     <tr>
       <td rowspan="16"><b>Optics</b></td>

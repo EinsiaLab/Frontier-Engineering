@@ -130,12 +130,19 @@ The table below lists the current coverage of domain tasks in the Benchmark. We 
       <td>Lunar soft landing trajectory optimization</td>
     </tr>
     <tr>
-      <td><b>ElectronicDesignAutomation</b></td>
-      <td><code>IntegrationPhysicalDesignOptimization</code></td>
-      <td>In Development</td>
+      <td rowspan="2"><b>ParticlePhysics</b></td>
+      <td><code>MuonTomography</code></td>
+      <td>Completed</td>
+      <td>@SeanDF333</td>
       <td>@ahydchh</td>
+      <td>Muon detector placement optimization under flux, budget, and excavation constraints</td>
+    </tr>
+    <tr>
+      <td><code>ProtonTherapyPlanning</code></td>
+      <td>Completed</td>
+      <td>@SeanDF333</td>
       <td>@ahydchh</td>
-      <td>Chip macro placement optimization</td>
+      <td>IMPT dose weight optimization under tumor coverage, OAR safety, and beam cost constraints</td>
     </tr>
     <tr>
       <td rowspan="3"><b>Kernel Engineering</b></td>
@@ -246,6 +253,80 @@ The table below lists the current coverage of domain tasks in the Benchmark. We 
       <td>@WayneJin0918</td>
       <td>@ahydchh</td>
       <td>BER analysis under Rayleigh fading with importance sampling for deep fade events</td>
+    </tr>
+    <tr>
+      <td rowspan="2"><b>EnergyStorage</b></td>
+      <td><code>BatteryFastChargingProfile</code></td>
+      <td>Completed</td>
+      <td>@kunkun04</td>
+      <td>@ahydchh</td>
+      <td>Fast-charge current-profile optimization for a lithium-ion cell under voltage, thermal, and degradation constraints</td>
+    </tr>
+    <tr>
+      <td><code>BatteryFastChargingSPMe</code></td>
+      <td>Completed</td>
+      <td>@kunkun04</td>
+      <td>@ahydchh</td>
+      <td>Staged fast-charge optimization under a reduced SPMe-T-Aging style electrochemical, thermal, plating, and aging model</td>
+    </tr>
+    <tr>
+      <td><b>SustainableDataCenterControl</b></td>
+      <td><code>hand_written_control</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>SustainDC joint control benchmark for load shifting, cooling, and battery dispatch through the unified evaluation pipeline</td>
+    </tr>
+    <tr>
+      <td rowspan="4"><b>ReactionOptimisation</b></td>
+      <td><code>snar_multiobjective</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>Continuous-flow SnAr reaction optimization with a Pareto trade-off between productivity and waste</td>
+    </tr>
+    <tr>
+      <td><code>mit_case1_mixed</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>Mixed-variable reaction yield maximization with continuous process settings and a categorical catalyst</td>
+    </tr>
+    <tr>
+      <td><code>reizman_suzuki_pareto</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>Reizman Suzuki emulator Pareto optimization over catalyst choice and operating conditions</td>
+    </tr>
+    <tr>
+      <td><code>dtlz2_pareto</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>DTLZ2 Pareto-front approximation task integrated through the unified evaluation pipeline</td>
+    </tr>
+    <tr>
+      <td rowspan="3"><b>MolecularMechanics</b></td>
+      <td><code>weighted_parameter_coverage</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>Rare force-field parameter coverage under a molecule budget</td>
+    </tr>
+    <tr>
+      <td><code>diverse_conformer_portfolio</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>Low-energy, high-diversity conformer portfolio selection</td>
+    </tr>
+    <tr>
+      <td><code>torsion_profile_fitting</code></td>
+      <td>Completed</td>
+      <td>@ahydchh</td>
+      <td>@ahydchh</td>
+      <td>Force-field torsion-scale fitting against target energy profiles</td>
     </tr>
     <tr>
       <td rowspan="16"><b>Optics</b></td>

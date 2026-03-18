@@ -1,0 +1,5 @@
+# SustainableDataCenterControl dependencies for direct verification.
+# Install from repository root:
+#   python -m pip install -r benchmarks/SustainableDataCenterControl/requirements.txt
+
+-r hand_written_control/sustaindc/requirements.txt
