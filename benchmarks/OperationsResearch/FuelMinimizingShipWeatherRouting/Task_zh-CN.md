@@ -1,8 +1,18 @@
-# Fuel-Minimizing Ship Weather Routing 任务
+# 燃油最小化船舶气象航线规划
 
-## 目标
+## 任务概览
 
-Route a ship across a frozen coastal grid while minimizing total fuel consumption under synthetic wind and current fields.
+在冻结的沿海栅格上规划船舶航线，在确定性的风场和流场影响下尽量降低燃油消耗。
+
+这个 benchmark 对应的是考虑天气影响的航线规划。一旦把逆风、侧风和流场影响都折算进燃油模型，几何最短路通常就不再是最省油的路线。
+
+从算法角度看，它是在固定栅格图上的受约束路径规划问题，只不过边代价由环境场诱导出来。
+
+## 哪些部分是冻结的
+
+- `runtime/problem.py` 中冻结的沿海陆地掩码、水域格点、确定性风场和确定性流场。
+- 起点、终点，以及路径只能在相邻可航行格点之间移动的规则。
+- 用于给返回航线打分的燃油和航时模型。
 
 ## 提交接口
 
@@ -13,35 +23,30 @@ def solve(instance):
     ...
 ```
 
-返回值可以是路径列表，也可以是包含 `path` 键的字典。
+返回一个网格坐标列表，或带 `path` 字段的字典。路径必须从 `instance["start"]` 出发，到达 `instance["goal"]`，每一步只走相邻格点，并始终停留在可航行水域内。
 
-路径必须：
+## 评测流程
 
-1. 从 `instance["start"]` 出发
-2. 以 `instance["goal"]` 结束
-3. 只能在相邻网格之间移动
-4. 不能进入陆地或不可航行水域
-
-## 固定世界模型
-
-- 地图、起终点、合成风场与合成流场都固定在 `runtime/problem.py` 中。
-- 上游算法谱系来自 `WeatherRoutingTool`，但这里的环境数据是 benchmark 内部固定生成的 synthetic asset。
-
-## 评测方式
-
-评测器会：
-
-1. 载入固定实例
-2. 机械检查路径可行性
-3. 计算该路径的总燃油和总航时
-4. 记录最短步数 baseline 与 Dijkstra 参考值作为诊断信息，同时直接以候选燃油目标打分
+1. 从 `runtime/problem.py` 载入冻结的航线实例。
+2. 检查返回路径的起终点、相邻移动规则和陆地掩码。
+3. 计算整条航线的总燃油和总航时。
+4. 输出候选燃油消耗，并同时给出 baseline 和参考指标作对照。
 
 ## 指标
 
 - `combined_score`：`-candidate_fuel`
-- `valid`：只有路径可行时才为 `1.0`
+- `valid`：只有航线可行时才为 `1.0`
 - `candidate_fuel`
 - `baseline_fuel`
 - `reference_fuel`
 - `candidate_time_h`
 - `baseline_time_h`
+
+## 判为无效的情况
+
+- 缺少 `solve(...)`，或函数在评测中报错
+- 返回值无法解析为路径
+- 路径起终点错误、包含非相邻移动，或触碰陆地
+- 任意报告指标出现非有限值
+
+<!-- AI_GENERATED -->

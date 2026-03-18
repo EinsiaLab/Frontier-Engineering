@@ -1,8 +1,18 @@
 # DuckDB Pre-Aggregation Selection Task
 
-## Objective
+## Problem
 
-Choose a small set of pre-aggregation tables for a frozen DuckDB reporting workload.
+Choose a whitelist subset of pre-aggregation tables for a frozen DuckDB reporting workload and minimize total runtime.
+
+This benchmark models a very common warehouse decision: which summary tables are worth materializing for a recurring reporting workload. The wrong choice wastes storage and refresh time; the right choice reduces repeated scan and aggregation cost.
+
+Algorithmically, it is a materialized-view selection problem over a fixed candidate set, scored by real query execution under exact-result checks.
+
+## What Is Frozen
+
+- The schema, local data generator, and reporting workload in `runtime/problem.py`.
+- The whitelist of legal summary tables in `workload_manifest["candidate_preaggregations"]`.
+- The correctness audit and the timing protocol used to compare setup plus repeated report execution.
 
 ## Submission Contract
 
@@ -13,23 +23,29 @@ def select_preaggregations(workload_manifest):
     ...
 ```
 
-Return a list of candidate pre-aggregation names from the whitelist in `workload_manifest["candidate_preaggregations"]`.
-A dict with key `preaggregations` is also accepted.
+Return a list of whitelist pre-aggregation names. A dict with key `preaggregations` is also accepted.
 
 ## Evaluation
 
-The evaluator will:
-
-1. Build the frozen DuckDB workload.
-2. Create the selected pre-aggregation tables.
-3. Run the fixed reporting workload and verify result equivalence.
-4. Measure candidate total runtime as setup cost plus repeated report execution, and log the baseline for context.
+1. Build the frozen DuckDB database and load the workload manifest.
+2. Create the pre-aggregation tables you selected from the whitelist.
+3. Run the fixed reporting queries and verify result equivalence.
+4. Measure total candidate runtime and report the no-materialization baseline for context.
 
 ## Metrics
 
 - `combined_score`: `-candidate_total_runtime_s`
-- `valid`: `1.0` only if all selected names are valid and results stay unchanged
+- `valid`: `1.0` only if all selected names are legal and query results stay unchanged
 - `candidate_total_runtime_s`
 - `baseline_total_runtime_s`
 - `candidate_setup_runtime_s`
 - `candidate_workload_runtime_s`
+
+## Invalid Submissions
+
+- `select_preaggregations(...)` is missing or crashes
+- The return value cannot be parsed into a list of names
+- Any selected name is outside the whitelist
+- Materialization or query execution fails, or results change
+
+<!-- AI_GENERATED -->

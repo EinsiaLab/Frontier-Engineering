@@ -1,10 +1,18 @@
 # Bridge Topology Optimization Task
 
-## Objective
+## Problem
 
-Minimize compliance on a frozen bridge-like topology optimization case with a passive-solid deck and distributed load.
+Update densities inside a frozen bridge-like pyMOTO topology-optimization loop and minimize final compliance.
 
-The benchmark freezes one pyMOTO-based structural optimization case in `runtime/problem.py`.
+This benchmark models a bridge-like layout problem with a prescribed solid deck. Part of the structure is fixed up front, so the remaining material must form an efficient load path under a hard budget.
+
+You are not drawing the final structure once. You are designing the inner update rule of a fixed PDE-constrained optimizer, and every step must remain feasible.
+
+## What Is Frozen
+
+- The pyMOTO finite-element model, geometry, loads, passive masks, and SIMP settings in `runtime/problem.py`.
+- The material budget, minimum density, move limit, and 30-step optimization horizon.
+- The compliance objective and the feasibility validator for each intermediate density update.
 
 ## Submission Contract
 
@@ -15,50 +23,31 @@ def update_density(density, sensitivity, state):
     ...
 ```
 
-Inputs:
+`density` is the current density vector, `sensitivity` is the current compliance sensitivity, and `state` includes keys such as `iteration`, `domain_shape`, `volume_fraction`, `target_density_sum`, `minimum_density`, `move_limit`, `current_compliance`, `history`, `passive_solid_mask`, and `passive_void_mask`.
 
-- `density`: current density vector as a NumPy array of shape `(nel,)`
-- `sensitivity`: current compliance sensitivity with respect to the design vector
-- `state`: a dict containing:
-  - `iteration`
-  - `domain_shape`
-  - `volume_fraction`
-  - `target_density_sum`
-  - `minimum_density`
-  - `move_limit`
-  - `current_compliance`
-  - `history`
-  - `passive_solid_mask`
-  - `passive_void_mask`
-
-The function must return the next feasible density vector. A dict with key `density` is also accepted.
-
-You may import `project_density` from `runtime.problem` if you want a helper that projects a raw proposal back onto the feasible set.
+Return the next feasible density vector, or a dict with key `density`. If you want a projection helper, you may import `project_density` from `runtime.problem`.
 
 ## Evaluation
 
-The evaluator will:
-
-1. Build the frozen pyMOTO finite-element model.
-2. Run 30 fixed optimization iterations.
-3. Compare the baseline OC update rule against your `update_density(...)`.
-4. Reject non-finite or infeasible density updates.
-5. Expose the final candidate compliance directly as the optimization score.
+1. Build the frozen pyMOTO model from `runtime/problem.py`.
+2. Run the fixed 30-iteration optimization loop with your `update_density(...)` callback.
+3. Validate every intermediate density update against bounds, move limits, masks, and volume conservation.
+4. Report final candidate compliance and compare it with the OC-style baseline for context.
 
 ## Metrics
 
 - `combined_score`: `-candidate_compliance`
-- `valid`: `1.0` only if every density update is finite and feasible
+- `valid`: `1.0` only if every update is finite and feasible
 - `candidate_compliance`
 - `baseline_compliance`
 - `final_volume_fraction`
 - `volume_fraction_error`
 
-## Failure Cases
+## Invalid Submissions
 
-The submission is marked invalid and receives a very low score if:
+- `update_density(...)` is missing or crashes
+- Any proposed density contains non-finite values
+- Any update violates bounds, move limits, passive masks, or the target density sum
+- The pyMOTO solve fails during evaluation
 
-- `update_density()` is missing
-- any proposed density is non-finite
-- any density violates bounds, move limits, passive masks, or volume budget
-- the pyMOTO solve fails
+<!-- AI_GENERATED -->

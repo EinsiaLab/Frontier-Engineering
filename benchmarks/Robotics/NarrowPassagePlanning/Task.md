@@ -1,10 +1,18 @@
 # Narrow-Passage Planning Task
 
-## Objective
+## Problem
 
-Plan a collision-free path through a single-cell narrow passage on a frozen occupancy grid.
+Plan a collision-free path through a frozen narrow-passage occupancy grid and keep path cost close to optimal.
 
-The benchmark uses one frozen occupancy grid in `runtime/problem.py`.
+Narrow passages are a classic planning failure mode: a planner that looks reasonable in open space can still fail badly at doorways, single-cell corridors, and other bottlenecks.
+
+This is still graph search, but the topology forces the useful path through a thin feasible corridor, so many locally plausible heuristics waste search effort or suggest illegal shortcuts.
+
+## What Is Frozen
+
+- The narrow-passage occupancy grid, start cell, goal cell, and validator in `runtime/problem.py`.
+- The movement rule: each step must stay in free space and move between adjacent grid cells.
+- The baseline path and the shortest-path reference cost reported for context.
 
 ## Submission Contract
 
@@ -15,18 +23,28 @@ def plan_path(grid, start, goal):
     ...
 ```
 
-Inputs:
+Return a path as a sequence of `(x, y)` cells. A dict with key `path` is also accepted.
 
-- `grid`: tuple of strings, where `#` means obstacle and `.` means free space
-- `start`: `(x, y)`
-- `goal`: `(x, y)`
+## Evaluation
 
-The function must return a path as a sequence of `(x, y)` cells. A dict with key `path` is also accepted.
+1. Load the frozen grid, start, and goal from `runtime/problem.py`.
+2. Validate the returned path against the start/end cells, adjacency rule, and obstacle mask.
+3. Compute candidate path cost as path length minus one.
+4. Report candidate cost together with baseline and shortest-path reference costs.
 
 ## Metrics
 
 - `combined_score`: `-candidate_cost`
-- `valid`: `1.0` only if the returned path is finite and collision-free
+- `valid`: `1.0` only if the path is finite and collision-free
 - `candidate_cost`
 - `baseline_cost`
 - `reference_cost`
+
+## Invalid Submissions
+
+- `plan_path(...)` is missing or crashes
+- The returned value cannot be parsed into a path
+- The path has the wrong start or goal, contains a non-adjacent move, or enters an obstacle
+- Any reported metric becomes non-finite
+
+<!-- AI_GENERATED -->

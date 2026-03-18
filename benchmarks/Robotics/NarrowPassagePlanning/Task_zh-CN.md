@@ -1,10 +1,18 @@
-# Narrow-Passage Planning 任务
+# 狭窄通道路径规划
 
-## 目标
+## 任务概览
 
-Plan a collision-free path through a single-cell narrow passage on a frozen occupancy grid.
+在冻结的狭窄通道占据栅格上规划一条无碰撞路径，并尽量接近最优路径代价。
 
-评测使用 `runtime/problem.py` 中冻结的一张 occupancy grid。
+狭窄通道是规划算法的经典失效模式。一个在开阔空间里看起来很正常的规划器，到了门洞、单格走廊或其他瓶颈位置时，可能会明显失效。
+
+它本质上还是图搜索，但拓扑结构会把可行路径强行压进一条很薄的通道里，所以很多局部上看着合理的启发式会浪费搜索，甚至试图走非法捷径。
+
+## 哪些部分是冻结的
+
+- `runtime/problem.py` 中冻结的狭窄通道占据栅格、起点、终点和校验器。
+- 固定的移动规则：每一步都必须在空闲区域内，并且只能在相邻格点之间移动。
+- 用于对照的 baseline 路径和最短路参考代价。
 
 ## 提交接口
 
@@ -15,12 +23,28 @@ def plan_path(grid, start, goal):
     ...
 ```
 
-返回值必须是一条 `(x, y)` 路径序列。也接受包含 `path` 字段的字典。
+返回一条由 `(x, y)` 单元组成的路径序列；也接受带 `path` 字段的字典。
+
+## 评测流程
+
+1. 从 `runtime/problem.py` 载入冻结的栅格、起点和终点。
+2. 检查返回路径的起终点、相邻移动规则和障碍掩码。
+3. 按路径长度减一的方式计算候选路径代价。
+4. 输出候选代价，并同时给出 baseline 与最短路参考代价。
 
 ## 指标
 
 - `combined_score`：`-candidate_cost`
-- `valid`：路径有限且无碰撞时为 `1.0`
+- `valid`：只有路径有限且无碰撞时才为 `1.0`
 - `candidate_cost`
 - `baseline_cost`
 - `reference_cost`
+
+## 判为无效的情况
+
+- 缺少 `plan_path(...)`，或函数在评测中报错
+- 返回值无法解析为路径
+- 路径起终点错误、包含非相邻移动，或进入障碍物
+- 任意报告指标出现非有限值
+
+<!-- AI_GENERATED -->

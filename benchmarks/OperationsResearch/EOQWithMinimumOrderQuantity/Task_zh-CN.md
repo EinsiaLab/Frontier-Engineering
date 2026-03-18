@@ -1,10 +1,18 @@
-# EOQ with Minimum Order Quantity 任务
+# EOQ 最小起订量优化
 
-## 目标
+## 任务概览
 
-Optimize annual cost for deterministic EOQ instances with a hard minimum order quantity.
+在冻结的确定性 EOQ 案例上选择订货量，在硬性最小起订量约束下尽量降低平均年成本。
 
-规范来源来自 `Stockpyl` 的 EOQ 公式实现与经典确定性 EOQ 模型。固定评测样例定义在 `runtime/problem.py` 中，属于 benchmark 内部冻结参数表。
+供应商 MOQ 是采购里非常常见的硬约束。它会直接改变占用资金和仓储压力，而且经常把最优解推到边界位置，简单套一个 EOQ 公式往往会错。
+
+从计算角度看，它是在冻结解析成本模型上的一个小型约束优化问题。难点在于边界意识，而不是系统集成。
+
+## 哪些部分是冻结的
+
+- `runtime/problem.py` 中冻结的确定性 EOQ 案例表和年成本模型。
+- 每个冻结案例的需求、订货成本、持有成本和 MOQ 参数。
+- 对所有案例平均候选成本的固定评测循环。
 
 ## 提交接口
 
@@ -15,24 +23,27 @@ def solve(instance):
     ...
 ```
 
-返回值要求：
+返回一个数值型订货量，或带 `order_quantity` 字段的字典。
 
-- EOQ 类任务：返回 `order_quantity` 字段的字典，或者直接返回数值型订货批量。
-- `(r,Q)` 类任务：返回包含 `reorder_point` 和 `order_quantity` 的字典，或者直接返回二元组 `(r, Q)`。
+## 评测流程
 
-## 评测方式
-
-评测器会：
-
-1. 读取 `runtime/problem.py` 中的固定样例。
-2. 运行 baseline。
-3. 运行选手的 `solve(instance)`。
-4. 计算成本和可行性。
-5. 计算平均候选成本，并将其直接暴露为优化分数。
+1. 从 `runtime/problem.py` 载入冻结案例集。
+2. 对每个案例运行参考 baseline，用于诊断对照。
+3. 在每个案例上运行你的 `solve(instance)`，并解析返回的订货量。
+4. 检查 MOQ 约束，计算年成本，并对全体案例求平均。
 
 ## 指标
 
 - `combined_score`：`-avg_cost`
-- `valid`：所有 case 都可行且数值有限时为 `1.0`
-- `avg_cost`：平均候选成本
-- `avg_cost_ratio`：仅用于诊断的平均 `baseline_cost / candidate_cost`
+- `valid`：只有所有案例都可行且输出有限时才为 `1.0`
+- `avg_cost`
+- `avg_cost_ratio`：用于诊断的平均 `baseline_cost / candidate_cost`
+
+## 判为无效的情况
+
+- 缺少 `solve(...)`，或函数在评测中报错
+- 返回值无法解析为订货量
+- 任意案例的订货量违反 MOQ 约束，或不是有限值
+- 任意案例的评测指标出现非有限值
+
+<!-- AI_GENERATED -->

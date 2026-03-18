@@ -1,66 +1,50 @@
 # LA16 Dispatching Rule Optimization Task
 
-## Objective
+## Problem
 
-Optimize a greedy dispatching rule on the canonical LA16 Lawrence 10x10 job shop instance.
+Design a greedy dispatching rule for the canonical LA16 Lawrence 10x10 job shop and minimize makespan.
 
-The benchmark uses one frozen canonical instance: `la16`.
-The known optimum for this instance is `945`.
+This benchmark is the same policy-design problem as FT10, but on the canonical LA16 bottleneck structure. Small local scoring changes can still produce large throughput differences.
+
+You are again writing a local priority function inside a fixed scheduler rather than constructing the schedule yourself.
+
+## What Is Frozen
+
+- The canonical `la16` instance and the known optimum `945`.
+- The schedule builder, feasibility logic, and tie-handling protocol in `runtime/problem.py`.
+- The rule that only operations with the earliest feasible start time are compared by your score.
 
 ## Submission Contract
 
-Submit one Python file.
-
-For dispatch-rule tasks, define:
+Submit one Python file that defines:
 
 ```python
 def score_operation(operation, state):
     ...
 ```
 
-For neighborhood-move tasks, define:
-
-```python
-def score_move(move, state):
-    ...
-```
-
-You may optionally define:
-
-```python
-MAX_ITERATIONS = 50
-```
+Return any finite scalar priority. Among operations tied on earliest feasible start time, larger scores are scheduled first.
 
 ## Evaluation
 
-Dispatch-rule tasks:
-
-1. Start from an empty schedule.
-2. Repeatedly gather the next unscheduled operation from each job.
-3. Among operations with the earliest feasible start time, choose the one with highest `score_operation`.
-4. Build a complete feasible schedule and compute makespan.
-
-Neighborhood-move tasks:
-
-1. Start from the baseline SPT dispatch schedule.
-2. Repeatedly generate adjacent machine-order swap moves.
-3. Rank moves by `score_move`.
-4. Apply the first improving move in ranked order.
-5. Stop when no improving move exists or `MAX_ITERATIONS` is reached.
+1. Load the canonical `la16` instance from `runtime/problem.py`.
+2. Start from an empty schedule and repeatedly collect the next unscheduled operation from each job.
+3. Among operations tied on earliest feasible start time, pick the one with the highest `score_operation(...)`.
+4. Build a complete schedule, compute candidate makespan, and report the baseline and relative gap to the optimum.
 
 ## Metrics
 
 - `combined_score`: `-candidate_makespan`
-- `valid`: `1.0` only when a complete feasible schedule is produced
+- `valid`: `1.0` only if a complete feasible schedule is produced
 - `candidate_makespan`
 - `baseline_makespan`
 - `relative_gap_to_optimum`
 
-## Failure Cases
+## Invalid Submissions
 
-The submission is marked invalid and receives a very low score if:
+- `score_operation(...)` is missing or crashes
+- The returned priority is non-finite
+- The induced schedule is infeasible or incomplete
+- Evaluation fails before a valid makespan is produced
 
-- the required scoring function is missing
-- the return value is non-finite
-- the induced schedule is infeasible
-- the candidate crashes during evaluation
+<!-- AI_GENERATED -->

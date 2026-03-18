@@ -1,31 +1,55 @@
 # DuckDB Pre-Aggregation Selection
 
-Choose a small set of pre-aggregation tables for a frozen DuckDB reporting workload.
+Choose a whitelist subset of pre-aggregation tables for a frozen DuckDB reporting workload and minimize total runtime.
 
-## Provenance
+## Why This Benchmark Matters
 
-- Provenance class: `traceable local workload with DuckDB/TPC-H schema lineage`
-- Engine lineage: `DuckDB`
-- Data asset: benchmark-local deterministic SQL-generated tables
-- Full provenance note: see `references/source_manifest.md`
+This benchmark models a very common warehouse decision: which summary tables are worth materializing for a recurring reporting workload. The wrong choice wastes storage and refresh time; the right choice reduces repeated scan and aggregation cost.
 
-## File Layout
+Algorithmically, it is a materialized-view selection problem over a fixed candidate set, scored by real query execution under exact-result checks.
 
-- `Task.md`: task contract and scoring rules.
-- `Task_zh-CN.md`: Chinese translation.
-- `README_zh-CN.md`: Chinese overview.
-- `scripts/init.py`: initial candidate file exposed to agents.
-- `baseline/solution.py`: reference implementation.
-- `runtime/problem.py`: task-local interface to the frozen workload.
-- `verification/evaluator.py`: evaluator entry.
-- `references/source_manifest.md`: provenance and authenticity notes.
+## What You Edit
+
+- Target file: `scripts/init.py`
+- Entry point: `select_preaggregations(workload_manifest)`
+
+## Source of Truth
+
+- `Task.md`: full task contract and scoring rules
+- `Task_zh-CN.md`: Chinese translation of the task contract
+- `runtime/problem.py`: frozen instance, validator, and metrics helpers
+- `baseline/solution.py`: reference baseline
+- `verification/evaluator.py`: local evaluator entry point
+- `references/source_manifest.md`: provenance and lineage notes
+
+## Environment
+
+From repository root:
+
+```bash
+pip install -r frontier_eval/requirements.txt
+pip install -r benchmarks/ComputerSystems/DuckDBPreAggregationSelection/verification/requirements.txt
+```
 
 ## Quick Run
 
 From repository root:
 
 ```bash
-.venv/bin/python benchmarks/ComputerSystems/DuckDBPreAggregationSelection/verification/evaluator.py \
+python benchmarks/ComputerSystems/DuckDBPreAggregationSelection/verification/evaluator.py \
   benchmarks/ComputerSystems/DuckDBPreAggregationSelection/scripts/init.py \
   --metrics-out /tmp/DuckDBPreAggregationSelection_metrics.json
 ```
+
+## Optional: Run with `frontier_eval`
+
+```bash
+python -m frontier_eval \
+  task=unified \
+  task.benchmark=ComputerSystems/DuckDBPreAggregationSelection \
+  algorithm.iterations=0
+```
+
+If you need a non-default interpreter, also add `task.runtime.use_conda_run=false task.runtime.python_path=/path/to/python`.
+
+<!-- AI_GENERATED -->

@@ -1,8 +1,18 @@
-# Dynamic-Current Minimum-Time Routing 任务
+# 动态流场最短航时船舶路径规划
 
-## 目标
+## 任务概览
 
-Route a ship across a frozen coastal grid while minimizing travel time under deterministic current and depth fields.
+在冻结的沿海栅格上规划船舶航线，利用确定性流场并满足最小水深约束，使总航时尽量短。
+
+这个 benchmark 可以看作航道通行和港口进出规划的代理问题。更快的路线意味着更好的时刻可靠性，但一旦把流场增益和吃水限制考虑进去，几何最短路径往往既不合法，也不一定最快。
+
+从算法角度看，它是在固定栅格图上的受约束最短路问题，只不过边代价会受到物理场影响。
+
+## 哪些部分是冻结的
+
+- `runtime/problem.py` 中冻结的陆地掩码、水域格点、确定性流场和水深场。
+- 起点、终点、最小吃水要求，以及四邻接移动规则。
+- 固定的航时计算方式，以及 baseline 与参考路径的报告指标。
 
 ## 提交接口
 
@@ -13,35 +23,30 @@ def solve(instance):
     ...
 ```
 
-返回值可以是路径列表，也可以是包含 `path` 键的字典。
+返回一个网格坐标列表，或带 `path` 字段的字典。路径必须从 `instance["start"]` 出发，到达 `instance["goal"]`，每一步只走相邻格点，并始终停留在深度不小于 `instance["min_depth"]` 的可航行水域。
 
-路径必须：
+## 评测流程
 
-1. 从 `instance["start"]` 出发
-2. 以 `instance["goal"]` 结束
-3. 只能在相邻网格之间移动
-4. 只能经过水深不小于 `instance["min_depth"]` 的可航行网格
-
-## 固定世界模型
-
-- 地图、合成流场和合成 depth raster 都固定在 `runtime/problem.py` 中。
-- 上游算法谱系来自 `HALEM`，但这里的环境数据是 benchmark 内部固定生成的 synthetic asset。
-
-## 评测方式
-
-评测器会：
-
-1. 载入固定实例
-2. 按陆地与最小水深约束检查路径可行性
-3. 计算总航时
-4. 记录最短步数 baseline 与 Dijkstra 参考值作为诊断信息，同时直接以候选航时目标打分
+1. 从 `runtime/problem.py` 载入冻结的航线实例。
+2. 检查返回路径的起终点、相邻移动规则、陆地掩码和最小水深约束。
+3. 计算整条路径的总航时与步数。
+4. 输出候选航时，并同时给出 baseline 和参考指标作对照。
 
 ## 指标
 
 - `combined_score`：`-candidate_time_h`
-- `valid`：只有路径可行时才为 `1.0`
+- `valid`：只有航线可行时才为 `1.0`
 - `candidate_time_h`
 - `baseline_time_h`
 - `reference_time_h`
 - `candidate_hops`
 - `baseline_hops`
+
+## 判为无效的情况
+
+- 缺少 `solve(...)`，或函数在评测中报错
+- 返回值无法解析为路径
+- 路径起终点错误、包含非相邻移动，或进入陆地/浅水区域
+- 任意报告指标出现非有限值
+
+<!-- AI_GENERATED -->

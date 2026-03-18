@@ -1,33 +1,55 @@
 # Poisson (r,Q) with Service-Level Constraint
 
-Select reorder point and lot size for Poisson-demand (r,Q) instances with a hard cycle-service-level target.
+Choose `(r, Q)` policies for frozen Poisson-demand inventory cases with a hard service-level target and minimize average cost.
 
-## Provenance
+## Why This Benchmark Matters
 
-- Upstream lineage: `Stockpyl` single-echelon `(r,Q)` routines for Poisson demand.
-- Data asset: benchmark-local frozen parameter tables defined in `runtime/problem.py`.
-- Full provenance note: see `references/source_manifest.md`.
+This benchmark models replenishment for spare parts and MRO inventory, where demand arrives as discrete events and service commitments still matter. Good policies cut stockouts without overspending on safety stock.
 
-## File Layout
+It is a small stochastic-policy tuning problem: the evaluator freezes the demand model and cost accounting, and your code only chooses the `(r, Q)` pair.
 
-- `Task.md`: task contract and scoring rules.
-- `Task_zh-CN.md`: Chinese translation of the contract.
-- `scripts/init.py`: initial candidate file exposed to agents.
-- `baseline/solution.py`: reference implementation.
-- `runtime/problem.py`: frozen cases, baseline solver, and scoring helpers.
-- `verification/evaluator.py`: evaluator entry.
-- `verification/requirements.txt`: minimal dependencies for this benchmark.
+## What You Edit
+
+- Target file: `scripts/init.py`
+- Entry point: `solve(instance)`
+
+## Source of Truth
+
+- `Task.md`: full task contract and scoring rules
+- `Task_zh-CN.md`: Chinese translation of the task contract
+- `runtime/problem.py`: frozen instance, validator, and metrics helpers
+- `baseline/solution.py`: reference baseline
+- `verification/evaluator.py`: local evaluator entry point
+- `references/source_manifest.md`: provenance and lineage notes
+
+## Environment
+
+From repository root:
+
+```bash
+pip install -r frontier_eval/requirements.txt
+pip install -r benchmarks/OperationsResearch/PoissonRQServiceLevel/verification/requirements.txt
+```
 
 ## Quick Run
 
 From repository root:
 
 ```bash
-python benchmarks/OperationsResearch/PoissonRQServiceLevel/verification/evaluator.py   benchmarks/OperationsResearch/PoissonRQServiceLevel/scripts/init.py   --metrics-out /tmp/PoissonRQServiceLevel_metrics.json
+python benchmarks/OperationsResearch/PoissonRQServiceLevel/verification/evaluator.py \
+  benchmarks/OperationsResearch/PoissonRQServiceLevel/scripts/init.py \
+  --metrics-out /tmp/PoissonRQServiceLevel_metrics.json
 ```
 
-Run through `frontier_eval` with:
+## Optional: Run with `frontier_eval`
 
 ```bash
-python -m frontier_eval   task=unified   task.benchmark=OperationsResearch/PoissonRQServiceLevel   algorithm.iterations=0
+python -m frontier_eval \
+  task=unified \
+  task.benchmark=OperationsResearch/PoissonRQServiceLevel \
+  algorithm.iterations=0
 ```
+
+If you need a non-default interpreter, also add `task.runtime.use_conda_run=false task.runtime.python_path=/path/to/python`.
+
+<!-- AI_GENERATED -->

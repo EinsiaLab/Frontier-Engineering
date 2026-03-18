@@ -1,10 +1,18 @@
-# MBB Beam Topology Optimization 任务
+# MBB 梁拓扑优化
 
-## 目标
+## 任务概览
 
-Minimize compliance on a frozen half-MBB beam using pyMOTO's SIMP formulation and a fixed material budget.
+在冻结的半 MBB 梁 pyMOTO 拓扑优化循环中更新密度场，并尽量降低最终柔顺度。
 
-评测在 `runtime/problem.py` 中冻结了一个基于 pyMOTO 的结构拓扑优化实例。
+半 MBB 梁是经典的“单位材料刚度”基准。局部密度的小改动可能改善，也可能破坏全局受力路径，所以更新规则不能只盯着局部。
+
+这道题依然是在重复约束调用下做优化器设计：你只控制更新规则，物理求解循环和可行性检查都保持不变。
+
+## 哪些部分是冻结的
+
+- `runtime/problem.py` 中的 pyMOTO 有限元模型、几何、载荷、被动区域和 SIMP 设置。
+- 材料体积分数预算、最小密度、单步 move limit，以及固定的 30 次迭代。
+- 柔顺度目标和每一步密度更新的可行性校验逻辑。
 
 ## 提交接口
 
@@ -15,41 +23,31 @@ def update_density(density, sensitivity, state):
     ...
 ```
 
-输入参数：
+`density` 是当前密度向量，`sensitivity` 是当前柔顺度灵敏度，`state` 中包含 `iteration`、`domain_shape`、`volume_fraction`、`target_density_sum`、`minimum_density`、`move_limit`、`current_compliance`、`history`、`passive_solid_mask`、`passive_void_mask` 等字段。
 
-- `density`：当前密度向量，NumPy 数组，形状为 `(nel,)`
-- `sensitivity`：当前目标函数相对于设计变量的灵敏度
-- `state`：字典，包含：
-  - `iteration`
-  - `domain_shape`
-  - `volume_fraction`
-  - `target_density_sum`
-  - `minimum_density`
-  - `move_limit`
-  - `current_compliance`
-  - `history`
-  - `passive_solid_mask`
-  - `passive_void_mask`
+返回下一步可行的密度向量；也接受带 `density` 字段的字典。如果需要投影辅助函数，可以从 `runtime.problem` 导入 `project_density`。
 
-返回值必须是下一步的可行密度向量。也接受包含 `density` 字段的字典。
+## 评测流程
 
-如果你只想先产生一个原始提案，可以从 `runtime.problem` 导入 `project_density`，把原始提案投影回可行域。
-
-## 评测方式
-
-评测器会：
-
-1. 构建固定的 pyMOTO 有限元模型。
-2. 运行固定 30 次优化迭代。
-3. 对比 baseline 的 OC 更新规则与你的 `update_density(...)`。
-4. 拒绝任何非有限或不可行的密度更新。
-5. 直接以最终 candidate compliance 作为优化分数。
+1. 从 `runtime/problem.py` 构建冻结的 pyMOTO 模型。
+2. 在固定的 30 次迭代优化循环里调用你的 `update_density(...)`。
+3. 对每一步候选密度执行边界、move limit、被动区域和体积守恒校验。
+4. 输出最终候选柔顺度，并同时给出 OC 风格基线作参考。
 
 ## 指标
 
 - `combined_score`：`-candidate_compliance`
-- `valid`：所有密度更新都有限且可行时为 `1.0`
+- `valid`：只有每一步更新都有限且可行时才为 `1.0`
 - `candidate_compliance`
 - `baseline_compliance`
 - `final_volume_fraction`
 - `volume_fraction_error`
+
+## 判为无效的情况
+
+- 缺少 `update_density(...)`，或函数在评测中报错
+- 任意一步候选密度包含非有限值
+- 任意一步更新违反边界、move limit、被动区域或目标体积约束
+- 评测过程中 pyMOTO 求解失败
+
+<!-- AI_GENERATED -->

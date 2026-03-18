@@ -1,33 +1,55 @@
 # Normal (r,Q) with 95% Service-Level Constraint
 
-Select reorder point and lot size for Normal-demand (r,Q) instances with a hard cycle-service-level target.
+Choose `(r, Q)` policies for frozen Normal-demand inventory cases with a hard 95% service-level target and minimize average cost.
 
-## Provenance
+## Why This Benchmark Matters
 
-- Upstream lineage: `Stockpyl` single-echelon `(r,Q)` routines for Normal demand.
-- Data asset: benchmark-local frozen parameter tables defined in `runtime/problem.py`.
-- Full provenance note: see `references/source_manifest.md`.
+This benchmark captures policy tuning near a service-level boundary. Small changes in reorder point can materially change stockout risk and working capital when the target is fixed around 95%.
 
-## File Layout
+Algorithmically, it is a small constrained discrete optimization problem over a frozen probabilistic model.
 
-- `Task.md`: task contract and scoring rules.
-- `Task_zh-CN.md`: Chinese translation of the contract.
-- `scripts/init.py`: initial candidate file exposed to agents.
-- `baseline/solution.py`: reference implementation.
-- `runtime/problem.py`: frozen cases, baseline solver, and scoring helpers.
-- `verification/evaluator.py`: evaluator entry.
-- `verification/requirements.txt`: minimal dependencies for this benchmark.
+## What You Edit
+
+- Target file: `scripts/init.py`
+- Entry point: `solve(instance)`
+
+## Source of Truth
+
+- `Task.md`: full task contract and scoring rules
+- `Task_zh-CN.md`: Chinese translation of the task contract
+- `runtime/problem.py`: frozen instance, validator, and metrics helpers
+- `baseline/solution.py`: reference baseline
+- `verification/evaluator.py`: local evaluator entry point
+- `references/source_manifest.md`: provenance and lineage notes
+
+## Environment
+
+From repository root:
+
+```bash
+pip install -r frontier_eval/requirements.txt
+pip install -r benchmarks/OperationsResearch/NormalRQServiceLevel95/verification/requirements.txt
+```
 
 ## Quick Run
 
 From repository root:
 
 ```bash
-python benchmarks/OperationsResearch/NormalRQServiceLevel95/verification/evaluator.py   benchmarks/OperationsResearch/NormalRQServiceLevel95/scripts/init.py   --metrics-out /tmp/NormalRQServiceLevel95_metrics.json
+python benchmarks/OperationsResearch/NormalRQServiceLevel95/verification/evaluator.py \
+  benchmarks/OperationsResearch/NormalRQServiceLevel95/scripts/init.py \
+  --metrics-out /tmp/NormalRQServiceLevel95_metrics.json
 ```
 
-Run through `frontier_eval` with:
+## Optional: Run with `frontier_eval`
 
 ```bash
-python -m frontier_eval   task=unified   task.benchmark=OperationsResearch/NormalRQServiceLevel95   algorithm.iterations=0
+python -m frontier_eval \
+  task=unified \
+  task.benchmark=OperationsResearch/NormalRQServiceLevel95 \
+  algorithm.iterations=0
 ```
+
+If you need a non-default interpreter, also add `task.runtime.use_conda_run=false task.runtime.python_path=/path/to/python`.
+
+<!-- AI_GENERATED -->

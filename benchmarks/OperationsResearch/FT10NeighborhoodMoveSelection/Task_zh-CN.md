@@ -1,52 +1,39 @@
-# FT10 Neighborhood Move Selection 任务
+# FT10 邻域移动选择
 
-## 目标
+## 任务概览
 
-Guide an adjacent-swap local search on the canonical FT10 Fisher-Thompson 10x10 job shop instance.
+为经典 FT10 作业车间上的冻结局部搜索壳层排序相邻交换动作，并尽量缩短 makespan。
 
-评测使用单个固定的 canonical 实例：`ft10`。
-该实例的已知最优 makespan 为 `930`。
+这个 benchmark 对应的是有限搜索预算下的排程改进问题。系统已经有一个可行初始解，真正关键的是它下一步先尝试哪个邻域动作。
+
+你控制的是固定局部搜索循环里的动作排序，而不是自己从头到尾搜索整个排程空间。
+
+## 哪些部分是冻结的
+
+- 经典 `ft10` 实例，以及已知最优值 `930`。
+- 作为初始 incumbent 的 baseline SPT 派工排程。
+- `runtime/problem.py` 中冻结的相邻交换邻域生成器和 first-improving 接受规则。
 
 ## 提交接口
 
-提交一个 Python 文件。
-
-如果是 dispatch-rule 任务，需要定义：
+提交一个 Python 文件，定义：
 
 ```python
-def score_operation(operation, state):
-    ...
-```
+MAX_ITERATIONS = 50
 
-如果是邻域搜索任务，需要定义：
 
-```python
 def score_move(move, state):
     ...
 ```
 
-你也可以额外定义：
+定义 `score_move(move, state)` 并返回任意有限标量；分数更高的动作会被优先尝试。你也可以把 `MAX_ITERATIONS` 设成任意正整数，以调整搜索预算。
 
-```python
-MAX_ITERATIONS = 50
-```
+## 评测流程
 
-## 评测方式
-
-Dispatch-rule 任务：
-
-1. 从空排程开始。
-2. 每次收集每个 job 的下一道未排工序。
-3. 在“最早可开工时间最小”的工序集合中，选择 `score_operation` 最高者。
-4. 构造完整可行排程并计算 makespan。
-
-邻域搜索任务：
-
-1. 从 baseline 的 SPT dispatch 排程开始。
-2. 生成机器序列上的相邻交换 move。
-3. 用 `score_move` 对 move 排序。
-4. 按排序顺序找到第一个真正改进 makespan 的 move 并应用。
-5. 当没有改进 move 或达到 `MAX_ITERATIONS` 时停止。
+1. 从 `runtime/problem.py` 载入经典 `ft10` 实例。
+2. 从冻结的 baseline 派工排程开始。
+3. 反复生成相邻机器顺序交换动作，按 `score_move(...)` 排序，并应用第一个能改进的动作。
+4. 当不存在改进动作或达到 `MAX_ITERATIONS` 时停止，并输出候选 makespan 与诊断指标。
 
 ## 指标
 
@@ -56,11 +43,11 @@ Dispatch-rule 任务：
 - `baseline_makespan`
 - `relative_gap_to_optimum`
 
-## 失败情况
+## 判为无效的情况
 
-如果出现以下情况，提交会被判为无效，并得到一个很低的分数：
+- 缺少 `score_move(...)`，或函数在评测中报错
+- 返回的动作分数不是有限值
+- `MAX_ITERATIONS` 不合法，或在得到有效排程之前评测就失败
+- 诱导出的排程变得不可行
 
-- 缺少要求的评分函数
-- 返回值不是有限标量
-- 诱导出的排程不可行
-- 候选程序在评测时崩溃
+<!-- AI_GENERATED -->

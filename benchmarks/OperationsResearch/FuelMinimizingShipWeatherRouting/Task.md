@@ -1,8 +1,18 @@
 # Fuel-Minimizing Ship Weather Routing Task
 
-## Objective
+## Problem
 
-Route a ship across a frozen coastal grid while minimizing total fuel consumption under synthetic wind and current fields.
+Route a ship across a frozen coastal grid while minimizing fuel consumption under deterministic wind and current fields.
+
+This benchmark stands in for weather-aware voyage planning. The shortest geometric route is rarely the cheapest once headwind, crosswind, and current penalties are folded into the fuel model.
+
+It is a constrained routing problem on a fixed grid graph whose edge costs are induced by environmental fields.
+
+## What Is Frozen
+
+- The coastal land mask, water cells, deterministic wind field, and deterministic current field in `runtime/problem.py`.
+- The start cell, goal cell, and the rule that paths move only between adjacent navigable cells.
+- The fuel and travel-time model used to score the returned route.
 
 ## Submission Contract
 
@@ -13,28 +23,14 @@ def solve(instance):
     ...
 ```
 
-Return either a list of grid cells or a dict with key `path`.
-
-The path must:
-
-1. Start at `instance["start"]`
-2. End at `instance["goal"]`
-3. Move only between adjacent grid cells
-4. Stay on navigable water cells
-
-## Fixed World Model
-
-- The map, start/goal pair, synthetic wind field, and synthetic current field are fixed in `runtime/problem.py`.
-- The upstream lineage is weather-aware ship routing from `WeatherRoutingTool`, but the actual grid data here is benchmark-local synthetic data with a fixed generator.
+Return either a list of grid cells or a dict with key `path`. The path must start at `instance["start"]`, end at `instance["goal"]`, move only between adjacent cells, and stay on navigable water cells.
 
 ## Evaluation
 
-The evaluator will:
-
-1. Load the frozen routing instance
-2. Validate your path mechanically
-3. Compute total fuel use and travel time along the path
-4. Log the shortest-hop baseline and Dijkstra reference metrics for context while scoring candidate fuel directly
+1. Load the frozen routing instance from `runtime/problem.py`.
+2. Validate the returned path against the start/end cells, adjacency rule, and land mask.
+3. Compute total fuel and travel time along the route.
+4. Report candidate fuel together with baseline and reference metrics for context.
 
 ## Metrics
 
@@ -45,3 +41,12 @@ The evaluator will:
 - `reference_fuel`
 - `candidate_time_h`
 - `baseline_time_h`
+
+## Invalid Submissions
+
+- `solve(...)` is missing or crashes
+- The returned value cannot be parsed into a path
+- The path has the wrong start or goal, contains a non-adjacent move, or touches land
+- Any reported metric becomes non-finite
+
+<!-- AI_GENERATED -->

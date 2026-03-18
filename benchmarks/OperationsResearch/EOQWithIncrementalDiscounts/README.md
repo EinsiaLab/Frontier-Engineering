@@ -1,33 +1,55 @@
 # EOQ with Incremental Discounts
 
-Choose an order quantity under incremental quantity discounts.
+Choose an order quantity for frozen EOQ cases with incremental discounts and minimize average annual cost.
 
-## Provenance
+## Why This Benchmark Matters
 
-- Upstream lineage: `Stockpyl` EOQ with incremental discount routines and the standard incremental discount EOQ model family.
-- Data asset: benchmark-local frozen parameter tables defined in `runtime/problem.py`.
-- Full provenance note: see `references/source_manifest.md`.
+Incremental discount contracts are common in industrial purchasing: only the units beyond each breakpoint get the lower price. Correctly reasoning about the cumulative tiered purchase cost matters just as much as choosing a good order size.
 
-## File Layout
+From a CS angle, this is again a small frozen search problem, but the cost accounting is cumulative across tiers rather than a simple breakpoint lookup.
 
-- `Task.md`: task contract and scoring rules.
-- `Task_zh-CN.md`: Chinese translation of the contract.
-- `scripts/init.py`: initial candidate file exposed to agents.
-- `baseline/solution.py`: reference implementation.
-- `runtime/problem.py`: frozen cases, baseline solver, and scoring helpers.
-- `verification/evaluator.py`: evaluator entry.
-- `verification/requirements.txt`: minimal dependencies for this benchmark.
+## What You Edit
+
+- Target file: `scripts/init.py`
+- Entry point: `solve(instance)`
+
+## Source of Truth
+
+- `Task.md`: full task contract and scoring rules
+- `Task_zh-CN.md`: Chinese translation of the task contract
+- `runtime/problem.py`: frozen instance, validator, and metrics helpers
+- `baseline/solution.py`: reference baseline
+- `verification/evaluator.py`: local evaluator entry point
+- `references/source_manifest.md`: provenance and lineage notes
+
+## Environment
+
+From repository root:
+
+```bash
+pip install -r frontier_eval/requirements.txt
+pip install -r benchmarks/OperationsResearch/EOQWithIncrementalDiscounts/verification/requirements.txt
+```
 
 ## Quick Run
 
 From repository root:
 
 ```bash
-python benchmarks/OperationsResearch/EOQWithIncrementalDiscounts/verification/evaluator.py   benchmarks/OperationsResearch/EOQWithIncrementalDiscounts/scripts/init.py   --metrics-out /tmp/EOQWithIncrementalDiscounts_metrics.json
+python benchmarks/OperationsResearch/EOQWithIncrementalDiscounts/verification/evaluator.py \
+  benchmarks/OperationsResearch/EOQWithIncrementalDiscounts/scripts/init.py \
+  --metrics-out /tmp/EOQWithIncrementalDiscounts_metrics.json
 ```
 
-Run through `frontier_eval` with:
+## Optional: Run with `frontier_eval`
 
 ```bash
-python -m frontier_eval   task=unified   task.benchmark=OperationsResearch/EOQWithIncrementalDiscounts   algorithm.iterations=0
+python -m frontier_eval \
+  task=unified \
+  task.benchmark=OperationsResearch/EOQWithIncrementalDiscounts \
+  algorithm.iterations=0
 ```
+
+If you need a non-default interpreter, also add `task.runtime.use_conda_run=false task.runtime.python_path=/path/to/python`.
+
+<!-- AI_GENERATED -->

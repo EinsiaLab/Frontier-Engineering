@@ -1,10 +1,18 @@
-# EOQ with All-Units Discounts 任务
+# EOQ 全量折扣优化
 
-## 目标
+## 任务概览
 
-Choose an order quantity under piecewise all-units discount pricing.
+在冻结的 EOQ 案例上选择订货量，在全量折扣定价下尽量降低平均年成本。
 
-规范来源来自 `Stockpyl` 的 all-units discount EOQ 实现。固定评测样例定义在 `runtime/problem.py` 中，属于 benchmark 内部冻结参数表。
+全量折扣在包装、化工和代工采购里很常见。一旦跨过某个价格断点，整笔订单的每一件都会换成新的单价，所以选错区间会直接放大年度采购成本。
+
+从计算角度看，这是一个冻结的小型分段优化问题。输出虽然只有一个订货量 `Q`，但一旦落入不同价格区间，目标函数就会发生不连续变化。
+
+## 哪些部分是冻结的
+
+- `runtime/problem.py` 中冻结的 EOQ 案例表和成本模型。
+- 每个案例对应的价格断点、需求、持有成本和订货成本参数。
+- 对全体冻结案例取平均成本的评测循环。
 
 ## 提交接口
 
@@ -15,24 +23,27 @@ def solve(instance):
     ...
 ```
 
-返回值要求：
+返回一个数值型订货量，或带 `order_quantity` 字段的字典。
 
-- EOQ 类任务：返回 `order_quantity` 字段的字典，或者直接返回数值型订货批量。
-- `(r,Q)` 类任务：返回包含 `reorder_point` 和 `order_quantity` 的字典，或者直接返回二元组 `(r, Q)`。
+## 评测流程
 
-## 评测方式
-
-评测器会：
-
-1. 读取 `runtime/problem.py` 中的固定样例。
-2. 运行 baseline。
-3. 运行选手的 `solve(instance)`。
-4. 计算成本和可行性。
-5. 计算平均候选成本，并将其直接暴露为优化分数。
+1. 从 `runtime/problem.py` 载入冻结案例集。
+2. 对每个案例运行参考 baseline，用于诊断对照。
+3. 在每个案例上运行你的 `solve(instance)`，并解析返回的订货量。
+4. 把订货量换算成可行性与年成本，最后对所有案例求平均。
 
 ## 指标
 
 - `combined_score`：`-avg_cost`
-- `valid`：所有 case 都可行且数值有限时为 `1.0`
-- `avg_cost`：平均候选成本
-- `avg_cost_ratio`：仅用于诊断的平均 `baseline_cost / candidate_cost`
+- `valid`：只有所有案例都可行且输出有限时才为 `1.0`
+- `avg_cost`
+- `avg_cost_ratio`：用于诊断的平均 `baseline_cost / candidate_cost`
+
+## 判为无效的情况
+
+- 缺少 `solve(...)`，或函数在评测中报错
+- 返回值无法解析为订货量
+- 任意案例的订货量不可行，或不是有限值
+- 任意案例的评测指标出现非有限值
+
+<!-- AI_GENERATED -->

@@ -1,66 +1,53 @@
 # FT10 Neighborhood Move Selection Task
 
-## Objective
+## Problem
 
-Guide an adjacent-swap local search on the canonical FT10 Fisher-Thompson 10x10 job shop instance.
+Rank adjacent-swap moves for a frozen local-search shell on the canonical FT10 job shop and minimize makespan.
 
-The benchmark uses one frozen canonical instance: `ft10`.
-The known optimum for this instance is `930`.
+This benchmark models schedule refinement under a limited search budget. The scheduler already has a feasible incumbent; what matters is which neighboring move it tries first.
+
+You are controlling move ranking inside a fixed local-search loop rather than searching the schedule space end to end yourself.
+
+## What Is Frozen
+
+- The canonical `ft10` instance and the known optimum `930`.
+- The baseline SPT dispatch schedule used as the incumbent.
+- The adjacent-swap move generator and first-improving acceptance rule in `runtime/problem.py`.
 
 ## Submission Contract
 
-Submit one Python file.
-
-For dispatch-rule tasks, define:
+Submit one Python file that defines:
 
 ```python
-def score_operation(operation, state):
-    ...
-```
+MAX_ITERATIONS = 50
 
-For neighborhood-move tasks, define:
 
-```python
 def score_move(move, state):
     ...
 ```
 
-You may optionally define:
-
-```python
-MAX_ITERATIONS = 50
-```
+Define `score_move(move, state)` and return any finite scalar; larger scores are tried first. You may also set `MAX_ITERATIONS` to any positive integer if you want to change the search budget.
 
 ## Evaluation
 
-Dispatch-rule tasks:
-
-1. Start from an empty schedule.
-2. Repeatedly gather the next unscheduled operation from each job.
-3. Among operations with the earliest feasible start time, choose the one with highest `score_operation`.
-4. Build a complete feasible schedule and compute makespan.
-
-Neighborhood-move tasks:
-
-1. Start from the baseline SPT dispatch schedule.
-2. Repeatedly generate adjacent machine-order swap moves.
-3. Rank moves by `score_move`.
-4. Apply the first improving move in ranked order.
-5. Stop when no improving move exists or `MAX_ITERATIONS` is reached.
+1. Load the canonical `ft10` instance from `runtime/problem.py`.
+2. Start from the frozen baseline dispatch schedule.
+3. Repeatedly generate adjacent machine-order swap moves, rank them by `score_move(...)`, and apply the first improving move.
+4. Stop when no improving move exists or `MAX_ITERATIONS` is reached, then report candidate makespan and diagnostics.
 
 ## Metrics
 
 - `combined_score`: `-candidate_makespan`
-- `valid`: `1.0` only when a complete feasible schedule is produced
+- `valid`: `1.0` only if a complete feasible schedule is produced
 - `candidate_makespan`
 - `baseline_makespan`
 - `relative_gap_to_optimum`
 
-## Failure Cases
+## Invalid Submissions
 
-The submission is marked invalid and receives a very low score if:
+- `score_move(...)` is missing or crashes
+- The returned move score is non-finite
+- `MAX_ITERATIONS` is invalid or evaluation fails before a valid schedule is built
+- The induced schedule becomes infeasible
 
-- the required scoring function is missing
-- the return value is non-finite
-- the induced schedule is infeasible
-- the candidate crashes during evaluation
+<!-- AI_GENERATED -->

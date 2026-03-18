@@ -1,52 +1,36 @@
-# FT10 Dispatching Rule Optimization 任务
+# FT10 派工规则优化
 
-## 目标
+## 任务概览
 
-Optimize a greedy dispatching rule on the canonical FT10 Fisher-Thompson 10x10 job shop instance.
+为经典 FT10 Fisher-Thompson 10x10 作业车间设计贪心派工规则，并尽量缩短 makespan。
 
-评测使用单个固定的 canonical 实例：`ft10`。
-该实例的已知最优 makespan 为 `930`。
+这个 benchmark 对应的是车间在线派工场景。现实里，轻量级优先级规则依然很常用，因为它们易于部署，而且真的会影响吞吐、延误和加班。
+
+你并不是直接输出完整排程，而是在一个冻结调度器内部写优先级函数，所以这道题本质上是在固定模拟器里的策略设计。
+
+## 哪些部分是冻结的
+
+- 经典 `ft10` 实例，以及已知最优值 `930`。
+- `runtime/problem.py` 中冻结的调度构造器、可行性逻辑和 tie-breaking 协议。
+- 只有最早可开工的操作才会交给你的评分函数比较的这条规则。
 
 ## 提交接口
 
-提交一个 Python 文件。
-
-如果是 dispatch-rule 任务，需要定义：
+提交一个 Python 文件，定义：
 
 ```python
 def score_operation(operation, state):
     ...
 ```
 
-如果是邻域搜索任务，需要定义：
+返回任意有限标量优先级。在最早可开工时间相同的候选操作里，分数更高的会被优先调度。
 
-```python
-def score_move(move, state):
-    ...
-```
+## 评测流程
 
-你也可以额外定义：
-
-```python
-MAX_ITERATIONS = 50
-```
-
-## 评测方式
-
-Dispatch-rule 任务：
-
-1. 从空排程开始。
-2. 每次收集每个 job 的下一道未排工序。
-3. 在“最早可开工时间最小”的工序集合中，选择 `score_operation` 最高者。
-4. 构造完整可行排程并计算 makespan。
-
-邻域搜索任务：
-
-1. 从 baseline 的 SPT dispatch 排程开始。
-2. 生成机器序列上的相邻交换 move。
-3. 用 `score_move` 对 move 排序。
-4. 按排序顺序找到第一个真正改进 makespan 的 move 并应用。
-5. 当没有改进 move 或达到 `MAX_ITERATIONS` 时停止。
+1. 从 `runtime/problem.py` 载入经典 `ft10` 实例。
+2. 从空排程开始，反复收集每个 job 的下一个未调度操作。
+3. 在最早可开工时间相同的操作中，选择 `score_operation(...)` 最高的那个。
+4. 构造完整排程，计算候选 makespan，并同时报告 baseline 与相对最优差距。
 
 ## 指标
 
@@ -56,11 +40,11 @@ Dispatch-rule 任务：
 - `baseline_makespan`
 - `relative_gap_to_optimum`
 
-## 失败情况
+## 判为无效的情况
 
-如果出现以下情况，提交会被判为无效，并得到一个很低的分数：
+- 缺少 `score_operation(...)`，或函数在评测中报错
+- 返回的优先级不是有限值
+- 诱导出的排程不可行，或没有排完整
+- 在得到有效 makespan 之前评测就失败
 
-- 缺少要求的评分函数
-- 返回值不是有限标量
-- 诱导出的排程不可行
-- 候选程序在评测时崩溃
+<!-- AI_GENERATED -->

@@ -1,8 +1,18 @@
 # Dynamic-Current Minimum-Time Routing Task
 
-## Objective
+## Problem
 
-Route a ship across a frozen coastal grid while minimizing travel time under deterministic current and depth fields.
+Route a ship across a frozen coastal grid while minimizing travel time under deterministic current and depth constraints.
+
+This benchmark stands in for channel navigation and port-access planning. A fast route improves schedule reliability, but the shortest geometric route can be illegal or slow once current assistance and draft limits matter.
+
+Algorithmically, it is a constrained shortest-path problem on a fixed grid graph with physics-induced edge costs.
+
+## What Is Frozen
+
+- The land mask, water cells, deterministic current field, and depth field in `runtime/problem.py`.
+- The start cell, goal cell, minimum draft requirement, and four-neighbor movement rule.
+- The travel-time computation and the reference metrics reported for baseline and Dijkstra-style routes.
 
 ## Submission Contract
 
@@ -13,28 +23,14 @@ def solve(instance):
     ...
 ```
 
-Return either a list of grid cells or a dict with key `path`.
-
-The path must:
-
-1. Start at `instance["start"]`
-2. End at `instance["goal"]`
-3. Move only between adjacent grid cells
-4. Stay on water cells with depth at least `instance["min_depth"]`
-
-## Fixed World Model
-
-- The map, synthetic current field, and synthetic depth raster are fixed in `runtime/problem.py`.
-- The upstream lineage is dynamic-current minimum-time routing from `HALEM`, but the actual environmental data here is benchmark-local synthetic data with a fixed generator.
+Return either a list of grid cells or a dict with key `path`. The path must start at `instance["start"]`, end at `instance["goal"]`, move only between adjacent cells, and stay on water cells with depth at least `instance["min_depth"]`.
 
 ## Evaluation
 
-The evaluator will:
-
-1. Load the frozen routing instance
-2. Validate your path against the land mask and minimum-depth rule
-3. Compute travel time along the route
-4. Log the shortest-hop baseline and Dijkstra reference metrics for context while scoring candidate travel time directly
+1. Load the frozen routing instance from `runtime/problem.py`.
+2. Validate the returned path against the start/end cells, adjacency rule, land mask, and minimum-depth constraint.
+3. Compute total travel time and hop count along the path.
+4. Report candidate time together with baseline and reference metrics for context.
 
 ## Metrics
 
@@ -45,3 +41,12 @@ The evaluator will:
 - `reference_time_h`
 - `candidate_hops`
 - `baseline_hops`
+
+## Invalid Submissions
+
+- `solve(...)` is missing or crashes
+- The returned value cannot be parsed into a path
+- The path has the wrong start or goal, contains a non-adjacent move, or enters land/shallow water
+- Any reported metric becomes non-finite
+
+<!-- AI_GENERATED -->

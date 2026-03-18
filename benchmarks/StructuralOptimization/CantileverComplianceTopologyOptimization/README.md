@@ -1,42 +1,55 @@
 # Cantilever Compliance Topology Optimization
 
-Minimize compliance on a frozen cantilever beam using pyMOTO's SIMP formulation and a fixed material budget.
+Update densities inside a frozen cantilever pyMOTO topology-optimization loop and minimize final compliance.
 
-## Provenance
+## Why This Benchmark Matters
 
-- Provenance class: `official-example-derived`
-- Frozen geometry: `cantilever`
-- Solver lineage: `pyMOTO` compliance + SIMP density optimization
-- Full provenance note: see `references/source_manifest.md`
+This benchmark stands in for lightweight bracket and support design. With a fixed material budget, the objective is to make the cantilever as stiff as possible.
 
-## File Layout
+From a CS point of view, this is optimizer design inside a frozen FEM/SIMP loop rather than one-shot prediction.
 
-- `Task.md`: task contract and scoring rules.
-- `Task_zh-CN.md`: Chinese translation.
-- `scripts/init.py`: initial candidate file exposed to agents.
-- `baseline/solution.py`: OC-style baseline update rule.
-- `runtime/problem.py`: frozen physics, constraints, and optimization loop.
-- `verification/evaluator.py`: evaluator entry.
-- `references/source_manifest.md`: source and provenance notes.
+## What You Edit
+
+- Target file: `scripts/init.py`
+- Entry point: `update_density(density, sensitivity, state)`
+
+## Source of Truth
+
+- `Task.md`: full task contract and scoring rules
+- `Task_zh-CN.md`: Chinese translation of the task contract
+- `runtime/problem.py`: frozen instance, validator, and metrics helpers
+- `baseline/solution.py`: reference baseline
+- `verification/evaluator.py`: local evaluator entry point
+- `references/source_manifest.md`: provenance and lineage notes
+
+## Environment
+
+From repository root:
+
+```bash
+pip install -r frontier_eval/requirements.txt
+pip install -r benchmarks/StructuralOptimization/CantileverComplianceTopologyOptimization/verification/requirements.txt
+```
 
 ## Quick Run
 
 From repository root:
 
 ```bash
-/mnt/shared-storage-user/p1-shared/luotianwei/Frontier-Engineering/.venv/bin/python \
-  benchmarks/StructuralOptimization/CantileverComplianceTopologyOptimization/verification/evaluator.py \
+python benchmarks/StructuralOptimization/CantileverComplianceTopologyOptimization/verification/evaluator.py \
   benchmarks/StructuralOptimization/CantileverComplianceTopologyOptimization/scripts/init.py \
   --metrics-out /tmp/CantileverComplianceTopologyOptimization_metrics.json
 ```
 
-Run with `frontier_eval`:
+## Optional: Run with `frontier_eval`
 
 ```bash
 python -m frontier_eval \
   task=unified \
   task.benchmark=StructuralOptimization/CantileverComplianceTopologyOptimization \
-  task.runtime.use_conda_run=false \
-  task.runtime.python_path=/mnt/shared-storage-user/p1-shared/luotianwei/Frontier-Engineering/.venv/bin/python \
   algorithm.iterations=0
 ```
+
+If you need a non-default interpreter, also add `task.runtime.use_conda_run=false task.runtime.python_path=/path/to/python`.
+
+<!-- AI_GENERATED -->

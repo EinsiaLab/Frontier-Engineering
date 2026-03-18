@@ -1,31 +1,55 @@
 # FT10 Neighborhood Move Selection
 
-Guide an adjacent-swap local search on the canonical FT10 Fisher-Thompson 10x10 job shop instance.
+Rank adjacent-swap moves for a frozen local-search shell on the canonical FT10 job shop and minimize makespan.
 
-## Provenance
+## Why This Benchmark Matters
 
-The frozen instance is copied from the canonical benchmark set distributed in `job_shop_lib/benchmarking/benchmark_instances.json`.
-The instance id is `ft10`, and the published optimum used for scoring reference is `930`.
+This benchmark models schedule refinement under a limited search budget. The scheduler already has a feasible incumbent; what matters is which neighboring move it tries first.
 
-## File Layout
+You are controlling move ranking inside a fixed local-search loop rather than searching the schedule space end to end yourself.
 
-- `Task.md`: task contract and scoring rules.
-- `Task_zh-CN.md`: Chinese version.
-- `scripts/init.py`: initial candidate file exposed to agents.
-- `baseline/solution.py`: baseline heuristic.
-- `runtime/problem.py`: frozen instance, scheduling runtime, baseline, and evaluator helpers.
-- `runtime/instance.json`: vendored canonical benchmark instance.
-- `verification/evaluator.py`: evaluator entry.
-- `references/source_manifest.md`: instance provenance.
+## What You Edit
+
+- Target file: `scripts/init.py`
+- Entry point: `score_move(move, state)`
+
+## Source of Truth
+
+- `Task.md`: full task contract and scoring rules
+- `Task_zh-CN.md`: Chinese translation of the task contract
+- `runtime/problem.py`: frozen instance, validator, and metrics helpers
+- `baseline/solution.py`: reference baseline
+- `verification/evaluator.py`: local evaluator entry point
+- `references/source_manifest.md`: provenance and lineage notes
+
+## Environment
+
+From repository root:
+
+```bash
+pip install -r frontier_eval/requirements.txt
+pip install -r benchmarks/OperationsResearch/FT10NeighborhoodMoveSelection/verification/requirements.txt
+```
 
 ## Quick Run
 
-```bash
-python benchmarks/OperationsResearch/FT10NeighborhoodMoveSelection/verification/evaluator.py   benchmarks/OperationsResearch/FT10NeighborhoodMoveSelection/scripts/init.py   --metrics-out /tmp/FT10NeighborhoodMoveSelection_metrics.json
-```
-
-Run with `frontier_eval`:
+From repository root:
 
 ```bash
-python -m frontier_eval   task=unified   task.benchmark=OperationsResearch/FT10NeighborhoodMoveSelection   task.runtime.use_conda_run=false   task.runtime.python_path=/mnt/shared-storage-user/p1-shared/luotianwei/Frontier-Engineering/.venv/bin/python   algorithm.iterations=0
+python benchmarks/OperationsResearch/FT10NeighborhoodMoveSelection/verification/evaluator.py \
+  benchmarks/OperationsResearch/FT10NeighborhoodMoveSelection/scripts/init.py \
+  --metrics-out /tmp/FT10NeighborhoodMoveSelection_metrics.json
 ```
+
+## Optional: Run with `frontier_eval`
+
+```bash
+python -m frontier_eval \
+  task=unified \
+  task.benchmark=OperationsResearch/FT10NeighborhoodMoveSelection \
+  algorithm.iterations=0
+```
+
+If you need a non-default interpreter, also add `task.runtime.use_conda_run=false task.runtime.python_path=/path/to/python`.
+
+<!-- AI_GENERATED -->

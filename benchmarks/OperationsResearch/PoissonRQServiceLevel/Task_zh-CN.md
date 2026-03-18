@@ -1,10 +1,18 @@
-# Poisson (r,Q) with Service-Level Constraint 任务
+# 泊松需求 (r,Q) 服务水平优化
 
-## 目标
+## 任务概览
 
-Select reorder point and lot size for Poisson-demand (r,Q) instances with a hard cycle-service-level target.
+为冻结的泊松需求库存案例选择 `(r, Q)` 策略，在硬性的服务水平约束下尽量降低平均成本。
 
-规范来源来自 `Stockpyl` 的 Poisson-demand `(r,Q)` 实现。固定评测样例定义在 `runtime/problem.py` 中，属于 benchmark 内部冻结参数表。
+这个 benchmark 对应的是备件和 MRO 库存补货，需求是离散事件到达，但服务承诺依然很重要。好的策略既要减少缺货，也不能因为过度安全库存而多花钱。
+
+从计算角度看，它是一个小型随机策略调优问题：评测器冻结了需求模型和成本核算，而你只需要选出 `(r, Q)`。
+
+## 哪些部分是冻结的
+
+- `runtime/problem.py` 中冻结的泊松需求案例表、服务水平目标和成本模型。
+- 用于检查返回 `(r, Q)` 是否满足目标的可行性审核逻辑。
+- 对所有冻结案例平均候选成本的评测循环。
 
 ## 提交接口
 
@@ -15,24 +23,27 @@ def solve(instance):
     ...
 ```
 
-返回值要求：
+返回一个二元组 `(reorder_point, order_quantity)`，或带 `reorder_point` 和 `order_quantity` 字段的字典。
 
-- EOQ 类任务：返回 `order_quantity` 字段的字典，或者直接返回数值型订货批量。
-- `(r,Q)` 类任务：返回包含 `reorder_point` 和 `order_quantity` 的字典，或者直接返回二元组 `(r, Q)`。
+## 评测流程
 
-## 评测方式
-
-评测器会：
-
-1. 读取 `runtime/problem.py` 中的固定样例。
-2. 运行 baseline。
-3. 运行选手的 `solve(instance)`。
-4. 计算成本和可行性。
-5. 计算平均候选成本，并将其直接暴露为优化分数。
+1. 从 `runtime/problem.py` 载入冻结案例集。
+2. 对每个案例运行参考 baseline，用于诊断对照。
+3. 在每个案例上运行你的 `solve(instance)`，并解析返回的 `(r, Q)`。
+4. 检查硬性服务水平约束，计算年成本，并对全体案例求平均。
 
 ## 指标
 
 - `combined_score`：`-avg_cost`
-- `valid`：所有 case 都可行且数值有限时为 `1.0`
-- `avg_cost`：平均候选成本
-- `avg_cost_ratio`：仅用于诊断的平均 `baseline_cost / candidate_cost`
+- `valid`：只有所有案例都可行且输出有限时才为 `1.0`
+- `avg_cost`
+- `avg_cost_ratio`：用于诊断的平均 `baseline_cost / candidate_cost`
+
+## 判为无效的情况
+
+- 缺少 `solve(...)`，或函数在评测中报错
+- 返回值无法解析为 `(r, Q)`
+- 任意案例没有达到服务水平目标，或返回了非有限值
+- 任意案例的评测指标出现非有限值
+
+<!-- AI_GENERATED -->

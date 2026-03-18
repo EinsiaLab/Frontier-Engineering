@@ -1,10 +1,18 @@
 # EOQ with All-Units Discounts Task
 
-## Objective
+## Problem
 
-Choose an order quantity under piecewise all-units discount pricing.
+Choose an order quantity for frozen EOQ cases with all-units discounts and minimize average annual cost.
 
-Canonical source lineage comes from `Stockpyl` all-units discount EOQ routines. The benchmark uses frozen benchmark-local cases defined in `runtime/problem.py`.
+All-units discounts appear in packaging, chemicals, and contract manufacturing. Crossing a breakpoint changes the unit price of every unit in the order, so choosing the wrong region can dominate annual spend.
+
+This is a frozen piecewise optimization problem with regime switches. The output is still a single scalar `Q`, but the objective changes discontinuously when the chosen price region changes.
+
+## What Is Frozen
+
+- The deterministic EOQ case table and cost model in `runtime/problem.py`.
+- The price-break schedule, demand, holding-cost, and order-cost parameters for every case.
+- The evaluator loop that averages cost across all frozen cases.
 
 ## Submission Contract
 
@@ -15,33 +23,27 @@ def solve(instance):
     ...
 ```
 
-The return value must be:
-
-- For EOQ tasks: a dict with `order_quantity`, or a raw numeric quantity.
-- For `(r,Q)` tasks: a dict with `reorder_point` and `order_quantity`, or a 2-tuple `(r, Q)`.
+Return either a raw numeric order quantity or a dict with key `order_quantity`.
 
 ## Evaluation
 
-The evaluator will:
-
 1. Load the frozen case set from `runtime/problem.py`.
-2. Run the reference baseline for each case.
-3. Run your `solve(instance)` implementation for each case.
-4. Convert the returned quantity or `(r, Q)` pair into a cost and feasibility result.
-5. Compute the average candidate cost and expose it directly as the optimization score.
+2. Run the reference baseline on every case for diagnostics.
+3. Run your `solve(instance)` on every case and parse the returned order quantity.
+4. Convert that quantity into feasibility and annual cost, then average cost across all cases.
 
 ## Metrics
 
 - `combined_score`: `-avg_cost`
 - `valid`: `1.0` only if every case is feasible and every output is finite
-- `avg_cost`: average candidate cost
-- `avg_cost_ratio`: average `baseline_cost / candidate_cost` for diagnostics only
+- `avg_cost`
+- `avg_cost_ratio`: average `baseline_cost / candidate_cost` for diagnostics
 
-## Failure Cases
+## Invalid Submissions
 
-The submission is marked invalid and receives a very low score if:
+- `solve(...)` is missing or crashes
+- The returned value cannot be parsed into an order quantity
+- Any order quantity is infeasible or non-finite
+- Any case evaluation produces a non-finite metric
 
-- `solve()` is missing
-- the returned output cannot be parsed
-- any case violates feasibility constraints
-- any metric becomes non-finite
+<!-- AI_GENERATED -->
