@@ -116,12 +116,19 @@
       <td>登月软着陆轨迹优化</td>
     </tr>
     <tr>
-      <td><b>ParticlePhysics</b></td>
+      <td rowspan="2"><b>ParticlePhysics</b></td>
       <td><code>MuonTomography</code></td>
       <td>已完成</td>
       <td>@SeanDF333</td>
       <td>@ahydchh</td>
       <td>考虑缪子通量、预算与开挖约束的探测器布局优化</td>
+    </tr>
+    <tr>
+      <td><code>ProtonTherapyPlanning</code></td>
+      <td>已完成</td>
+      <td>@SeanDF333</td>
+      <td>@ahydchh</td>
+      <td>在肿瘤覆盖、危及器官保护与束流成本约束下优化 IMPT 剂量权重</td>
     </tr>
     <tr>
       <td rowspan="3"><b>Kernel Engineering</b></td>

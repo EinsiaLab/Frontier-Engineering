@@ -130,12 +130,19 @@ The table below lists the current coverage of domain tasks in the Benchmark. We 
       <td>Lunar soft landing trajectory optimization</td>
     </tr>
     <tr>
-      <td><b>ParticlePhysics</b></td>
+      <td rowspan="2"><b>ParticlePhysics</b></td>
       <td><code>MuonTomography</code></td>
       <td>Completed</td>
       <td>@SeanDF333</td>
       <td>@ahydchh</td>
       <td>Muon detector placement optimization under flux, budget, and excavation constraints</td>
+    </tr>
+    <tr>
+      <td><code>ProtonTherapyPlanning</code></td>
+      <td>Completed</td>
+      <td>@SeanDF333</td>
+      <td>@ahydchh</td>
+      <td>IMPT dose weight optimization under tumor coverage, OAR safety, and beam cost constraints</td>
     </tr>
     <tr>
       <td rowspan="3"><b>Kernel Engineering</b></td>
