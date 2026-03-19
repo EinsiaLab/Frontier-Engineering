@@ -442,12 +442,19 @@ The table below lists the current coverage of domain tasks in the Benchmark. We 
       <td>Polarization-multiplexed holography</td>
     </tr>
     <tr>
-      <td><b>Computer Systems</b></td>
+      <td rowspan="2"><b>Computer Systems</b></td>
       <td><code>Malloc Lab</code></td>
       <td>Completed</td>
       <td>@ahydchh</td>
       <td>@ahydchh</td>
       <td>Dynamic memory allocation</td>
+    </tr>
+    <tr>
+      <td><code>DuckDBWorkloadOptimization</code></td>
+      <td>Completed</td>
+      <td>@DocZbs</td>
+      <td>@DocZbs</td>
+      <td>Index/materialized-view selection and query rewriting optimization on official DuckDB workloads</td>
     </tr>
     <tr>
       <td><b>EngDesign</b></td>
@@ -566,7 +573,7 @@ The table below lists the current coverage of domain tasks in the Benchmark. We 
       <td>Classical JSSP YN family (Yamada and Nakano 1992)</td>
     </tr>
     <tr>
-      <td rowspan="3"><b>StructuralOptimization</b></td>
+      <td rowspan="4"><b>StructuralOptimization</b></td>
       <td><code>ISCSO2015</code></td>
       <td>Completed</td>
       <td>@yks23</td>
@@ -588,7 +595,14 @@ The table below lists the current coverage of domain tasks in the Benchmark. We 
       <td>MBB beam 2D topology optimization (SIMP), Continuous, volume-constrained, compliance minimization</td>
     </tr>
     <tr>
-      <td rowspan="5"><b>Robotics</b></td>
+      <td><code>PyMOTOSIMPCompliance</code></td>
+      <td>Completed</td>
+      <td>@DocZbs</td>
+      <td>@DocZbs</td>
+      <td>pyMOTO-based 2D beam topology optimization (SIMP + OC/MMA) under a volume-fraction constraint</td>
+    </tr>
+    <tr>
+      <td rowspan="6"><b>Robotics</b></td>
       <td><code>DynamicObstacleAvoidanceNavigation</code></td>
       <td>Completed</td>
       <td>@MichaelCaoo</td>
@@ -624,12 +638,26 @@ The table below lists the current coverage of domain tasks in the Benchmark. We 
       <td>UAV inspection under wind field disturbance</td>
     </tr>
     <tr>
-      <td><b>Aerodynamics</b></td>
+      <td><code>CoFlyersVasarhelyiTuning</code></td>
+      <td>In Progress</td>
+      <td>@DocZbs</td>
+      <td>@DocZbs</td>
+      <td>Tune the original CoFlyers Vasarhelyi flocking parameters</td>
+    </tr>
+    <tr>
+      <td rowspan="2"><b>Aerodynamics</b></td>
       <td><code>CarAerodynamicsSensing</code></td>
       <td>Completed</td>
       <td>@LeiDQ, @llltttwww</td>
       <td>@llltttwww</td>
       <td>Sensor placement on 3D car surface for pressure field reconstruction</td>
+    </tr>
+    <tr>
+      <td><code>DawnAircraftDesignOptimization</code></td>
+      <td>Completed</td>
+      <td>@DocZbs</td>
+      <td>@DocZbs</td>
+      <td>Jointly optimize wing, fuselage, and propulsion variables under cruise/endurance/payload constraints to minimize total aircraft mass</td>
     </tr>
     <tr>
       <td><b>WirelessChannelSimulation</b></td>
@@ -638,6 +666,22 @@ The table below lists the current coverage of domain tasks in the Benchmark. We 
       <td>@tonyhaohan</td>
       <td>@yks23, @ahydchh</td>
       <td>BER estimation with importance sampling for Hamming(127,120)</td>
+    </tr>
+    <tr>
+      <td><b>PowerSystems</b></td>
+      <td><code>EV2GymSmartCharging</code></td>
+      <td>Completed</td>
+      <td>@DocZbs</td>
+      <td>@DocZbs</td>
+      <td>Upstream-aligned EV smart charging</td>
+    </tr>
+    <tr>
+      <td><b>AdditiveManufacturing</b></td>
+      <td><code>DiffSimThermalControl</code></td>
+      <td>Completed</td>
+      <td>@DocZbs</td>
+      <td>@DocZbs</td>
+      <td>Study process optimization in additive manufacturing using differentiable simulation</td>
     </tr>
   </tbody>
 </table>
@@ -655,3 +699,4 @@ Welcome to our developer community! Whether you want to discuss new engineering 
 * 🟢 **Feishu (Lark)**: [Click here to join our Feishu discussion group](https://applink.feishu.cn/client/chat/chatter/add_by_link?link_token=21ak5858-60ba-44fd-9085-01f165c8771c)
 
 * 🔜 **Discord**: [Click here to join our Discord community](https://discord.gg/hxeVhZNN)
+

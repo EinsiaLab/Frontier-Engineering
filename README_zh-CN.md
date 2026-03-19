@@ -1,6 +1,6 @@
 # Frontier-Eng: 人工智能代理的大规模工程优化基准
 
-[English](README.md) | 简体中文
+English | [简体中文](README_zh-CN.md)
 
 **Frontier-Eng** 是一个旨在评估 AI Agent 在**真实工程领域**中解决**开放式优化问题**能力的Benchmark。
 
@@ -20,7 +20,8 @@
 
 我们需要社区的力量来扩展 Benchmark 的覆盖范围。我们欢迎通过 Pull Request (PR) 的方式提交新的工程问题。如果你希望贡献，请遵循以下标准和流程：
 
-> **AI 辅助贡献**：我们欢迎使用 AI 工具辅助创建的贡献。如果您使用 AI 助手来帮助完成贡献，我们建议将本仓库中的提示词指南（`AGENT.md` 或 `AGENT_zh-CN.md`）提供给您的 AI 助手，以确保其遵循我们的标准和要求。**但是，请不要过度依赖 AI 工具或完全放手不管**。人工审查和监督对于确保质量和正确性至关重要。
+> **AI 辅助贡献**：我们欢迎使用 AI 工具辅助创建的贡献。如果您使用 AI 助手来帮助完成贡献，我们建议将本仓库中的提示词指南（`AGENT.md`）提供给您的 AI 助手，以确保其遵循我们的标准和要求。**但是，请不要过度依赖 AI 工具或完全放手不管**。人工审查和监督对于确保质量和正确性至关重要。
+
 ### 样本要求
 
 1. **Reality Gap**: 必须贴近现实，考虑现实影响因素，非单纯数学抽象。
@@ -92,8 +93,12 @@
    * **Agent Review**: 提交 PR 后，首先由 **AI Agent** 进行自动化初步审查（包括代码规范、基础逻辑验证等），并可能在 PR 中直接提出修改建议。
    * **Maintainer Review**: Agent 审查通过后，**维护者** 将进行最终复核。确认无误后，你的贡献将被合并。
 ---
-> 💡 如果这是你第一次贡献，或者对目录结构有疑问，欢迎先提交 Issue 进行讨论。  
+> 💡 如果这是你第一次贡献，或者对目录结构有疑问，欢迎先提交 Issue 进行讨论。
+
 ## 📊 任务进度与规划
+
+下表列出了当前 Benchmark 各领域任务的覆盖情况。我们不仅欢迎代码贡献，也欢迎社区提出有挑战性的新工程问题构想。
+
 
 <table>
   <thead>
@@ -428,12 +433,19 @@
       <td>偏振复用全息</td>
     </tr>
     <tr>
-      <td><b>Computer Systems</b></td>
+      <td rowspan="2"><b>Computer Systems</b></td>
       <td><code>Malloc Lab</code></td>
       <td>已完成</td>
       <td>@ahydchh</td>
       <td>@ahydchh</td>
       <td>动态内存分配实验</td>
+    </tr>
+    <tr>
+      <td><code>DuckDBWorkloadOptimization</code></td>
+      <td>已完成</td>
+      <td>@DocZbs</td>
+      <td>@DocZbs</td>
+      <td>基于 DuckDB 官方 workload 的索引/物化视图选择与查询改写优化</td>
     </tr>
     <tr>
       <td><b>EngDesign</b></td>
@@ -552,7 +564,7 @@
       <td>经典 JSSP 的 YN 家族（Yamada & Nakano，1992）</td>
     </tr>
     <tr>
-      <td rowspan="3"><b>StructuralOptimization</b></td>
+      <td rowspan="4"><b>StructuralOptimization</b></td>
       <td><code>ISCSO2015</code></td>
       <td>已完成</td>
       <td>@yks23</td>
@@ -574,7 +586,14 @@
       <td>连续、体积约束的合规最小化, 连续、体积约束的合规最小化</td>
     </tr>
     <tr>
-      <td rowspan="5"><b>Robotics</b></td>
+      <td><code>PyMOTOSIMPCompliance</code></td>
+      <td>已完成</td>
+      <td>@DocZbs</td>
+      <td>@DocZbs</td>
+      <td>基于 pyMOTO 的二维梁拓扑优化（SIMP + OC/MMA），在体积分数约束下最小化柔度</td>
+    </tr>
+    <tr>
+      <td rowspan="6"><b>Robotics</b></td>
       <td><code>DynamicObstacleAvoidanceNavigation</code></td>
       <td>已完成</td>
       <td>@MichaelCaoo</td>
@@ -610,12 +629,26 @@
       <td>风场扰动下的无人机巡检</td>
     </tr>
     <tr>
-      <td><b>Aerodynamics</b></td>
+      <td><code>CoFlyersVasarhelyiTuning</code></td>
+      <td>已完成</td>
+      <td>@DocZbs</td>
+      <td>@DocZbs</td>
+      <td>调优 Vasarhelyi 群飞参数</td>
+    </tr>
+    <tr>
+      <td rowspan="2"><b>Aerodynamics</b></td>
       <td><code>CarAerodynamicsSensing</code></td>
       <td>已完成</td>
       <td>@LeiDQ, @llltttwww</td>
       <td>@llltttwww</td>
       <td>3D 汽车表面传感器布局优化，用于压力场重建</td>
+    </tr>
+    <tr>
+      <td><code>DawnAircraftDesignOptimization</code></td>
+      <td>已完成</td>
+      <td>@DocZbs</td>
+      <td>@DocZbs</td>
+      <td>在巡航高度、续航与载荷约束下，联合优化机翼/机身/动力参数以最小化飞机总重量</td>
     </tr>
     <tr>
       <td><b>WirelessChannelSimulation</b></td>
@@ -624,6 +657,22 @@
       <td>@tonyhaohan</td>
       <td>@yks23, @ahydchh</td>
       <td>使用重要性采样估计 Hamming(127,120) 的误码率</td>
+    </tr>
+    <tr>
+      <td><b>PowerSystems</b></td>
+      <td><code>EV2GymSmartCharging</code></td>
+      <td>已完成</td>
+      <td>@DocZbs</td>
+      <td>@DocZbs</td>
+      <td>电动车智能充电</td>
+    </tr>
+    <tr>
+      <td><b>AdditiveManufacturing</b></td>
+      <td><code>DiffSimThermalControl</code></td>
+      <td>已完成</td>
+      <td>@DocZbs</td>
+      <td>@DocZbs</td>
+      <td>研究增材制造中的 differentiable simulation 工艺优化</td>
     </tr>
   </tbody>
 </table>
@@ -640,3 +689,4 @@
 
 * 🟢 **飞书**: [点击这里加入我们的飞书讨论群](https://applink.feishu.cn/client/chat/chatter/add_by_link?link_token=21ak5858-60ba-44fd-9085-01f165c8771c)
 * 🔜 **Discord**: [点击这里加入我们的Discord社区](https://discord.gg/hxeVhZNN)
+
