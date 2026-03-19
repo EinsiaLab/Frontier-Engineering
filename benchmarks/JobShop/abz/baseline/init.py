@@ -1,3 +1,4 @@
+# EVOLVE-BLOCK-START
 """Simple greedy baseline for ABZ (Adams, Balas & Zawack, 1988).
 
 Baseline constraints:
@@ -186,3 +187,4 @@ def _cli() -> None:
 
 if __name__ == "__main__":
     _cli()
+# EVOLVE-BLOCK-END

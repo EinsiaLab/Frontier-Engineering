@@ -8,8 +8,10 @@ import json
 import math
 import os
 import random
+import socket
 import sys
 import time
+import urllib.error
 import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
@@ -136,12 +138,17 @@ def _chat_completions_sync(
     }
     body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
 
-    headers = {"Content-Type": "application/json"}
+    total_attempts = max(1, int(retries))
+    headers = {
+        "Content-Type": "application/json",
+        # Some proxies behave better when each request is an isolated connection.
+        "Connection": "close",
+    }
     if api_key:
         headers["Authorization"] = f"Bearer {api_key}"
 
     last_err: Exception | None = None
-    for attempt in range(max(1, int(retries))):
+    for attempt in range(total_attempts):
         try:
             req = urllib.request.Request(url, data=body, headers=headers, method="POST")
             with urllib.request.urlopen(req, timeout=max(1.0, float(timeout_s))) as resp:
@@ -159,13 +166,40 @@ def _chat_completions_sync(
                     if isinstance(first.get("text"), str):
                         return str(first["text"])
             raise ValueError("No completion choices in response")
+        except urllib.error.HTTPError as e:
+            body_preview = ""
+            try:
+                body_preview = e.read().decode("utf-8", errors="replace")
+            except Exception:
+                body_preview = ""
+            body_preview = _tail(body_preview.strip(), 400)
+            detail = f"HTTP {e.code} for {url}"
+            if body_preview:
+                detail += f": {body_preview}"
+            last_err = RuntimeError(detail)
+            retryable = e.code in {408, 409, 425, 429, 500, 502, 503, 504}
+        except urllib.error.URLError as e:
+            reason = getattr(e, "reason", e)
+            last_err = RuntimeError(f"{url}: {reason}")
+            retryable = True
+        except (TimeoutError, socket.timeout, ConnectionError) as e:
+            last_err = e
+            retryable = True
         except Exception as e:
             last_err = e
-            if attempt + 1 >= max(1, int(retries)):
-                break
-            time.sleep(max(0.0, float(retry_delay_s)))
-            continue
-    raise RuntimeError(f"LLM request failed: {last_err}") from last_err
+            retryable = True
+
+        if attempt + 1 >= total_attempts or not retryable:
+            break
+
+        delay_s = max(0.0, float(retry_delay_s)) * (2 ** attempt)
+        delay_s = min(delay_s, 30.0)
+        if delay_s > 0.0:
+            time.sleep(delay_s * (1.0 + random.random() * 0.2))
+        else:
+            time.sleep(0.05)
+
+    raise RuntimeError(f"LLM request failed after {total_attempts} attempts: {last_err}") from last_err
 
 
 def _signed_log1p(x: float) -> float:
@@ -387,7 +421,9 @@ class ABMCTSAlgorithm(Algorithm):
         llm_temperature_default = float(getattr(llm_cfg, "temperature", 0.7) or 0.7)
         llm_max_tokens_default = int(getattr(llm_cfg, "max_tokens", 4096) or 4096)
         llm_timeout_s = float(getattr(llm_cfg, "timeout", 60) or 60)
-        llm_retries = int(getattr(llm_cfg, "retries", 3) or 3)
+        # AB-MCTS makes many short LLM calls; a few extra retries help absorb transient
+        # proxy hiccups without forcing users to remember per-run override tuning.
+        llm_retries = max(6, int(getattr(llm_cfg, "retries", 3) or 3))
         llm_retry_delay_s = float(getattr(llm_cfg, "retry_delay", 5) or 5)
 
         prompt_cfg = getattr(algo_cfg, "prompt", None)
@@ -487,18 +523,27 @@ class ABMCTSAlgorithm(Algorithm):
             reward=float(baseline_reward),
         )
 
-        def _write_best(state: ProgramState) -> None:
+        def _write_best(
+            state: ProgramState,
+            *,
+            step: int | None,
+            node_id: int | None,
+            results_dir: Path | None,
+        ) -> None:
             best_program_path = best_dir / "program.py"
             best_program_path.write_text(state.code, encoding="utf-8", errors="replace")
             info = {
                 "metrics": state.metrics,
                 "combined_score": float(state.combined_score),
                 "reward": float(state.reward),
+                "best_step": step,
+                "node_id": node_id,
                 "program_path": str(best_program_path),
+                "results_dir": str(results_dir) if results_dir is not None else None,
             }
             (best_dir / "best_program_info.json").write_text(_safe_json(info), encoding="utf-8")
 
-        _write_best(best_state)
+        _write_best(best_state, step=0, node_id=None, results_dir=baseline_dir)
 
         if iterations <= 0:
             print(f"Best score: {best_state.combined_score}")
@@ -730,13 +775,27 @@ class ABMCTSAlgorithm(Algorithm):
                     llm_raw = ""
                     code = ""
                     feedback: str | None = None
+                    llm_failure: str | None = None
                     for attempt in range(1, max(1, max_llm_attempts) + 1):
-                        user_prompt, llm_raw, code = await _propose_code(
-                            parent=parent_state,
-                            action=action_spec,
-                            attempt=attempt,
-                            feedback=feedback,
-                        )
+                        try:
+                            user_prompt, llm_raw, code = await _propose_code(
+                                parent=parent_state,
+                                action=action_spec,
+                                attempt=attempt,
+                                feedback=feedback,
+                            )
+                            llm_failure = None
+                        except Exception as e:
+                            llm_failure = str(e)
+                            feedback = f"LLM request failed: {llm_failure}"
+                            llm_raw = feedback
+                            code = ""
+                            print(
+                                f"[abmcts] step={generation_idx} trial={trial.trial_id} "
+                                f"LLM request failed on attempt {attempt}/{max_llm_attempts}: {llm_failure}",
+                                file=sys.stderr,
+                            )
+                            continue
                         feedback = None
                         if not code.strip():
                             feedback = "Empty output. Return valid Python code only."
@@ -762,20 +821,40 @@ class ABMCTSAlgorithm(Algorithm):
                             continue
                         break
 
-                    if not code.strip():
-                        code = baseline_code
+                    node_dir = tree_dir / f"node_{node_id:06d}"
+                    if not code.strip() and llm_failure:
+                        metrics = {
+                            "combined_score": 0.0,
+                            "valid": 0.0,
+                            "error": "llm_request_failed",
+                            "llm_error": llm_failure,
+                        }
+                        artifacts = {"llm_error": llm_failure}
+                        raw_score, reward = _reward_from_metrics(
+                            metrics, baseline_score=float(baseline_raw_score), baseline_valid=baseline_valid
+                        )
+                        program_state = ProgramState(
+                            code=parent_state.code,
+                            metrics=metrics,
+                            artifacts=artifacts,
+                            combined_score=float(raw_score),
+                            reward=float(reward),
+                        )
+                    else:
+                        if not code.strip():
+                            code = baseline_code
 
-                    metrics, artifacts = await _evaluate_program(code, out_dir=tree_dir / f"node_{node_id:06d}")
-                    raw_score, reward = _reward_from_metrics(
-                        metrics, baseline_score=float(baseline_raw_score), baseline_valid=baseline_valid
-                    )
-                    program_state = ProgramState(
-                        code=code,
-                        metrics=metrics,
-                        artifacts=artifacts,
-                        combined_score=float(raw_score),
-                        reward=float(reward),
-                    )
+                        metrics, artifacts = await _evaluate_program(code, out_dir=node_dir)
+                        raw_score, reward = _reward_from_metrics(
+                            metrics, baseline_score=float(baseline_raw_score), baseline_valid=baseline_valid
+                        )
+                        program_state = ProgramState(
+                            code=code,
+                            metrics=metrics,
+                            artifacts=artifacts,
+                            combined_score=float(raw_score),
+                            reward=float(reward),
+                        )
 
                     before_size = int(search_state.tree.size)
                     search_state = algo.tell(search_state, trial.trial_id, (program_state, float(reward)))
@@ -797,7 +876,12 @@ class ABMCTSAlgorithm(Algorithm):
 
                     if program_state.combined_score > best_state.combined_score:
                         best_state = program_state
-                        _write_best(best_state)
+                        _write_best(
+                            best_state,
+                            step=int(generation_idx),
+                            node_id=int(node_id),
+                            results_dir=node_dir,
+                        )
 
                     if trace_f is not None:
                         trace_f.write(

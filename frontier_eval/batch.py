@@ -73,6 +73,13 @@ class AlgorithmSpec:
 
 
 @dataclass(frozen=True)
+class TaskSpec:
+    name: str
+    label: str
+    overrides: list[str] = field(default_factory=list)
+
+
+@dataclass(frozen=True)
 class LlmSpec:
     name: str
     api_base: str | None = None
@@ -86,6 +93,7 @@ class LlmSpec:
 @dataclass(frozen=True)
 class RunSpec:
     task: str
+    task_config: str
     algorithm: AlgorithmSpec
     llm: LlmSpec | None
     cwd: Path
@@ -165,6 +173,31 @@ def _parse_algorithms(raw_list: list[Any]) -> list[AlgorithmSpec]:
     return algorithms
 
 
+def _parse_tasks(raw_list: list[Any]) -> list[TaskSpec]:
+    tasks: list[TaskSpec] = []
+    seen_labels: set[str] = set()
+
+    for item in raw_list:
+        if isinstance(item, str):
+            spec = TaskSpec(name=item, label=item)
+        elif isinstance(item, dict):
+            name = item.get("name")
+            if not name:
+                raise ValueError("task entry missing `name`")
+            label = str(item.get("label") or name)
+            overrides = _normalize_overrides(item.get("overrides"))
+            spec = TaskSpec(name=str(name), label=label, overrides=overrides)
+        else:
+            raise TypeError(f"task entry must be str or dict, got {type(item)}")
+
+        if spec.label in seen_labels:
+            raise ValueError(f"duplicate task label in matrix.tasks: {spec.label}")
+        seen_labels.add(spec.label)
+        tasks.append(spec)
+
+    return tasks
+
+
 def _parse_llms(raw_list: list[Any], *, default_llm_config: str) -> list[LlmSpec]:
     llms: list[LlmSpec] = []
     for item in raw_list:
@@ -217,7 +250,7 @@ def _build_runs(
     *,
     repo_root: Path,
     batch_root: Path,
-    tasks: list[str],
+    tasks: list[TaskSpec],
     algorithms: list[AlgorithmSpec],
     llms: list[LlmSpec],
     llm_default_config: str,
@@ -229,27 +262,33 @@ def _build_runs(
     batch_root = batch_root.expanduser().resolve()
     batch_root.mkdir(parents=True, exist_ok=True)
 
-    for t in tasks:
-        _require_hydra_group(repo_root, group="task", name=t)
+    for task_spec in tasks:
+        _require_hydra_group(repo_root, group="task", name=task_spec.name)
     for a in algorithms:
         _require_hydra_group(repo_root, group="algorithm", name=a.name)
     _require_hydra_group(repo_root, group="llm", name=llm_default_config)
 
     runs: list[RunSpec] = []
-    for task in tasks:
+    for task_spec in tasks:
         for algo in algorithms:
             for llm in llms or [None]:
                 llm_name = "default_llm" if llm is None else llm.name
-                run_dir = batch_root / _safe_slug(task) / _safe_slug(algo.name) / _safe_slug(llm_name)
+                run_dir = (
+                    batch_root
+                    / _safe_slug(task_spec.label)
+                    / _safe_slug(algo.name)
+                    / _safe_slug(llm_name)
+                )
                 if unique_dirs:
                     run_dir = _unique_dir(run_dir)
 
                 overrides: list[str] = [
-                    f"task={task}",
+                    f"task={task_spec.name}",
                     f"algorithm={algo.name}",
                     f"llm={llm_default_config if llm is None else (llm.llm_config or llm_default_config)}",
                     f"run.output_dir={run_dir.as_posix()}",
                 ]
+                overrides.extend(task_spec.overrides)
                 overrides.extend(common_overrides)
                 overrides.extend(algo.overrides)
                 if llm is not None:
@@ -259,7 +298,7 @@ def _build_runs(
                 env = os.environ.copy()
                 env.setdefault("PYTHONUNBUFFERED", "1")
                 env.setdefault("FRONTIER_ENGINEERING_ROOT", str(repo_root))
-                env["FRONTIER_EVAL_TASK_NAME"] = task
+                env["FRONTIER_EVAL_TASK_NAME"] = task_spec.name
                 if llm is not None:
                     if llm.api_base:
                         env["OPENAI_API_BASE"] = llm.api_base
@@ -277,7 +316,8 @@ def _build_runs(
                 cmd = [python_exe, "-m", "frontier_eval", *overrides]
                 runs.append(
                     RunSpec(
-                        task=task,
+                        task=task_spec.label,
+                        task_config=task_spec.name,
                         algorithm=algo,
                         llm=llm,
                         cwd=repo_root,
@@ -406,6 +446,7 @@ async def _run_one(run: RunSpec) -> dict[str, Any]:
 
     meta = {
         "task": run.task,
+        "task_config": run.task_config,
         "algorithm": run.algorithm.name,
         "llm": None if run.llm is None else run.llm.name,
         "cmd": shlex.join(run.cmd),
@@ -435,6 +476,7 @@ async def _run_one(run: RunSpec) -> dict[str, Any]:
         metrics = _extract_abmcts_best_metrics(run.output_dir)
     record: dict[str, Any] = {
         "task": run.task,
+        "task_config": run.task_config,
         "algorithm": run.algorithm.name,
         "llm": None if run.llm is None else run.llm.name,
         "model": None if run.llm is None else run.llm.model,
@@ -445,6 +487,10 @@ async def _run_one(run: RunSpec) -> dict[str, Any]:
         "elapsed_s": float(elapsed_s),
         "best_metrics": metrics,
     }
+    if isinstance(metrics, dict):
+        record["combined_score"] = metrics.get("combined_score")
+        record["valid"] = metrics.get("valid")
+        record["timeout"] = metrics.get("timeout")
     _write_json(run.output_dir / "launcher_result.json", record)
     return record
 
@@ -523,13 +569,19 @@ def main(argv: list[str] | None = None) -> None:
         "--tasks",
         action="append",
         default=[],
-        help="Only run these tasks (repeatable; supports comma-separated).",
+        help="Only run these task labels (repeatable; supports comma-separated).",
+    )
+    parser.add_argument(
+        "--algorithms",
+        action="append",
+        default=[],
+        help="Only run these algorithm names (repeatable; supports comma-separated).",
     )
     parser.add_argument(
         "--exclude-tasks",
         action="append",
         default=[],
-        help="Exclude these tasks (repeatable; supports comma-separated).",
+        help="Exclude these task labels (repeatable; supports comma-separated).",
     )
     parser.add_argument("--dry-run", action="store_true", help="Print commands without running.")
     parser.add_argument(
@@ -576,26 +628,28 @@ def main(argv: list[str] | None = None) -> None:
     if not isinstance(matrix, dict):
         raise TypeError("matrix file must define a mapping at top-level")
 
-    matrix_tasks = _as_str_list(matrix.get("tasks"), field_name="tasks")
-    if not matrix_tasks:
+    raw_tasks = matrix.get("tasks")
+    if not isinstance(raw_tasks, list) or not raw_tasks:
         raise ValueError("matrix.tasks is required and must be non-empty")
+    matrix_tasks = _parse_tasks(raw_tasks)
 
     include_tasks = _parse_csv_args(args.tasks)
     exclude_tasks = _parse_csv_args(args.exclude_tasks)
-    matrix_task_set = set(matrix_tasks)
+    matrix_task_set = {task.label for task in matrix_tasks}
 
     tasks = matrix_tasks
     if include_tasks:
         unknown = [t for t in include_tasks if t not in matrix_task_set]
         if unknown:
             raise ValueError(f"--tasks contains task(s) not present in matrix: {unknown}")
-        tasks = include_tasks
+        include_set = set(include_tasks)
+        tasks = [task for task in tasks if task.label in include_set]
     if exclude_tasks:
         unknown = [t for t in exclude_tasks if t not in matrix_task_set]
         if unknown:
             raise ValueError(f"--exclude-tasks contains task(s) not present in matrix: {unknown}")
         exclude_set = set(exclude_tasks)
-        tasks = [t for t in tasks if t not in exclude_set]
+        tasks = [task for task in tasks if task.label not in exclude_set]
     if not tasks:
         raise ValueError("No tasks selected after applying --tasks/--exclude-tasks filters")
 
@@ -603,6 +657,18 @@ def main(argv: list[str] | None = None) -> None:
     if not isinstance(raw_algos, list) or not raw_algos:
         raise ValueError("matrix.algorithms is required and must be non-empty")
     algorithms = _parse_algorithms(raw_algos)
+    include_algorithms = _parse_csv_args(args.algorithms)
+    matrix_algorithm_set = {algo.name for algo in algorithms}
+    if include_algorithms:
+        unknown = [name for name in include_algorithms if name not in matrix_algorithm_set]
+        if unknown:
+            raise ValueError(
+                f"--algorithms contains algorithm(s) not present in matrix: {unknown}"
+            )
+        include_algo_set = set(include_algorithms)
+        algorithms = [algo for algo in algorithms if algo.name in include_algo_set]
+    if not algorithms:
+        raise ValueError("No algorithms selected after applying --algorithms filters")
 
     raw_llms = matrix.get("llms", [])
     if raw_llms and not isinstance(raw_llms, list):
@@ -636,7 +702,7 @@ def main(argv: list[str] | None = None) -> None:
 
         if not args.dry_run:
             for task in tasks:
-                task_dir = (batch_root / _safe_slug(task)).resolve()
+                task_dir = (batch_root / _safe_slug(task.label)).resolve()
                 try:
                     task_dir.relative_to(batch_root.resolve())
                 except Exception as e:
@@ -648,7 +714,10 @@ def main(argv: list[str] | None = None) -> None:
                 if task_dir.is_dir():
                     shutil.rmtree(task_dir)
 
-            _filter_summary_jsonl_in_place(batch_root / "summary.jsonl", exclude_tasks=set(tasks))
+            _filter_summary_jsonl_in_place(
+                batch_root / "summary.jsonl",
+                exclude_tasks={task.label for task in tasks},
+            )
         unique_dirs = False
     else:
         batch_name = str(run_cfg.get("name") or "batch")

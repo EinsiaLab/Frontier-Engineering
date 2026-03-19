@@ -1,3 +1,4 @@
+# EVOLVE-BLOCK-START
 """Baseline solver for Task 4: polarization-multiplexed focusing."""
 
 from __future__ import annotations
@@ -146,3 +147,4 @@ def solve(spec: dict[str, Any] | None = None, device: str | None = None, seed: i
         "phase_y_layers": [p.detach().cpu() for p in phase_y_layers],
         "loss_history": losses,
     }
+# EVOLVE-BLOCK-END

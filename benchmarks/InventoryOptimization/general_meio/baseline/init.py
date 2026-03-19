@@ -1,3 +1,4 @@
+# EVOLVE-BLOCK-START
 """Baseline implementation for Task 02.
 
 No stockpyl optimizer is used here.
@@ -20,3 +21,4 @@ def solve() -> dict[int, int]:
     s10 = round(1.73 * sink_total)
 
     return {10: s10, 20: s20, 30: s30, 40: s40, 50: s50}
+# EVOLVE-BLOCK-END

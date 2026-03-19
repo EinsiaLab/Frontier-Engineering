@@ -1,3 +1,4 @@
+# EVOLVE-BLOCK-START
 import numpy as np
 
 
@@ -15,3 +16,4 @@ def compute_dm_commands(
     """
     u = reconstructor @ slopes
     return np.clip(u, -max_voltage, max_voltage)
+# EVOLVE-BLOCK-END

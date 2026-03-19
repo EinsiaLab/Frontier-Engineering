@@ -1,3 +1,4 @@
+# EVOLVE-BLOCK-START
 """Baseline solver for Task 2: MCS + power scheduling."""
 
 from __future__ import annotations
@@ -37,3 +38,4 @@ def select_mcs_power(
     power_dbm = np.full(n_users, each_dbm, dtype=float)
 
     return {"mcs": mcs, "power_dbm": power_dbm}
+# EVOLVE-BLOCK-END

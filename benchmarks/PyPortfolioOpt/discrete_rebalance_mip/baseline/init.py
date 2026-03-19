@@ -1,3 +1,4 @@
+# EVOLVE-BLOCK-START
 import numpy as np
 
 
@@ -167,3 +168,4 @@ def solve_instance(instance: dict) -> dict:
 
     x = np.rint(x).astype(int)
     return {"lots": x}
+# EVOLVE-BLOCK-END

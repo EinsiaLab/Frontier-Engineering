@@ -50,10 +50,64 @@ class TestShinkaEvolveEntrypoint(unittest.TestCase):
 
         self.assertIn("## Error Message", feedback)
         self.assertIn("KeyError: 'wind_u'", feedback)
+        self.assertIn("## Constraints", feedback)
         self.assertIn("## Agent File: runtime/problem.py", feedback)
         self.assertIn("INSTANCE_KEYS", feedback)
-        self.assertLess(feedback.index("## Error Message"), feedback.index("## Constraint Summary"))
-        self.assertLess(feedback.index("## Agent File: runtime/problem.py"), feedback.index("## Benchmark Stdout"))
+        self.assertLess(feedback.index("## Error Message"), feedback.index("## Constraints"))
+        self.assertLess(feedback.index("## Benchmark Stdout"), feedback.index("## Agent File: runtime/problem.py"))
+
+    def test_synthesize_text_feedback_includes_program_stderr_and_traceback(self) -> None:
+        feedback = entrypoint._synthesize_text_feedback(
+            {"combined_score": 0.0, "valid": 0.0},
+            {
+                "error_message": "candidate program exited non-zero",
+                "program_stderr": "Traceback (most recent call last):\nValueError: bad input",
+                "traceback": "ValueError: bad input\n  at solver.py:13",
+            },
+        )
+
+        self.assertIn("## Error Message", feedback)
+        self.assertIn("candidate program exited non-zero", feedback)
+        self.assertIn("## Program Stderr", feedback)
+        self.assertIn("ValueError: bad input", feedback)
+        self.assertIn("## Traceback", feedback)
+
+    def test_context_bundle_prefers_full_stderr_and_builds_log_bridges(self) -> None:
+        bundle = entrypoint._build_context_bundle(
+            {"combined_score": 0.0, "valid": 0.0},
+            {
+                "error_message": "build failed",
+                "make_stderr": "short stderr",
+                "make_stderr_full": "full stderr details",
+                "make_stdout": "stdout details",
+            },
+        )
+
+        self.assertFalse(bundle.correct)
+        self.assertEqual(bundle.primary_error, "build failed")
+        self.assertIn("full stderr details", bundle.text_feedback)
+        self.assertNotIn("short stderr", bundle.text_feedback)
+        self.assertIn("full stderr details", bundle.stderr_bridge)
+        self.assertIn("stdout details", bundle.stdout_bridge)
+        self.assertIn("make_stderr_full", bundle.selected_keys)
+
+    def test_context_bundle_reports_omitted_keys_when_budget_is_small(self) -> None:
+        bundle = entrypoint._build_context_bundle(
+            {"combined_score": 0.0, "valid": 0.0},
+            {
+                "error_message": "boom",
+                "program_stderr": "stderr",
+                "benchmark_stdout": "stdout",
+                "constraints": "keep interface stable",
+                "extra_context_1": "x1",
+                "extra_context_2": "x2",
+                "extra_context_3": "x3",
+            },
+            text_feedback_max_chars=500,
+        )
+
+        self.assertIn("## Omitted Context", bundle.text_feedback)
+        self.assertTrue(bundle.omitted_keys)
 
 
 if __name__ == "__main__":

@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# EVOLVE-BLOCK-START
 """Baseline solver for Task 01: hard weighted multi-spot Fourier DOE."""
 
 from __future__ import annotations
@@ -140,3 +141,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+# EVOLVE-BLOCK-END

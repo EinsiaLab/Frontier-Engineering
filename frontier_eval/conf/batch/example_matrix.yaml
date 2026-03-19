@@ -1,6 +1,11 @@
 version: 1
 
 # Cartesian product: tasks × algorithms × llms
+# `tasks` entries can be either:
+# - a plain Hydra task name string, e.g. `manned_lunar_landing`
+# - or a mapping with `name`, optional `label`, and optional `overrides`
+#   to express multiple labeled runs of the same Hydra task config
+#   (useful for many `task=unified` benchmarks in one matrix)
 tasks:
   - manned_lunar_landing
 
@@ -33,4 +38,3 @@ run:
   base_dir: runs/batch
   max_parallel: 1
   fail_fast: false
-

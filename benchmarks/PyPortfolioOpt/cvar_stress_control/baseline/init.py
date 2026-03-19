@@ -1,3 +1,4 @@
+# EVOLVE-BLOCK-START
 import numpy as np
 
 
@@ -134,3 +135,4 @@ def solve_instance(instance: dict) -> dict:
             break
 
     return {"weights": w}
+# EVOLVE-BLOCK-END

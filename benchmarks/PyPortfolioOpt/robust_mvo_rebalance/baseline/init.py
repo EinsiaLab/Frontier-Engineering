@@ -1,3 +1,4 @@
+# EVOLVE-BLOCK-START
 import numpy as np
 
 
@@ -123,3 +124,4 @@ def solve_instance(instance: dict) -> dict:
         w = _enforce_sum_and_bounds(w, lower, upper)
 
     return {"weights": w}
+# EVOLVE-BLOCK-END

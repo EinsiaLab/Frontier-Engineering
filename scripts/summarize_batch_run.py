@@ -36,6 +36,7 @@ _STEP_PATTERNS: list[re.Pattern[str]] = [
     re.compile(r"(?:^|[\\/])iteration_(\d+)(?:[\\/]|$)"),
     re.compile(r"(?:^|[\\/])step_(\d+)(?:[\\/]|$)"),
 ]
+_ABMCTS_NODE_PATTERN: re.Pattern[str] = re.compile(r"(?:^|[\\/])node_(\d+)(?:[\\/]|$)")
 
 
 def _parse_step_from_path(path_str: str) -> int | None:
@@ -66,6 +67,14 @@ def _relpath(path: Path | None, root: Path, *, absolute: bool) -> str:
         return str(resolved.relative_to(root.resolve()))
     except Exception:
         return str(resolved)
+
+
+def _float_eq(a: float | None, b: float | None, *, atol: float = 1e-12, rtol: float = 1e-9) -> bool:
+    if a is None or b is None:
+        return False
+    diff = abs(float(a) - float(b))
+    limit = max(atol, rtol * max(abs(float(a)), abs(float(b))))
+    return diff <= limit
 
 
 def _find_program_file(*dirs: Path) -> Path | None:
@@ -130,6 +139,64 @@ def _extract_baseline_metrics(output_dir: Path, algorithm: str) -> dict[str, Any
         "runtime_s": _as_float(metrics.get("runtime_s")),
         "metrics_path": metrics_path,
     }
+
+
+def _load_abmcts_trace_steps(trace_path: Path) -> dict[int, int]:
+    mapping: dict[int, int] = {}
+    if not trace_path.is_file():
+        return mapping
+    try:
+        lines = trace_path.read_text(encoding="utf-8", errors="replace").splitlines()
+    except Exception:
+        return mapping
+
+    for line in lines:
+        raw = line.strip()
+        if not raw:
+            continue
+        try:
+            obj = json.loads(raw)
+        except Exception:
+            continue
+        if not isinstance(obj, dict):
+            continue
+        node_id = obj.get("node_id")
+        step = obj.get("step")
+        if not isinstance(node_id, int) or not isinstance(step, int):
+            continue
+        mapping[node_id] = step
+    return mapping
+
+
+def _infer_abmcts_best_from_tree(algo_root: Path, target_score: float | None) -> tuple[int | None, Path | None]:
+    if target_score is None:
+        return None, None
+
+    trace_steps = _load_abmcts_trace_steps(algo_root / "trace.jsonl")
+    best_step: int | None = None
+    best_dir: Path | None = None
+
+    for metrics_path in (algo_root / "tree").rglob("metrics.json"):
+        metrics = _read_json(metrics_path)
+        if not isinstance(metrics, dict):
+            continue
+        score = _as_float(metrics.get("combined_score", metrics.get("score")))
+        if not _float_eq(score, target_score):
+            continue
+        node_match = _ABMCTS_NODE_PATTERN.search(str(metrics_path))
+        node_step: int | None = None
+        if node_match:
+            try:
+                node_step = trace_steps.get(int(node_match.group(1)))
+            except Exception:
+                node_step = None
+        if node_step is None:
+            continue
+        if best_step is None or node_step < best_step:
+            best_step = node_step
+            best_dir = metrics_path.parent
+
+    return best_step, best_dir
 
 
 def _scan_best_metrics(algo_root: Path) -> tuple[dict[str, Any] | None, Path | None]:
@@ -223,6 +290,7 @@ def _extract_best_info(output_dir: Path, algorithm: str) -> dict[str, Any]:
     info = _read_json(info_path)
     if isinstance(info, dict) and isinstance(info.get("metrics"), dict):
         metrics = info["metrics"]
+        score = _as_float(metrics.get("combined_score", metrics.get("score")))
         program_path_raw = str(info.get("program_path") or "")
         results_dir_raw = str(info.get("results_dir") or "")
         step = _parse_step_from_path(program_path_raw) or _parse_step_from_path(results_dir_raw)
@@ -241,10 +309,28 @@ def _extract_best_info(output_dir: Path, algorithm: str) -> dict[str, Any]:
                     )
                 if results_dir is None and inferred_results.is_dir():
                     results_dir = inferred_results
+        elif step is None and algorithm == "abmcts" and algo_root.is_dir():
+            baseline_metrics = _read_json(algo_root / "baseline" / "metrics.json")
+            baseline_score = None
+            if isinstance(baseline_metrics, dict):
+                baseline_score = _as_float(
+                    baseline_metrics.get("combined_score", baseline_metrics.get("score"))
+                )
+
+            if _float_eq(score, baseline_score):
+                step = 0
+                if results_dir is None and (algo_root / "baseline").is_dir():
+                    results_dir = algo_root / "baseline"
+            else:
+                inferred_step, inferred_results = _infer_abmcts_best_from_tree(algo_root, score)
+                if inferred_step is not None:
+                    step = inferred_step
+                if results_dir is None and inferred_results is not None:
+                    results_dir = inferred_results
 
         return {
             "step": step,
-            "score": _as_float(metrics.get("combined_score", metrics.get("score"))),
+            "score": score,
             "valid": _as_float(metrics.get("valid")),
             "runtime_s": _as_float(metrics.get("runtime_s")),
             "info_path": info_path if info_path.is_file() else None,
@@ -428,13 +514,16 @@ def main(argv: list[str] | None = None) -> int:
                 notes.append("missing_best_score")
             if best.get("step") is None:
                 notes.append("missing_best_step")
+            returncode = rec.get("returncode", "")
+            if returncode not in ("", None, 0, "0"):
+                notes.append("returncode_nonzero")
 
             row = {
                 "task": task,
                 "algorithm": algorithm,
                 "llm": llm_str,
                 "run_dir": _relpath(output_dir, batch_root, absolute=bool(args.absolute_paths)),
-                "returncode": rec.get("returncode", ""),
+                "returncode": returncode,
                 "elapsed_s": rec.get("elapsed_s", ""),
                 "baseline_step": baseline.get("step", ""),
                 "baseline_score": baseline.get("score", ""),

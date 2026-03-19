@@ -1,3 +1,4 @@
+# EVOLVE-BLOCK-START
 """Baseline implementation for Task 05.
 
 No stockpyl EOQD optimizer is used here.
@@ -17,3 +18,4 @@ def solve(cfg: dict):
     safety_multiplier = 1.0 + 0.5 * cfg["disruption_rate"] / cfg["recovery_rate"]
     q_manual = q_classic * safety_multiplier
     return q_classic, q_manual, safety_multiplier
+# EVOLVE-BLOCK-END

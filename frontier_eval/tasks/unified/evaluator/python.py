@@ -132,15 +132,28 @@ def _hash_file(path: Path) -> str:
     return h.hexdigest()
 
 
+def _should_ignore_fingerprint_entry(root: Path, path: Path) -> bool:
+    if path.name == "__pycache__":
+        return True
+    if path.suffix in {".pyc", ".pyo"}:
+        return True
+    rel_parts = path.relative_to(root).parts
+    return "__pycache__" in rel_parts
+
+
 def _fingerprint_path(path: Path) -> str:
     if not path.exists():
         return "__MISSING__"
+    if path.name == "__pycache__" or path.suffix in {".pyc", ".pyo"}:
+        return "__IGNORED__"
     if path.is_file():
         return f"file:{_hash_file(path)}"
 
     if path.is_dir():
         h = hashlib.sha256()
         for child in sorted(path.rglob("*")):
+            if _should_ignore_fingerprint_entry(path, child):
+                continue
             rel = child.relative_to(path).as_posix()
             h.update(rel.encode("utf-8"))
             h.update(b"\0")
@@ -448,8 +461,25 @@ def evaluate(program_path: str, *, spec: UnifiedTaskSpec) -> Any:
             spec.runtime_use_conda_run and spec.runtime_conda_env and not spec.runtime_python_path
         )
         if run_with_conda:
+            conda_executable = (
+                os.environ.get("CONDA_EXE")
+                or shutil.which("conda")
+                or next(
+                    (
+                        candidate
+                        for candidate in (
+                            "/root/miniconda3/bin/conda",
+                            "/opt/conda/bin/conda",
+                            "/usr/local/miniconda3/bin/conda",
+                            "/mnt/shared-storage-user/p1-shared/luotianwei/miniconda3/bin/conda",
+                        )
+                        if os.path.exists(candidate)
+                    ),
+                    "conda",
+                )
+            )
             run_cmd = [
-                "conda",
+                conda_executable,
                 "run",
                 "-n",
                 spec.runtime_conda_env,
@@ -459,6 +489,7 @@ def evaluate(program_path: str, *, spec: UnifiedTaskSpec) -> Any:
             ]
             artifacts["runtime_mode"] = "conda_run"
             artifacts["runtime_conda_env"] = spec.runtime_conda_env
+            artifacts["runtime_conda_executable"] = conda_executable
         else:
             run_cmd = [spec.runtime_shell, "-lc", rendered_cmd]
             artifacts["runtime_mode"] = "shell"

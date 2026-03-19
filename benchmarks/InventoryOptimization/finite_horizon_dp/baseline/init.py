@@ -1,3 +1,4 @@
+# EVOLVE-BLOCK-START
 """Baseline implementation for Task 04.
 
 No stockpyl DP solver is used here.
@@ -22,3 +23,4 @@ def solve(demand_mean, demand_sd):
         S_levels.append(max(S_t, s_t + 6))
 
     return s_levels, S_levels
+# EVOLVE-BLOCK-END

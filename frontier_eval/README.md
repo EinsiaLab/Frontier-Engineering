@@ -236,6 +236,21 @@ Use the batch runner (writes an isolated `run.output_dir` for each combination a
 python -m frontier_eval.batch --matrix frontier_eval/conf/batch/example_matrix.yaml
 ```
 
+`matrix.tasks` supports either plain task names or labeled task entries with per-entry overrides:
+
+```yaml
+tasks:
+  - manned_lunar_landing
+  - name: unified
+    label: ReactionOptimisation/dtlz2_pareto
+    overrides:
+      - task.benchmark=ReactionOptimisation/dtlz2_pareto
+      - task.runtime.conda_env=summit
+```
+
+The `label` is used for filtering (`--tasks` / `--exclude-tasks`), run directory names,
+and `summary.jsonl` rows, while `name` remains the actual Hydra task config.
+
 Rerun a subset of tasks:
 
 ```bash
@@ -248,6 +263,14 @@ Rerun in-place inside an existing batch directory (deletes the selected task dir
 ```bash
 python -m frontier_eval.batch --matrix runs/batch/<batch_id>/matrix_resolved.yaml \
   --in-place --tasks denoising
+```
+
+Unified baseline sweep example:
+
+```bash
+.venv/bin/python -m frontier_eval.batch \
+  --matrix frontier_eval/conf/batch/shinkaevolve_unified_baselines.yaml \
+  --python .venv/bin/python
 ```
 
 ## Extending (new task / algorithm)

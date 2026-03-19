@@ -1,3 +1,4 @@
+# EVOLVE-BLOCK-START
 """Baseline implementation for Task 03.
 
 No stockpyl optimizer is used here.
@@ -31,3 +32,4 @@ def solve() -> dict:
         "order_multiples": multiples,
         "order_quantities": order_quantities,
     }
+# EVOLVE-BLOCK-END
