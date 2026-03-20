@@ -3,6 +3,7 @@ from __future__ import annotations
 """TreeQuest AB-MCTS algorithm adapter for Frontier Eval."""
 
 import asyncio
+import datetime
 import hashlib
 import json
 import math
@@ -21,6 +22,28 @@ from omegaconf import DictConfig, ListConfig, OmegaConf
 
 from frontier_eval.algorithms.base import Algorithm
 from frontier_eval.tasks.base import Task
+
+
+def _prepare_abmcts_import_cache(repo_root: Path) -> None:
+    """Give each AB-MCTS worker its own cache root to avoid ArviZ import races."""
+
+    cache_root = repo_root / "runs" / "_cache" / "abmcts" / f"pid_{os.getpid()}"
+    arviz_cache_dir = cache_root / "arviz"
+    arviz_cache_dir.mkdir(parents=True, exist_ok=True)
+
+    # Force a per-process cache root so concurrent AB-MCTS launches do not contend
+    # on ArviZ's shared daily warning stamp file.
+    os.environ["XDG_CACHE_HOME"] = str(cache_root)
+
+    stamp_path = arviz_cache_dir / "daily_warning"
+    today = datetime.date.today().isoformat()
+    try:
+        if stamp_path.read_text(encoding="utf-8").strip() == today:
+            return
+    except FileNotFoundError:
+        pass
+    stamp_path.write_text(today, encoding="utf-8")
+
 
 
 def _safe_json(obj: Any) -> str:
@@ -325,6 +348,8 @@ class ABMCTSAlgorithm(Algorithm):
             treequest_src_str = str(treequest_src)
             if treequest_src_str not in sys.path:
                 sys.path.insert(0, treequest_src_str)
+
+        _prepare_abmcts_import_cache(self.repo_root)
 
         try:
             import treequest as tq

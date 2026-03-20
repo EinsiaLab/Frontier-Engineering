@@ -30,6 +30,31 @@ def _as_float(value: Any) -> float | None:
         return None
 
 
+def _as_int(value: Any) -> int | None:
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        return value
+    if isinstance(value, float):
+        if value.is_integer():
+            return int(value)
+        return None
+    try:
+        text = str(value).strip()
+        if not text:
+            return None
+        return int(text)
+    except Exception:
+        return None
+
+
+def _first_not_none(*values: Any) -> Any | None:
+    for value in values:
+        if value is not None:
+            return value
+    return None
+
+
 _STEP_PATTERNS: list[re.Pattern[str]] = [
     re.compile(r"(?:^|[\\/])gen_(\d+)(?:[\\/]|$)"),
     re.compile(r"(?:^|[\\/])iter_(\d+)(?:[\\/]|$)"),
@@ -37,6 +62,7 @@ _STEP_PATTERNS: list[re.Pattern[str]] = [
     re.compile(r"(?:^|[\\/])step_(\d+)(?:[\\/]|$)"),
 ]
 _ABMCTS_NODE_PATTERN: re.Pattern[str] = re.compile(r"(?:^|[\\/])node_(\d+)(?:[\\/]|$)")
+_OPENEVOLVE_HISTORY_PATTERN: re.Pattern[str] = re.compile(r"^iter_(\d+)__(.+)$")
 
 
 def _parse_step_from_path(path_str: str) -> int | None:
@@ -83,15 +109,81 @@ def _find_program_file(*dirs: Path) -> Path | None:
         candidates = [
             directory / "main.py",
             directory / "program.py",
+            directory / "best_program.py",
         ]
         candidates.extend(sorted(directory.glob("main.*")))
         candidates.extend(sorted(directory.glob("program.*")))
+        candidates.extend(sorted(directory.glob("best_program.*")))
         for candidate in candidates:
             if candidate in seen:
                 continue
             seen.add(candidate)
             if candidate.is_file():
                 return candidate
+    return None
+
+
+def _scan_openevolve_history(algo_root: Path) -> list[tuple[int, str, Path]]:
+    records: list[tuple[int, str, Path]] = []
+    for metrics_path in algo_root.glob("history/iter_*__*/metrics.json"):
+        program_dir = metrics_path.parent
+        match = _OPENEVOLVE_HISTORY_PATTERN.match(program_dir.name)
+        if not match:
+            continue
+        try:
+            iteration = int(match.group(1))
+        except Exception:
+            continue
+        records.append((iteration, match.group(2), metrics_path))
+    records.sort(key=lambda item: (item[0], item[1], str(item[2])))
+    return records
+
+
+def _find_openevolve_baseline_metrics(algo_root: Path) -> tuple[int | None, Path | None]:
+    history = _scan_openevolve_history(algo_root)
+    if not history:
+        return None, None
+
+    baseline_candidates: list[tuple[int, Path]] = []
+    for iteration, _program_id, metrics_path in history:
+        meta = _read_json(metrics_path.parent / "meta.json")
+        parent_id = meta.get("parent_id") if isinstance(meta, dict) else None
+        if parent_id in (None, ""):
+            baseline_candidates.append((iteration, metrics_path))
+
+    if baseline_candidates:
+        baseline_candidates.sort(key=lambda item: (item[0], str(item[1])))
+        return baseline_candidates[0]
+
+    iteration, _program_id, metrics_path = history[0]
+    return iteration, metrics_path
+
+
+def _find_openevolve_history_dir(
+    algo_root: Path,
+    *,
+    iteration: int | None,
+    program_id: str | None,
+) -> Path | None:
+    history_root = algo_root / "history"
+    if not history_root.is_dir():
+        return None
+
+    if iteration is not None and program_id:
+        direct = history_root / f"iter_{iteration:06d}__{program_id}"
+        if direct.is_dir():
+            return direct
+
+    if program_id:
+        matches = sorted(history_root.glob(f"iter_*__{program_id}"))
+        if matches:
+            return matches[0]
+
+    if iteration is not None:
+        matches = sorted(history_root.glob(f"iter_{iteration:06d}__*"))
+        if matches:
+            return matches[0]
+
     return None
 
 
@@ -110,35 +202,48 @@ def _extract_baseline_metrics(output_dir: Path, algorithm: str) -> dict[str, Any
             }
         return {"step": None, "score": None, "valid": None, "runtime_s": None, "metrics_path": None}
 
-    metrics_path = algo_root / "gen_0" / "results" / "metrics.json"
-    step = 0
-    if not metrics_path.is_file():
-        candidates: list[tuple[int, Path]] = []
-        for p in algo_root.glob("gen_*/results/metrics.json"):
-            m = re.search(r"(?:^|[\\/])gen_(\d+)(?:[\\/]|$)", str(p))
-            if not m:
-                continue
-            try:
-                candidates.append((int(m.group(1)), p))
-            except Exception:
-                continue
-        if candidates:
-            candidates.sort(key=lambda x: x[0])
-            step, metrics_path = candidates[0]
-        else:
+    if algorithm == "openevolve":
+        step, metrics_path = _find_openevolve_baseline_metrics(algo_root)
+        if metrics_path is None:
             return {"step": None, "score": None, "valid": None, "runtime_s": None, "metrics_path": None}
 
-    metrics = _read_json(metrics_path)
-    if not isinstance(metrics, dict):
-        return {"step": step, "score": None, "valid": None, "runtime_s": None, "metrics_path": metrics_path}
+        metrics = _read_json(metrics_path)
+        if not isinstance(metrics, dict):
+            return {
+                "step": step,
+                "score": None,
+                "valid": None,
+                "runtime_s": None,
+                "metrics_path": metrics_path,
+            }
 
-    return {
-        "step": step,
-        "score": _as_float(metrics.get("combined_score", metrics.get("score"))),
-        "valid": _as_float(metrics.get("valid")),
-        "runtime_s": _as_float(metrics.get("runtime_s")),
-        "metrics_path": metrics_path,
-    }
+        return {
+            "step": step,
+            "score": _as_float(metrics.get("combined_score", metrics.get("score"))),
+            "valid": _as_float(metrics.get("valid")),
+            "runtime_s": _as_float(metrics.get("runtime_s")),
+            "metrics_path": metrics_path,
+        }
+
+    if algorithm == "shinkaevolve":
+        metrics_path = algo_root / "gen_0" / "results" / "metrics.json"
+        step = 0
+        if not metrics_path.is_file():
+            return {"step": None, "score": None, "valid": None, "runtime_s": None, "metrics_path": None}
+
+        metrics = _read_json(metrics_path)
+        if not isinstance(metrics, dict):
+            return {"step": step, "score": None, "valid": None, "runtime_s": None, "metrics_path": metrics_path}
+
+        return {
+            "step": step,
+            "score": _as_float(metrics.get("combined_score", metrics.get("score"))),
+            "valid": _as_float(metrics.get("valid")),
+            "runtime_s": _as_float(metrics.get("runtime_s")),
+            "metrics_path": metrics_path,
+        }
+
+    return {"step": None, "score": None, "valid": None, "runtime_s": None, "metrics_path": None}
 
 
 def _load_abmcts_trace_steps(trace_path: Path) -> dict[int, int]:
@@ -293,7 +398,13 @@ def _extract_best_info(output_dir: Path, algorithm: str) -> dict[str, Any]:
         score = _as_float(metrics.get("combined_score", metrics.get("score")))
         program_path_raw = str(info.get("program_path") or "")
         results_dir_raw = str(info.get("results_dir") or "")
-        step = _parse_step_from_path(program_path_raw) or _parse_step_from_path(results_dir_raw)
+        step = _first_not_none(
+            _as_int(info.get("best_step")),
+            _as_int(info.get("iteration")),
+            _as_int(info.get("generation")),
+            _parse_step_from_path(program_path_raw),
+            _parse_step_from_path(results_dir_raw),
+        )
         program_path = Path(program_path_raw) if program_path_raw else None
         results_dir = Path(results_dir_raw) if results_dir_raw else None
 
@@ -327,6 +438,26 @@ def _extract_best_info(output_dir: Path, algorithm: str) -> dict[str, Any]:
                     step = inferred_step
                 if results_dir is None and inferred_results is not None:
                     results_dir = inferred_results
+        elif algorithm == "openevolve" and algo_root.is_dir():
+            program_id = str(info.get("id") or "").strip() or None
+            history_dir = _find_openevolve_history_dir(
+                algo_root,
+                iteration=step,
+                program_id=program_id,
+            )
+            if results_dir is None and history_dir is not None:
+                results_dir = history_dir
+            if program_path is None:
+                search_dirs: list[Path] = [algo_root / "best"]
+                if history_dir is not None:
+                    search_dirs.append(history_dir)
+                program_path = _find_program_file(*search_dirs)
+
+        if results_dir is not None:
+            resolved_metrics = _read_json(results_dir / "metrics.json")
+            if isinstance(resolved_metrics, dict):
+                metrics = resolved_metrics
+                score = _as_float(metrics.get("combined_score", metrics.get("score")))
 
         return {
             "step": step,
@@ -497,6 +628,8 @@ def main(argv: list[str] | None = None) -> int:
 
             baseline_score = baseline.get("score")
             best_score = best.get("score")
+            baseline_valid = _as_float(baseline.get("valid"))
+            best_valid = _as_float(best.get("valid"))
             delta_score: float | None = None
             if isinstance(baseline_score, (int, float)) and isinstance(best_score, (int, float)):
                 delta_score = float(best_score) - float(baseline_score)
@@ -512,6 +645,16 @@ def main(argv: list[str] | None = None) -> int:
                 notes.append("missing_baseline_score")
             if best.get("score") is None:
                 notes.append("missing_best_score")
+            if baseline_valid == 0.0:
+                notes.append("baseline_valid_zero")
+            if best_valid == 0.0:
+                notes.append("best_valid_zero")
+            if (
+                delta_score is not None
+                and isinstance(baseline_score, (int, float))
+                and float(baseline_score) == 0.0
+            ):
+                notes.append("delta_pct_unavailable_zero_baseline")
             if best.get("step") is None:
                 notes.append("missing_best_step")
             returncode = rec.get("returncode", "")
