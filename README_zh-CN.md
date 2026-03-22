@@ -44,6 +44,12 @@ English | [简体中文](README_zh-CN.md)
 │   ├── references/                  # 参考资料目录
 │   │   ├── constants.json           # 物理常数、仿真参数等
 │   │   └── manuals.pdf              # 领域知识手册、物理方程或约束条件文档
+│   ├── frontier_eval/               # [必选] Frontier Eval 的 unified-task 元数据
+│   │   ├── initial_program.txt      # 初始可编辑程序路径（相对任务根目录）
+│   │   ├── eval_command.txt         # `task=unified` 使用的评测命令模板
+│   │   ├── agent_files.txt          # 提供给 Agent 的上下文文件
+│   │   ├── artifact_files.txt       # 评测后需要收集的输出/日志文件
+│   │   └── constraints.txt          # 可选的任务约束/说明
 │   ├── verification/                # 验证与评分系统
 │   │   ├── evaluator.py             # [核心] 评分脚本入口
 │   │   ├── requirements.txt         # 运行评分环境所需的依赖
@@ -56,12 +62,14 @@ English | [简体中文](README_zh-CN.md)
     └── ...
 ```
 > 上述目录结构仅作为参考模板。在确保包含所有核心要素（如背景、输入输出、评测指标）的前提下，贡献者可根据具体情况调整文件组织方式。同时，验证代码的编程语言与格式均不作限制。
+>
+> 新增 benchmark 贡献默认必须通过 unified task 格式接入。也就是说，需要在 `<Task_Name>/frontier_eval/` 下补齐 benchmark 本地元数据，并使用 `task=unified` 完成框架适配验证。除非能够明确说明 unified 格式无法表达该任务、且已与维护者先沟通达成一致，否则不要再新增 `frontier_eval/tasks/<task>/...` 这种自定义 task 实现。完整 unified 元数据说明见 `frontier_eval/README_zh-CN.md`。
 
 ### 提交规范
 
 1. 运行测试命令尽量简短（最好单行命令）提交前必须测试！
     1. python verification/evaluator.py scripts/init.py # 在benchmark下的运行，使用verification/evaluator.py作为评测入口，测试的目标也即agent evolve的目标为scripts/init.py
-    2. python -m frontier_eval task=<task_name> algorithm.iterations=0 # 与框架的适配验证。注意，请在README中说明任务注册的task_name
+    2. python -m frontier_eval task=unified task.benchmark=<Domain_Name>/<Task_Name> algorithm.iterations=0 # 新增 benchmark 的框架适配验证。请在 README 中写清 unified benchmark id，以及任何必要的 runtime 覆盖项（例如 `task.runtime.conda_env=...`）
 2. 请注意不要包含私人信息的文件，例如:.env、API keys、IDE 配置（.vscode/）、临时文件（*.log, temp/, __pycache__/）、个人测试脚本，同时请检查提交的内容中是否包含绝对路径，避免出现复现问题和个人隐私泄露。
 
 3. **EVOLVE-BLOCK 标记（ShinkaEvolve / ABMCTS 必需）**：被 Agent 演化（evolve）的文件（例如 `scripts/init.py`，或类似 `malloclab-handout/mm.c` 这类语言特定的 baseline）必须包含 `EVOLVE-BLOCK-START` 与 `EVOLVE-BLOCK-END` 标记，用于定义*唯一*允许修改的代码区域。
