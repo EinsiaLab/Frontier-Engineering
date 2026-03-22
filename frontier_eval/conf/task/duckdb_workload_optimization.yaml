@@ -1,0 +1,7 @@
+name: unified
+benchmark: ComputerSystems/DuckDBWorkloadOptimization
+metadata_dir: frontier_eval
+
+runtime:
+  use_conda_run: false
+  shell: bash
