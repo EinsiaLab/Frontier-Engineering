@@ -275,6 +275,6 @@ Unified baseline sweep example:
 
 ## Extending (new task / algorithm)
 
-- Recommended for most new benchmarks: use `task=unified` + benchmark-local metadata files (section above), no new Python task code needed.
-- New custom task (only when unified is insufficient): implement a `frontier_eval/tasks/base.py` `Task` subclass (`initial_program_path()` + `evaluate_program()`), and register it in `frontier_eval/registry_tasks.py` (or keep using `frontier_eval/registry.py`'s `get_task`).
+- Required default for new benchmark contributions: use `task=unified` + benchmark-local metadata files (section above). New benchmark PRs should onboard through the unified format instead of adding new Python task code under `frontier_eval/tasks/`.
+- New custom task (only when unified is insufficient and the exception has been discussed with maintainers): implement a `frontier_eval/tasks/base.py` `Task` subclass (`initial_program_path()` + `evaluate_program()`), and register it in `frontier_eval/registry_tasks.py` (or keep using `frontier_eval/registry.py`'s `get_task`).
 - New algorithm: implement a `frontier_eval/algorithms/base.py` `Algorithm` subclass, and register it in `frontier_eval/registry_algorithms.py`.

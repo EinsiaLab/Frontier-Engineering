@@ -248,6 +248,6 @@ python -m frontier_eval.batch --matrix runs/batch/<batch_id>/matrix_resolved.yam
 
 ## 扩展方式（新增 task / algorithm）
 
-- 大多数新 benchmark 推荐：直接使用 `task=unified` + benchmark 本地元数据文件（见上文），无需新增 Python task 代码。
-- 仅在 unified 不满足需求时：实现 `frontier_eval/tasks/base.py` 的 `Task` 子类（`initial_program_path()` + `evaluate_program()`），并在 `frontier_eval/registry_tasks.py` 注册（或继续用 `frontier_eval/registry.py` 的 `get_task`）。
+- 新 benchmark 贡献的默认要求：直接使用 `task=unified` + benchmark 本地元数据文件（见上文）接入；新增 benchmark 的 PR 不应再默认新增 `frontier_eval/tasks/` 下的 Python task 代码。
+- 仅在 unified 明确无法满足需求、且已先与维护者沟通例外方案时：实现 `frontier_eval/tasks/base.py` 的 `Task` 子类（`initial_program_path()` + `evaluate_program()`），并在 `frontier_eval/registry_tasks.py` 注册（或继续用 `frontier_eval/registry.py` 的 `get_task`）。
 - 新增算法：实现 `frontier_eval/algorithms/base.py` 的 `Algorithm` 子类，并在 `frontier_eval/registry_algorithms.py` 注册。

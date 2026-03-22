@@ -1,0 +1,12 @@
+{
+  "CTV_CENTER": [0.0, 0.0, 50.0],
+  "CTV_RADIUS": 15.0,
+  "OAR_CENTER": [0.0, 20.0, 60.0],
+  "OAR_RADIUS": 10.0,
+  "SIGMA_XY": 5.0,
+  "SIGMA_Z": 3.0,
+  "D_RX": 60.0,
+  "D_LIMIT": 20.0,
+  "LAMBDA_OAR": 10.0,
+  "LAMBDA_W": 0.05
+}

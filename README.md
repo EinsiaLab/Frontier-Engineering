@@ -44,6 +44,12 @@ Each Task should contain the following file structure:
 │   ├── references/                  # References Directory
 │   │   ├── constants.json           # Physical constants, simulation parameters, etc.
 │   │   └── manuals.pdf              # Domain knowledge manual, physical equations, or constraints docs
+│   ├── frontier_eval/               # [Required] Unified-task metadata for Frontier Eval onboarding
+│   │   ├── initial_program.txt      # Initial editable program path (relative to task root)
+│   │   ├── eval_command.txt         # Evaluation command template used by `task=unified`
+│   │   ├── agent_files.txt          # Context files exposed to the agent
+│   │   ├── artifact_files.txt       # Output files/logs to collect after evaluation
+│   │   └── constraints.txt          # Optional task-specific constraints/instructions
 │   ├── verification/                # Verification & Scoring System
 │   │   ├── evaluator.py             # [Core] Scoring script entry point
 │   │   ├── requirements.txt         # Dependencies required for the scoring environment
@@ -57,13 +63,15 @@ Each Task should contain the following file structure:
 ```
 
 > The above directory structure serves only as a reference template. Contributors may adjust the file organization based on specific circumstances, provided that all core elements (e.g., background, input/output, evaluation metrics) are included. Additionally, there are no restrictions on the programming language and format of the verification code.
+>
+> New benchmark contributions must be onboarded through the unified task format. In practice, this means adding benchmark-local metadata under `<Task_Name>/frontier_eval/` and validating the task with `task=unified`. Adding a new custom task under `frontier_eval/tasks/<task>/...` is an exception path that should only be used when the unified format is demonstrably insufficient and the maintainer team has agreed on the exception first. See `frontier_eval/README.md` for the full unified metadata schema.
 
 ### Submission Guidelines
 
 1. Keep test commands as short as possible (ideally single-line commands). Testing is mandatory before submission!
 
   1. `python verification/evaluator.py scripts/init.py` # Run under benchmark, using `verification/evaluator.py` as the evaluation entry point. The target of the test, i.e., the target of agent evolution, is `scripts/init.py`.
-  2. `python -m frontier_eval task=<task_name> algorithm.iterations=0` # Framework compatibility verification. Note: Please specify the `task_name` registered in the README.
+  2. `python -m frontier_eval task=unified task.benchmark=<Domain_Name>/<Task_Name> algorithm.iterations=0` # Framework compatibility verification for new benchmark contributions. Please document the exact unified benchmark id and any required runtime overrides (for example `task.runtime.conda_env=...`) in the README.
 
 2. Please avoid files containing private information, such as: `.env`, API keys, IDE configurations (`.vscode/`), temporary files (`*.log`, `temp/`, `__pycache__`, and personal test scripts). Also, please check that the submitted content does not contain absolute paths to avoid reproducibility issues and privacy leaks.
 
@@ -130,12 +138,19 @@ The table below lists the current coverage of domain tasks in the Benchmark. We 
       <td>Lunar soft landing trajectory optimization</td>
     </tr>
     <tr>
-      <td><b>ParticlePhysics</b></td>
+      <td rowspan="2"><b>ParticlePhysics</b></td>
       <td><code>MuonTomography</code></td>
       <td>Completed</td>
       <td>@SeanDF333</td>
       <td>@ahydchh</td>
       <td>Muon detector placement optimization under flux, budget, and excavation constraints</td>
+    </tr>
+    <tr>
+      <td><code>ProtonTherapyPlanning</code></td>
+      <td>Completed</td>
+      <td>@SeanDF333</td>
+      <td>@ahydchh</td>
+      <td>IMPT dose weight optimization under tumor coverage, OAR safety, and beam cost constraints</td>
     </tr>
     <tr>
       <td rowspan="3"><b>Kernel Engineering</b></td>
@@ -435,12 +450,19 @@ The table below lists the current coverage of domain tasks in the Benchmark. We 
       <td>Polarization-multiplexed holography</td>
     </tr>
     <tr>
-      <td><b>Computer Systems</b></td>
+      <td rowspan="2"><b>Computer Systems</b></td>
       <td><code>Malloc Lab</code></td>
       <td>Completed</td>
       <td>@ahydchh</td>
       <td>@ahydchh</td>
       <td>Dynamic memory allocation</td>
+    </tr>
+    <tr>
+      <td><code>DuckDBWorkloadOptimization</code></td>
+      <td>Completed</td>
+      <td>@DocZbs</td>
+      <td>@DocZbs</td>
+      <td>Index/materialized-view selection and query rewriting optimization on official DuckDB workloads</td>
     </tr>
     <tr>
       <td><b>EngDesign</b></td>
@@ -559,7 +581,7 @@ The table below lists the current coverage of domain tasks in the Benchmark. We 
       <td>Classical JSSP YN family (Yamada and Nakano 1992)</td>
     </tr>
     <tr>
-      <td rowspan="3"><b>StructuralOptimization</b></td>
+      <td rowspan="4"><b>StructuralOptimization</b></td>
       <td><code>ISCSO2015</code></td>
       <td>Completed</td>
       <td>@yks23</td>
@@ -581,7 +603,14 @@ The table below lists the current coverage of domain tasks in the Benchmark. We 
       <td>MBB beam 2D topology optimization (SIMP), Continuous, volume-constrained, compliance minimization</td>
     </tr>
     <tr>
-      <td rowspan="5"><b>Robotics</b></td>
+      <td><code>PyMOTOSIMPCompliance</code></td>
+      <td>Completed</td>
+      <td>@DocZbs</td>
+      <td>@DocZbs</td>
+      <td>pyMOTO-based 2D beam topology optimization (SIMP + OC/MMA) under a volume-fraction constraint</td>
+    </tr>
+    <tr>
+      <td rowspan="6"><b>Robotics</b></td>
       <td><code>DynamicObstacleAvoidanceNavigation</code></td>
       <td>Completed</td>
       <td>@MichaelCaoo</td>
@@ -617,12 +646,26 @@ The table below lists the current coverage of domain tasks in the Benchmark. We 
       <td>UAV inspection under wind field disturbance</td>
     </tr>
     <tr>
-      <td><b>Aerodynamics</b></td>
+      <td><code>CoFlyersVasarhelyiTuning</code></td>
+      <td>In Progress</td>
+      <td>@DocZbs</td>
+      <td>@DocZbs</td>
+      <td>Tune the original CoFlyers Vasarhelyi flocking parameters</td>
+    </tr>
+    <tr>
+      <td rowspan="2"><b>Aerodynamics</b></td>
       <td><code>CarAerodynamicsSensing</code></td>
       <td>Completed</td>
       <td>@LeiDQ, @llltttwww</td>
       <td>@llltttwww</td>
       <td>Sensor placement on 3D car surface for pressure field reconstruction</td>
+    </tr>
+    <tr>
+      <td><code>DawnAircraftDesignOptimization</code></td>
+      <td>Completed</td>
+      <td>@DocZbs</td>
+      <td>@DocZbs</td>
+      <td>Jointly optimize wing, fuselage, and propulsion variables under cruise/endurance/payload constraints to minimize total aircraft mass</td>
     </tr>
     <tr>
       <td><b>WirelessChannelSimulation</b></td>
@@ -631,6 +674,22 @@ The table below lists the current coverage of domain tasks in the Benchmark. We 
       <td>@tonyhaohan</td>
       <td>@yks23, @ahydchh</td>
       <td>BER estimation with importance sampling for Hamming(127,120)</td>
+    </tr>
+    <tr>
+      <td><b>PowerSystems</b></td>
+      <td><code>EV2GymSmartCharging</code></td>
+      <td>Completed</td>
+      <td>@DocZbs</td>
+      <td>@DocZbs</td>
+      <td>Upstream-aligned EV smart charging</td>
+    </tr>
+    <tr>
+      <td><b>AdditiveManufacturing</b></td>
+      <td><code>DiffSimThermalControl</code></td>
+      <td>Completed</td>
+      <td>@DocZbs</td>
+      <td>@DocZbs</td>
+      <td>Study process optimization in additive manufacturing using differentiable simulation</td>
     </tr>
   </tbody>
 </table>
@@ -648,3 +707,4 @@ Welcome to our developer community! Whether you want to discuss new engineering 
 * 🟢 **Feishu (Lark)**: [Click here to join our Feishu discussion group](https://applink.feishu.cn/client/chat/chatter/add_by_link?link_token=21ak5858-60ba-44fd-9085-01f165c8771c)
 
 * 🔜 **Discord**: [Click here to join our Discord community](https://discord.gg/hxeVhZNN)
+

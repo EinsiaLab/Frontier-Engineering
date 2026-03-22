@@ -14,3 +14,6 @@
 * **[缪子成像探测器阵列布局优化 (Muon Tomography Optimization)](./MuonTomography/README_zh-CN.md)**
   * **背景**：利用宇宙射线缪子对大型结构进行内部透射成像。
   * **目标**：在预算受限且需考虑挖掘成本的情况下，寻找最佳的探测器空间坐标与角度布局，最大化目标区域的有效接收通量。
+* **[调强质子治疗剂量权重优化 (IMPT Dose Weight Optimization)](./ProtonTherapyPlanning/README_zh-CN.md)**
+  * **背景**：利用质子束布拉格峰效应优化肿瘤放疗中的照射计划。
+  * **目标**：在满足 CTV 处方剂量覆盖、OAR 剂量限制与束流成本约束下，优化质子束斑位置与权重。
