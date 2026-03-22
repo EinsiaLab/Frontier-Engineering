@@ -1,2 +1,4 @@
-name: iscso2023
-
+name: unified
+benchmark: StructuralOptimization/ISCSO2023
+runtime:
+  conda_env: frontier-eval-2

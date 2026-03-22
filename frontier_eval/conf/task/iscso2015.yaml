@@ -1,2 +1,4 @@
-name: iscso2015
-
+name: unified
+benchmark: StructuralOptimization/ISCSO2015
+runtime:
+  conda_env: frontier-eval-2

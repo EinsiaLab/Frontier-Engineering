@@ -1,2 +1,4 @@
-name: robot_arm_cycle_time
-
+name: unified
+benchmark: Robotics/RobotArmCycleTimeOptimization
+runtime:
+  conda_env: libero

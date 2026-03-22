@@ -1,1 +1,4 @@
-name: topology_optimization
+name: unified
+benchmark: StructuralOptimization/TopologyOptimization
+runtime:
+  conda_env: frontier-eval-2
