@@ -339,19 +339,8 @@ def _scan_best_metrics(algo_root: Path) -> tuple[dict[str, Any] | None, Path | N
     return best_any_metrics, best_any_path
 
 
-def _scan_shinkaevolve_best_gen(
-    algo_root: Path,
-) -> tuple[dict[str, Any] | None, int | None, Path | None]:
-    best_correct_score: float | None = None
-    best_correct_metrics: dict[str, Any] | None = None
-    best_correct_gen: int | None = None
-    best_correct_path: Path | None = None
-
-    best_any_score: float | None = None
-    best_any_metrics: dict[str, Any] | None = None
-    best_any_gen: int | None = None
-    best_any_path: Path | None = None
-
+def _iter_shinkaevolve_gen_metrics(algo_root: Path) -> list[tuple[int, Path, dict[str, Any], bool]]:
+    records: list[tuple[int, Path, dict[str, Any], bool]] = []
     for metrics_path in algo_root.glob("gen_*/results/metrics.json"):
         gen_dir = metrics_path.parent.parent
         gen_match = re.match(r"gen_(\d+)$", gen_dir.name)
@@ -365,12 +354,32 @@ def _scan_shinkaevolve_best_gen(
         metrics_raw = _read_json(metrics_path)
         if not isinstance(metrics_raw, dict):
             continue
-        score = _as_float(metrics_raw.get("combined_score", metrics_raw.get("score")))
-        if score is None:
-            continue
 
         correct_raw = _read_json(metrics_path.parent / "correct.json")
         correct = bool(correct_raw.get("correct")) if isinstance(correct_raw, dict) else True
+        records.append((gen_num, metrics_path, metrics_raw, correct))
+
+    records.sort(key=lambda item: (item[0], str(item[1])))
+    return records
+
+
+def _scan_shinkaevolve_best_gen(
+    algo_root: Path,
+) -> tuple[dict[str, Any] | None, int | None, Path | None]:
+    best_correct_score: float | None = None
+    best_correct_metrics: dict[str, Any] | None = None
+    best_correct_gen: int | None = None
+    best_correct_path: Path | None = None
+
+    best_any_score: float | None = None
+    best_any_metrics: dict[str, Any] | None = None
+    best_any_gen: int | None = None
+    best_any_path: Path | None = None
+
+    for gen_num, metrics_path, metrics_raw, correct in _iter_shinkaevolve_gen_metrics(algo_root):
+        score = _as_float(metrics_raw.get("combined_score", metrics_raw.get("score")))
+        if score is None:
+            continue
 
         if best_any_score is None or score > best_any_score:
             best_any_score = score
@@ -387,6 +396,35 @@ def _scan_shinkaevolve_best_gen(
     if best_correct_metrics is not None:
         return best_correct_metrics, best_correct_gen, best_correct_path
     return best_any_metrics, best_any_gen, best_any_path
+
+
+def _find_shinkaevolve_first_matching_gen(
+    algo_root: Path,
+    target_score: float | None,
+) -> tuple[int | None, Path | None, Path | None]:
+    if target_score is None:
+        return None, None, None
+
+    first_correct: tuple[int, Path, Path | None] | None = None
+    first_any: tuple[int, Path, Path | None] | None = None
+
+    for gen_num, metrics_path, metrics_raw, correct in _iter_shinkaevolve_gen_metrics(algo_root):
+        score = _as_float(metrics_raw.get("combined_score", metrics_raw.get("score")))
+        if not _float_eq(score, target_score):
+            continue
+
+        results_dir = metrics_path.parent
+        program_path = _find_program_file(results_dir.parent, results_dir)
+
+        if first_any is None:
+            first_any = (gen_num, results_dir, program_path)
+        if correct and first_correct is None:
+            first_correct = (gen_num, results_dir, program_path)
+
+    chosen = first_correct if first_correct is not None else first_any
+    if chosen is None:
+        return None, None, None
+    return chosen
 
 
 def _extract_best_info(output_dir: Path, algorithm: str) -> dict[str, Any]:
@@ -408,18 +446,29 @@ def _extract_best_info(output_dir: Path, algorithm: str) -> dict[str, Any]:
         program_path = Path(program_path_raw) if program_path_raw else None
         results_dir = Path(results_dir_raw) if results_dir_raw else None
 
-        if step is None and algorithm == "shinkaevolve" and algo_root.is_dir():
-            _, best_gen, _ = _scan_shinkaevolve_best_gen(algo_root)
-            if best_gen is not None:
-                step = best_gen
-                inferred_results = algo_root / f"gen_{best_gen}" / "results"
-                if program_path is None:
-                    program_path = _find_program_file(
-                        algo_root / f"gen_{best_gen}",
-                        inferred_results,
-                    )
-                if results_dir is None and inferred_results.is_dir():
+        if algorithm == "shinkaevolve" and algo_root.is_dir():
+            inferred_step, inferred_results, inferred_program = _find_shinkaevolve_first_matching_gen(
+                algo_root,
+                score,
+            )
+            if inferred_step is not None:
+                step = inferred_step
+                if inferred_results is not None:
                     results_dir = inferred_results
+                if inferred_program is not None:
+                    program_path = inferred_program
+            elif step is None:
+                _, best_gen, _ = _scan_shinkaevolve_best_gen(algo_root)
+                if best_gen is not None:
+                    step = best_gen
+                    inferred_results = algo_root / f"gen_{best_gen}" / "results"
+                    if program_path is None:
+                        program_path = _find_program_file(
+                            algo_root / f"gen_{best_gen}",
+                            inferred_results,
+                        )
+                    if results_dir is None and inferred_results.is_dir():
+                        results_dir = inferred_results
         elif step is None and algorithm == "abmcts" and algo_root.is_dir():
             baseline_metrics = _read_json(algo_root / "baseline" / "metrics.json")
             baseline_score = None

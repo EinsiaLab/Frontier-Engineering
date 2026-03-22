@@ -294,6 +294,8 @@ run_worker() {
 
         set +e
         FRONTIER_ENGINEERING_ROOT="$REPO_ROOT" \
+        SHINKA_PYTHON_EXECUTABLE="$PYTHON_BIN" \
+        PATH="$REPO_ROOT/.venv/bin:$PATH" \
         PYTHONUNBUFFERED=1 \
         "$PYTHON_BIN" -m frontier_eval \
             task=unified \
@@ -383,7 +385,7 @@ start_tmux() {
     fi
 
     local cmd
-    cmd="cd $quoted_repo && PYTHON_BIN=$quoted_python BATCH_ROOT=$quoted_batch EXPECTED_COUNT=$EXPECTED_COUNT EVALUATOR_TIMEOUT_S=$EVALUATOR_TIMEOUT_S RESUME=$RESUME BENCHMARK_FILTER=$quoted_filter bash $quoted_script --worker"
+    cmd="cd $quoted_repo && export PATH=$(printf '%q' "$REPO_ROOT/.venv/bin"):\$PATH && PYTHON_BIN=$quoted_python SHINKA_PYTHON_EXECUTABLE=$quoted_python BATCH_ROOT=$quoted_batch EXPECTED_COUNT=$EXPECTED_COUNT EVALUATOR_TIMEOUT_S=$EVALUATOR_TIMEOUT_S RESUME=$RESUME BENCHMARK_FILTER=$quoted_filter bash $quoted_script --worker"
 
     tmux new-session -d -s "$session" "$cmd"
     tmux pipe-pane -o -t "$session" "cat >> $(printf '%q' "$BATCH_ROOT/tmux.log")"

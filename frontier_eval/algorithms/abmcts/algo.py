@@ -9,6 +9,7 @@ import json
 import math
 import os
 import random
+import re
 import socket
 import sys
 import time
@@ -79,6 +80,14 @@ def _tail(text: str, limit: int) -> str:
     return text[-limit:]
 
 
+def _looks_like_fence_language_tag(line: str) -> bool:
+    text = line.strip()
+    if not text or len(text) > 32 or any(ch.isspace() for ch in text):
+        return False
+    allowed = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_+-.,#")
+    return all(ch in allowed for ch in text)
+
+
 def _strip_code_fences(text: str) -> str:
     raw = str(text or "").strip()
     if "```" not in raw:
@@ -96,7 +105,7 @@ def _strip_code_fences(text: str) -> str:
 
         inner = raw[start + 3 : end]
         inner_lines = inner.splitlines()
-        if inner_lines and inner_lines[0].strip().lower() in {"python", "py"}:
+        if inner_lines and _looks_like_fence_language_tag(inner_lines[0]):
             inner = "\n".join(inner_lines[1:])
         inner = inner.strip()
         if inner and (best is None or len(inner) > len(best)):
@@ -116,20 +125,101 @@ def _strip_code_fences(text: str) -> str:
     return "\n".join(cleaned_lines).strip()
 
 
-def _split_evolve_block(code: str) -> tuple[str, str, str] | None:
-    start_marker = "# EVOLVE-BLOCK-START"
-    end_marker = "# EVOLVE-BLOCK-END"
-    start = code.find(start_marker)
-    end = code.find(end_marker)
-    if start < 0 or end < 0 or start >= end:
+_MAIN_FUNCTION_RE = re.compile(r"\bmain\s*\(")
+
+
+def _classify_evolve_marker_line(line: str) -> str | None:
+    text = str(line or "").strip()
+    if not text:
         return None
 
-    start_line_end = code.find("\n", start)
-    if start_line_end < 0:
-        start_line_end = len(code)
-    content_start = min(len(code), start_line_end + 1)
-    content_end = end
-    return code[:content_start], code[content_start:content_end], code[content_end:]
+    text = text.strip("`").strip()
+    for prefix in ("//", "#", "--", ";", "*"):
+        if text.startswith(prefix):
+            text = text[len(prefix) :].strip()
+    if text.startswith("/*"):
+        text = text[2:].strip()
+    if text.endswith("*/"):
+        text = text[:-2].strip()
+    text = text.strip(":").strip()
+    if not text:
+        return None
+
+    normalized = text.upper().replace("_", "-").replace(" ", "-")
+    while "--" in normalized:
+        normalized = normalized.replace("--", "-")
+
+    if normalized in {"EVOLVE-BLOCK-START", "START-EVOLVE-BLOCK", "BEGIN-EVOLVE-BLOCK"}:
+        return "start"
+    if normalized in {"EVOLVE-BLOCK-END", "END-EVOLVE-BLOCK"}:
+        return "end"
+    if normalized == "EVOLVE-BLOCK":
+        return "generic"
+    return None
+
+
+def _split_evolve_block(code: str) -> tuple[str, str, str] | None:
+    lines = code.splitlines(keepends=True)
+    start_idx: int | None = None
+    end_idx: int | None = None
+
+    for idx, line in enumerate(lines):
+        kind = _classify_evolve_marker_line(line)
+        if kind in {"start", "generic"}:
+            start_idx = idx
+            break
+
+    if start_idx is None:
+        return None
+
+    for idx in range(len(lines) - 1, start_idx, -1):
+        kind = _classify_evolve_marker_line(lines[idx])
+        if kind in {"end", "generic"}:
+            end_idx = idx
+            break
+
+    if end_idx is None or start_idx >= end_idx:
+        return None
+
+    prefix = "".join(lines[: start_idx + 1])
+    block = "".join(lines[start_idx + 1 : end_idx])
+    suffix = "".join(lines[end_idx:])
+    return prefix, block, suffix
+
+
+def _strip_standalone_evolve_marker_lines(text: str) -> str:
+    out_lines = [line for line in str(text or "").splitlines() if _classify_evolve_marker_line(line) is None]
+    return "\n".join(out_lines).strip()
+
+
+def _find_incomplete_block_reason(original_block: str, candidate_block: str) -> str | None:
+    if _MAIN_FUNCTION_RE.search(original_block) and not _MAIN_FUNCTION_RE.search(candidate_block):
+        return (
+            "Replacement block omitted `main(...)` even though the current block contains it. "
+            "Return a COMPLETE replacement for the entire block, including the final `main()` definition."
+        )
+    return None
+
+
+def _infer_source_language_label(program_path: Path) -> str:
+    suffix = program_path.suffix.lower()
+    if suffix in {".c", ".cc", ".cpp", ".cxx", ".h", ".hh", ".hpp", ".hxx"}:
+        return "C++"
+    if suffix == ".cu":
+        return "CUDA/C++"
+    if suffix in {".py", ".pyw"}:
+        return "Python"
+    if suffix == ".rs":
+        return "Rust"
+    if suffix == ".jl":
+        return "Julia"
+    if suffix in {".json", ".json5"}:
+        return "JSON"
+    return "the original source language"
+
+
+def _is_python_source(program_path: Path) -> bool:
+    return program_path.suffix.lower() in {".py", ".pyw"}
 
 
 def _sha256_text(text: str) -> str:
@@ -451,16 +541,23 @@ class ABMCTSAlgorithm(Algorithm):
         llm_retries = max(6, int(getattr(llm_cfg, "retries", 3) or 3))
         llm_retry_delay_s = float(getattr(llm_cfg, "retry_delay", 5) or 5)
 
+        initial_path = task.initial_program_path()
+        program_filename = initial_path.name
+        program_language = _infer_source_language_label(initial_path)
+        python_source = _is_python_source(initial_path)
+
         prompt_cfg = getattr(algo_cfg, "prompt", None)
         sys_prompt_override = str(getattr(prompt_cfg, "system", "") or "").strip() if prompt_cfg is not None else ""
         root_prompt_override = str(getattr(prompt_cfg, "root", "") or "").strip() if prompt_cfg is not None else ""
         mutate_prompt_override = str(getattr(prompt_cfg, "mutate", "") or "").strip() if prompt_cfg is not None else ""
 
         sys_prompt_default = (
-            "You are optimizing a Python program for an automated benchmark.\n"
+            "You are optimizing a program for an automated benchmark.\n"
             "Goal: maximize metrics['combined_score'] (higher is better) while keeping the "
             "program correct, fast, and self-contained.\n"
-            "Return only plain Python code. Do not include explanations, markdown, or ``` code fences.\n"
+            f"The candidate file is `{program_filename}` and its language is {program_language}.\n"
+            f"Return only the updated contents of `{program_filename}`. "
+            "Do not include explanations, markdown, or ``` code fences.\n"
         )
         sys_prompt = sys_prompt_override or sys_prompt_default
 
@@ -507,7 +604,7 @@ class ABMCTSAlgorithm(Algorithm):
 
         async def _evaluate_program(code: str, *, out_dir: Path) -> tuple[dict[str, Any], dict[str, Any]]:
             out_dir.mkdir(parents=True, exist_ok=True)
-            program_path = out_dir / "program.py"
+            program_path = out_dir / program_filename
             program_path.write_text(code, encoding="utf-8", errors="replace")
             try:
                 raw = await asyncio.to_thread(task.evaluate_program, program_path)
@@ -520,7 +617,6 @@ class ABMCTSAlgorithm(Algorithm):
                 (out_dir / "artifacts.json").write_text(_safe_json(artifacts), encoding="utf-8")
             return metrics, artifacts
 
-        initial_path = task.initial_program_path()
         baseline_code = initial_path.read_text(encoding="utf-8", errors="replace")
         if len(baseline_code) > max_code_length:
             raise ValueError(f"Initial program exceeds algorithm.max_code_length ({max_code_length})")
@@ -555,7 +651,7 @@ class ABMCTSAlgorithm(Algorithm):
             node_id: int | None,
             results_dir: Path | None,
         ) -> None:
-            best_program_path = best_dir / "program.py"
+            best_program_path = best_dir / program_filename
             best_program_path.write_text(state.code, encoding="utf-8", errors="replace")
             info = {
                 "metrics": state.metrics,
@@ -683,7 +779,11 @@ class ABMCTSAlgorithm(Algorithm):
                     + "\n\nParent artifacts (truncated, JSON):\n"
                     + _safe_json(artifacts_preview)
                     + "\n\nUpdate ONLY the code between EVOLVE-BLOCK markers.\n"
-                    + "Return the replacement block content ONLY (no markers).\n\n"
+                    + "Return a COMPLETE replacement for the entire current block content ONLY (no markers).\n"
+                    + "If the current block already contains helper functions, globals, or `main()`, "
+                    + "your answer must include their complete updated definitions too.\n"
+                    + "Do not include EVOLVE-BLOCK markers, END-EVOLVE-BLOCK markers, explanations, "
+                    + "markdown, or ``` code fences.\n\n"
                     + "Current block:\n"
                     + block
                     + "\n"
@@ -696,7 +796,7 @@ class ABMCTSAlgorithm(Algorithm):
                     + _safe_json(parent_metrics)
                     + "\n\nParent artifacts (truncated, JSON):\n"
                     + _safe_json(artifacts_preview)
-                    + "\n\nReturn the full updated Python file content.\n\n"
+                    + f"\n\nReturn the full updated contents of `{program_filename}`.\n\n"
                     + "Current program:\n"
                     + base_code
                     + "\n"
@@ -735,10 +835,10 @@ class ABMCTSAlgorithm(Algorithm):
             cleaned = _strip_code_fences(raw)
             if expect_mode == "block" and block_parts is not None:
                 prefix, _block, suffix = block_parts
-                if "# EVOLVE-BLOCK-START" in cleaned and "# EVOLVE-BLOCK-END" in cleaned:
-                    inner_parts = _split_evolve_block(cleaned)
-                    if inner_parts is not None:
-                        _, cleaned, _ = inner_parts
+                inner_parts = _split_evolve_block(cleaned)
+                if inner_parts is not None:
+                    _, cleaned, _ = inner_parts
+                cleaned = _strip_standalone_evolve_marker_lines(cleaned)
                 code = prefix + cleaned.rstrip() + "\n" + suffix.lstrip("\n")
             else:
                 code = cleaned
@@ -756,7 +856,7 @@ class ABMCTSAlgorithm(Algorithm):
         ) -> None:
             node_dir = tree_dir / f"node_{node_id:06d}"
             node_dir.mkdir(parents=True, exist_ok=True)
-            (node_dir / "program.py").write_text(program.code, encoding="utf-8", errors="replace")
+            (node_dir / program_filename).write_text(program.code, encoding="utf-8", errors="replace")
             (node_dir / "metrics.json").write_text(_safe_json(program.metrics), encoding="utf-8")
             if program.artifacts:
                 (node_dir / "artifacts.json").write_text(_safe_json(program.artifacts), encoding="utf-8")
@@ -823,23 +923,36 @@ class ABMCTSAlgorithm(Algorithm):
                             continue
                         feedback = None
                         if not code.strip():
-                            feedback = "Empty output. Return valid Python code only."
+                            feedback = f"Empty output. Return only the updated contents of `{program_filename}`."
                             continue
                         if len(code) > max_code_length:
                             feedback = (
                                 f"Output too long ({len(code)} chars). Keep it under {max_code_length} chars."
                             )
                             continue
-                        try:
-                            compile(code, "<abmcts_candidate>", "exec")
-                        except SyntaxError as e:
-                            loc = f"line {e.lineno}" if e.lineno is not None else "unknown line"
-                            msg = str(e.msg) if getattr(e, "msg", None) else str(e)
-                            feedback = (
-                                f"Python syntax error ({loc}): {msg}. "
-                                "Return only valid Python code (no markdown fences)."
-                            )
-                            continue
+                        parent_code = baseline_code if parent_state is None else parent_state.code
+                        parent_block_parts = _split_evolve_block(parent_code)
+                        if parent_block_parts is not None:
+                            candidate_block_parts = _split_evolve_block(code)
+                            if candidate_block_parts is not None:
+                                incomplete_reason = _find_incomplete_block_reason(
+                                    parent_block_parts[1], candidate_block_parts[1]
+                                )
+                                if incomplete_reason:
+                                    feedback = incomplete_reason
+                                    continue
+                        if python_source:
+                            try:
+                                compile(code, "<abmcts_candidate>", "exec")
+                            except SyntaxError as e:
+                                loc = f"line {e.lineno}" if e.lineno is not None else "unknown line"
+                                msg = str(e.msg) if getattr(e, "msg", None) else str(e)
+                                feedback = (
+                                    f"Python syntax error ({loc}): {msg}. "
+                                    f"Return only valid Python code for `{program_filename}` "
+                                    "(no markdown fences)."
+                                )
+                                continue
                         h = _sha256_text(code)
                         if h in code_hashes and attempt < max(1, max_llm_attempts):
                             feedback = "Output was identical to a previous program. Produce a different variant."
@@ -858,8 +971,9 @@ class ABMCTSAlgorithm(Algorithm):
                         raw_score, reward = _reward_from_metrics(
                             metrics, baseline_score=float(baseline_raw_score), baseline_valid=baseline_valid
                         )
+                        parent_code = baseline_code if parent_state is None else parent_state.code
                         program_state = ProgramState(
-                            code=parent_state.code,
+                            code=parent_code,
                             metrics=metrics,
                             artifacts=artifacts,
                             combined_score=float(raw_score),
