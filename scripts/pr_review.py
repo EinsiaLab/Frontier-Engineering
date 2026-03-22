@@ -3,7 +3,7 @@ import sys
 import requests
 from github import Github, Auth
 
-OPENROUTER_MODEL = "google/gemini-2.0-flash-001"
+OPENROUTER_MODEL = "gemini-3-flash-preview"
 
 SYSTEM_PROMPT = """
 # Role & Objective
@@ -112,7 +112,7 @@ def analyze_code_with_llm(diff_content):
         return "❌ 无法进行审查：未配置 LLM_API_KEY。"
 
     # OpenRouter
-    url = "https://openrouter.ai/api/v1/chat/completions"
+    url = "https://litellm.nbdevenv.xiaoaojianghu.fun/v1/chat/completions"
     
     # 截断 Diff 以防止超长 (OpenRouter 部分模型支持 1M+ context，但为了省钱还是截断一下)
     # Gemini Flash 支持 1M context，这里可以设置得很大
