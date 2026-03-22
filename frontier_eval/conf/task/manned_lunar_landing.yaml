@@ -1,2 +1,4 @@
-name: manned_lunar_landing
-
+name: unified
+benchmark: Astrodynamics/MannedLunarLanding
+runtime:
+  conda_env: frontier-eval-2

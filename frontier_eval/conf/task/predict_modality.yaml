@@ -1,2 +1,4 @@
-name: predict_modality
-
+name: unified
+benchmark: SingleCellAnalysis/predict_modality
+runtime:
+  conda_env: frontier-eval-2

@@ -1,2 +1,4 @@
-name: dynamic_obstacle_navigation
-
+name: unified
+benchmark: Robotics/DynamicObstacleAvoidanceNavigation
+runtime:
+  conda_env: frontier-eval-2

@@ -1,0 +1,1 @@
+{python} "{repo_root_raw}/frontier_eval/tasks/unified/evaluator/legacy_runner.py" --callable benchmarks.WirelessChannelSimulation.HighReliableSimulation.verification.evaluator:evaluate --candidate {candidate} --repo-root {repo_root} --metrics-out metrics.json --artifacts-out artifacts.json

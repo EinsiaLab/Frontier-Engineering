@@ -1,2 +1,4 @@
-name: trimul
-kernel_python: ${oc.env:FRONTIER_EVAL_TRIMUL_PYTHON,python}
+name: unified
+benchmark: KernelEngineering/TriMul
+runtime:
+  conda_env: kernel

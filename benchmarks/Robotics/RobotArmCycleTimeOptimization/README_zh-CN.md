@@ -78,3 +78,13 @@ docker run --rm -v $(pwd)/../submission.json:/workspace/submission.json arm-eval
 - **目标构型**：`[1.2, -0.3, 0.8, -0.8, 0.5, 0.8, 1.0]` rad
 - **障碍物**：AABB，中心 `[0.45, -0.35, 0.65]`，半尺寸 `[0.08, 0.20, 0.08]` m
 - **优化目标**：最小化总时间 `T`
+
+## 使用 frontier_eval 运行（unified）
+
+unified benchmark：`task=unified task.benchmark=Robotics/RobotArmCycleTimeOptimization`
+
+```bash
+python -m frontier_eval task=unified task.benchmark=Robotics/RobotArmCycleTimeOptimization task.runtime.conda_env=<your_env> algorithm.iterations=0
+```
+
+兼容别名（通过配置路由到相同 unified benchmark）：`task=robot_arm_cycle_time`。

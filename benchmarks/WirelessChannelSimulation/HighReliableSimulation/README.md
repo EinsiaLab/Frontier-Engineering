@@ -41,16 +41,14 @@ cd benchmarks/WirelessChannelSimulation/HighReliableSimulation && python verific
 
 `scripts/init.py` is expected to be runnable and should produce non-zero `runtime_s` and `valid=1.0` under a normal environment.
 
-## frontier_eval Task Name
+## Run with frontier_eval (unified)
 
-Registered `task_name` for this task:
-
-```text
-high_reliable_simulation
-```
+Unified benchmark: `task=unified task.benchmark=WirelessChannelSimulation/HighReliableSimulation`
 
 Example:
 
 ```bash
-python -m frontier_eval task=high_reliable_simulation algorithm.iterations=0
+python -m frontier_eval task=unified task.benchmark=WirelessChannelSimulation/HighReliableSimulation algorithm.iterations=0
 ```
+
+Backwards-compatible alias (routes to the same unified benchmark via config): `task=high_reliable_simulation`.

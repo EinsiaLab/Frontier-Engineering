@@ -30,3 +30,12 @@ python benchmarks/SingleCellAnalysis/predict_modality/verification/evaluate_pred
   --prediction prediction.h5ad
 ```
 
+## Run with frontier_eval (unified)
+
+Unified benchmark: `task=unified task.benchmark=SingleCellAnalysis/predict_modality`
+
+```bash
+python -m frontier_eval task=unified task.benchmark=SingleCellAnalysis/predict_modality algorithm.iterations=0
+```
+
+Backwards-compatible alias (routes to the same unified benchmark via config): `task=predict_modality`.

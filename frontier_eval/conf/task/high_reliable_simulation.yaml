@@ -1,2 +1,4 @@
-name: high_reliable_simulation
-
+name: unified
+benchmark: WirelessChannelSimulation/HighReliableSimulation
+runtime:
+  conda_env: frontier-eval-2

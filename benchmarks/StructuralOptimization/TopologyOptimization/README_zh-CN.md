@@ -74,17 +74,14 @@ python verification/evaluator.py scripts/init.py
 - 不可行提交返回无效结果。
 - 在 `frontier_eval` 中，可行运行会转换为 `combined_score = -compliance`，因此分数越高越好。
 
-## 使用 frontier_eval 运行
+## 使用 frontier_eval 运行（unified）
 
-任务名：`topology_optimization`
+unified benchmark：`task=unified task.benchmark=StructuralOptimization/TopologyOptimization`
 
 ```bash
 python -m frontier_eval \
-task=topology_optimization \
+task=unified task.benchmark=StructuralOptimization/TopologyOptimization \
 algorithm.iterations=10
 ```
 
-该任务在 `frontier_eval` 中的接入实现位于：
-
-- `frontier_eval/tasks/topology_optimization/task.py`
-- `frontier_eval/tasks/topology_optimization/evaluator/evaluate.py`
+兼容别名（通过配置路由到相同 unified benchmark）：`task=topology_optimization`。

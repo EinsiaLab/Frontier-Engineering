@@ -81,3 +81,13 @@ docker run --rm -v $(pwd)/../submission.json:/workspace/submission.json quad-eva
 - **软约束**：ZMP 稳定裕度、地面摩擦力限制
 - **优化目标**：最大化前向速度（m/s）
 - **基线**（对角步）：约 0.24 m/s
+
+## 使用 frontier_eval 运行（unified）
+
+unified benchmark：`task=unified task.benchmark=Robotics/QuadrupedGaitOptimization`
+
+```bash
+python -m frontier_eval task=unified task.benchmark=Robotics/QuadrupedGaitOptimization task.runtime.conda_env=<your_env> algorithm.iterations=0
+```
+
+兼容别名（通过配置路由到相同 unified benchmark）：`task=quadruped_gait`。

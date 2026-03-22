@@ -1,2 +1,4 @@
-name: mla
-kernel_python: ${oc.env:FRONTIER_EVAL_MLA_PYTHON,python}
+name: unified
+benchmark: KernelEngineering/MLA
+runtime:
+  conda_env: kernel

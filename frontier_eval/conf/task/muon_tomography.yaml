@@ -1,1 +1,4 @@
-name: muon_tomography
+name: unified
+benchmark: ParticlePhysics/MuonTomography
+runtime:
+  conda_env: frontier-eval-2

@@ -40,3 +40,13 @@ This folder contains the assignment specification, a baseline trajectory script 
 1. Implement or modify a solver to generate `results.txt` (see `scripts/init.py`).
 2. Run the MATLAB or Octave checker in `eval/` to validate the file.
 3. Iterate until all checks pass and the payload is maximized.
+
+## Run with frontier_eval (unified)
+
+Unified benchmark: `task=unified task.benchmark=Astrodynamics/MannedLunarLanding`
+
+```bash
+python -m frontier_eval task=unified task.benchmark=Astrodynamics/MannedLunarLanding algorithm.iterations=0
+```
+
+Backwards-compatible alias (routes to the same unified benchmark via config): `task=manned_lunar_landing`.

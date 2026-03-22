@@ -1,1 +1,4 @@
-name: uav_inspection_coverage
+name: unified
+benchmark: Robotics/UAVInspectionCoverageWithWind
+runtime:
+  conda_env: frontier-eval-2

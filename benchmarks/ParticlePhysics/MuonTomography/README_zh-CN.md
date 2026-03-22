@@ -33,18 +33,21 @@ python verification/evaluator.py solution.json
 
 ## 3. 通过 `frontier_eval` 运行
 
-这个任务在 `frontier_eval` 里的注册名是 `muon_tomography`。
+该任务现在通过 unified benchmark 入口运行：
+`task=unified task.benchmark=ParticlePhysics/MuonTomography`。
 
 在仓库根目录下，可以先用下面的命令做标准兼容性验证：
 
 ```bash
 conda activate frontier-eval-2
-python -m frontier_eval task=muon_tomography algorithm=openevolve algorithm.iterations=0
+python -m frontier_eval task=unified task.benchmark=ParticlePhysics/MuonTomography algorithm=openevolve algorithm.iterations=0
 ```
 
 按 [frontier_eval/README_zh-CN.md](../../../frontier_eval/README_zh-CN.md) 完成框架级环境和 `.env` 配置后，就可以把 `algorithm.iterations` 调大，开始真正的搜索，例如：
 
 ```bash
 conda activate frontier-eval-2
-python -m frontier_eval task=muon_tomography algorithm=openevolve algorithm.iterations=10
+python -m frontier_eval task=unified task.benchmark=ParticlePhysics/MuonTomography algorithm=openevolve algorithm.iterations=10
 ```
+
+旧别名 `task=muon_tomography` 仍可使用，并会通过配置路由到相同的 unified benchmark。

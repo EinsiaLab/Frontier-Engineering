@@ -1,2 +1,4 @@
-name: car_aerodynamics_sensing
-
+name: unified
+benchmark: Aerodynamics/CarAerodynamicsSensing
+runtime:
+  conda_env: kernel
