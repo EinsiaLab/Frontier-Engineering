@@ -40,3 +40,13 @@
 1. 编写/修改求解器生成 `results.txt`（可参考 `scripts/init.py`）。
 2. 在 `eval/` 目录运行 MATLAB 或 Octave 验证程序进行检查。
 3. 迭代优化直至所有检查通过，并尽量提升运载质量。
+
+## 使用 frontier_eval 运行（unified）
+
+unified benchmark：`task=unified task.benchmark=Astrodynamics/MannedLunarLanding`
+
+```bash
+python -m frontier_eval task=unified task.benchmark=Astrodynamics/MannedLunarLanding algorithm.iterations=0
+```
+
+兼容别名（通过配置路由到相同 unified benchmark）：`task=manned_lunar_landing`。

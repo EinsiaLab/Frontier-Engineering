@@ -4,3 +4,13 @@
 `references/SHA3-256.pdf` 是算法详细介绍文件
 运行 `verification/valid.sh` 会生成随机数据对算法正确性进行验证（使用OpenSSL）。
 运行 `verification/eval.sh` 会分别使用 8Kbits 和 8Mbits 两种数据流进行多次运算，计算算法实现效率。
+
+## 使用 frontier_eval 运行（unified）
+
+unified benchmark：`task=unified task.benchmark=Cryptographic/SHA3-256`
+
+```bash
+python -m frontier_eval task=unified task.benchmark=Cryptographic/SHA3-256 algorithm.iterations=0
+```
+
+兼容别名（通过配置路由到相同 unified benchmark）：`task=crypto_sha3_256`。

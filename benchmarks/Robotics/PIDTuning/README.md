@@ -92,17 +92,14 @@ Write `submission.json` containing 12 scalar gains:
 - Higher is better.
 - If any scenario is infeasible, or any ITAE is non-positive, the final score is `0.0`.
 
-## Run with frontier_eval
+## Run with frontier_eval (unified)
 
-Task name: `pid_tuning`
+Unified benchmark: `task=unified task.benchmark=Robotics/PIDTuning`
 
 ```bash
 python -m frontier_eval \
-task=pid_tuning \
+task=unified task.benchmark=Robotics/PIDTuning \
 algorithm.iterations=10
 ```
 
-The `frontier_eval` integration for this task is implemented in:
-
-- `frontier_eval/tasks/pid_tuning/task.py`
-- `frontier_eval/tasks/pid_tuning/evaluator/python.py`
+Backwards-compatible alias (routes to the same unified benchmark via config): `task=pid_tuning`.

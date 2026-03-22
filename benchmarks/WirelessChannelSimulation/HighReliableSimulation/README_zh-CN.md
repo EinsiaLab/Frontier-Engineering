@@ -41,16 +41,14 @@ cd benchmarks/WirelessChannelSimulation/HighReliableSimulation && python verific
 
 `scripts/init.py` 是可运行初始程序；在正常环境下应出现非零 `runtime_s`，且 `valid=1.0`。
 
-## frontier_eval 任务名
+## 使用 frontier_eval 运行（unified）
 
-该任务注册的 `task_name` 为：
-
-```text
-high_reliable_simulation
-```
+unified benchmark：`task=unified task.benchmark=WirelessChannelSimulation/HighReliableSimulation`
 
 示例：
 
 ```bash
-python -m frontier_eval task=high_reliable_simulation algorithm.iterations=0
+python -m frontier_eval task=unified task.benchmark=WirelessChannelSimulation/HighReliableSimulation algorithm.iterations=0
 ```
+
+兼容别名（通过配置路由到相同 unified benchmark）：`task=high_reliable_simulation`。

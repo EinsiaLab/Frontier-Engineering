@@ -55,13 +55,15 @@ exec 3>tri_leaderboard.log POPCORN_FD=3 python eval.py benchmark tri_bench.txt
 - `task_spec_zh_cn_path`
 - `task_spec_zh_cn`（`Task_zh-CN.md` 内容，按上限截断）
 
-### 使用 frontier_eval 运行 TriMul（示例）
+### 使用 frontier_eval 运行 TriMul（unified，示例）
 
 ```bash
 OPENAI_MODEL=qwen/qwen3-coder-next \
-FRONTIER_EVAL_TRIMUL_PYTHON=/path/to/trimul/bin/python \
-/path/to/frontier-eval-2/bin/python -m frontier_eval \
-task=trimul \
+python -m frontier_eval \
+task=unified task.benchmark=KernelEngineering/TriMul \
+task.runtime.conda_env=kernel \
 algorithm.iterations=20 \
 algorithm.oe.evaluator.timeout=1800
 ```
+
+兼容别名（通过配置路由到相同 unified benchmark）：`task=trimul`。

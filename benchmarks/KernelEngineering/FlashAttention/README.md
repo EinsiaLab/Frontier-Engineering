@@ -108,18 +108,15 @@ and the return value is the attention output tensor with shape:
 - Lower runtime is better.
 - In `frontier_eval`, feasible runs are converted to `combined_score = 1e9 / geom_mean_ns`, so higher is better there.
 
-## Run with frontier_eval
+## Run with frontier_eval (unified)
 
-Task name: `flash_attention`
+Unified benchmark: `task=unified task.benchmark=KernelEngineering/FlashAttention`
 
 ```bash
-FRONTIER_EVAL_FLASH_ATTENTION_PYTHON=/path/to/kernel/python \
 python -m frontier_eval \
-task=flash_attention \
+task=unified task.benchmark=KernelEngineering/FlashAttention \
+task.runtime.conda_env=kernel \
 algorithm.iterations=10
 ```
 
-The `frontier_eval` integration for this task is implemented in:
-
-- `frontier_eval/tasks/flash_attention/task.py`
-- `frontier_eval/tasks/flash_attention/evaluator/python.py`
+Backwards-compatible alias (routes to the same unified benchmark via config): `task=flash_attention`.

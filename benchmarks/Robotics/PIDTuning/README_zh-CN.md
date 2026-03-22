@@ -92,17 +92,14 @@ python verification/evaluator.py scripts/init.py
 - 分数越高越好。
 - 若任一场景不可行，或任一 ITAE 非正，最终分数为 `0.0`。
 
-## 使用 frontier_eval 运行
+## 使用 frontier_eval 运行（unified）
 
-任务名：`pid_tuning`
+unified benchmark：`task=unified task.benchmark=Robotics/PIDTuning`
 
 ```bash
 python -m frontier_eval \
-task=pid_tuning \
+task=unified task.benchmark=Robotics/PIDTuning \
 algorithm.iterations=10
 ```
 
-该任务在 `frontier_eval` 中的接入实现位于：
-
-- `frontier_eval/tasks/pid_tuning/task.py`
-- `frontier_eval/tasks/pid_tuning/evaluator/python.py`
+兼容别名（通过配置路由到相同 unified benchmark）：`task=pid_tuning`。

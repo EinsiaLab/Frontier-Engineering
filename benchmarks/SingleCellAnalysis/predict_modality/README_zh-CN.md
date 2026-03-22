@@ -30,3 +30,12 @@ python benchmarks/SingleCellAnalysis/predict_modality/verification/evaluate_pred
   --prediction prediction.h5ad
 ```
 
+## 使用 frontier_eval 运行（unified）
+
+unified benchmark：`task=unified task.benchmark=SingleCellAnalysis/predict_modality`
+
+```bash
+python -m frontier_eval task=unified task.benchmark=SingleCellAnalysis/predict_modality algorithm.iterations=0
+```
+
+兼容别名（通过配置路由到相同 unified benchmark）：`task=predict_modality`。
