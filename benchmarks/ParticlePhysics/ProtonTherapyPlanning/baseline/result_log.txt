@@ -1,0 +1,16 @@
+# 1. Local Baseline Evaluation
+$ conda activate frontier-eval-2
+$ cd benchmarks/ParticlePhysics/ProtonTherapyPlanning
+$ python baseline/solution.py
+Baseline plan successfully generated: plan.json
+Total spots placed: 48
+
+$ python verification/evaluator.py plan.json
+{"score": -2685.8873258471367, "status": "success", "metrics": {"ctv_mse": 2779.3623258471366, "oar_overdose_penalty": 0.0, "total_weight": 130.5}}
+
+# 2. Framework Compatibility Check
+$ cd ../../../
+$ python -m frontier_eval task=proton_therapy_planning algorithm=openevolve algorithm.iterations=0
+[INFO] - Evaluated program in 0.25s: combined_score=-2685.8873, valid=1.0000, timeout=0.0000, runtime_s=0.2516, program_returncode=0.0000
+[INFO] - Evolution complete. Best program has metrics: combined_score=-2685.8873, valid=1.0000, timeout=0.0000, runtime_s=0.2516, program_returncode=0.0000
+Best score: -2685.8873258471367

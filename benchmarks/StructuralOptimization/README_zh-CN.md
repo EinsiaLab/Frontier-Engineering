@@ -11,6 +11,7 @@
 | `ISCSO2015` | 45 杆 2D 桁架尺寸 + 形状优化 | 54 | 连续、有约束、多工况 |
 | `ISCSO2023` | 284 杆 3D 桁架尺寸优化 | 284 | 连续、有约束、多工况 |
 | `TopologyOptimization` | MBB 束流二维拓扑优化 (SIMP) | 1200 | 连续、体积约束的合规最小化 |
+| `PyMOTOSIMPCompliance` | 基于 pyMOTO 范式的二维梁 SIMP 柔度最小化拓扑设计 | 4800 | 连续、体积约束的合规最小化 |
 
 ## 为何适合 Frontier-Engineering
 
@@ -29,4 +30,3 @@
 - Agent + FEM 仿真交互 benchmark
 - 自动算法设计 benchmark
 - LLM + 数值仿真 benchmark
-

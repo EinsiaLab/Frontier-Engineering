@@ -14,3 +14,6 @@ Currently, this domain includes the following benchmark tasks:
 * **[Muon Tomography Detector Placement Optimization](./MuonTomography/README.md)**
   * **Background**: Utilizing cosmic ray muons for internal transmission imaging of large structures.
   * **Objective**: Find the optimal spatial coordinates and angular layout of detectors under budget and excavation constraints to maximize the effective received flux in the target region.
+* **[IMPT Dose Weight Optimization](./ProtonTherapyPlanning/README.md)**
+  * **Background**: Optimizing proton therapy treatment plans using the Bragg peak effect of proton beams.
+  * **Objective**: Optimize proton spot positions and weights under CTV coverage, OAR dose limits, and beam cost constraints.

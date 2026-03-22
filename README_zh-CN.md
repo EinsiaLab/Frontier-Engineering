@@ -1,6 +1,6 @@
 # Frontier-Eng: 人工智能代理的大规模工程优化基准
 
-[English](README.md) | 简体中文
+English | [简体中文](README_zh-CN.md)
 
 **Frontier-Eng** 是一个旨在评估 AI Agent 在**真实工程领域**中解决**开放式优化问题**能力的Benchmark。
 
@@ -20,7 +20,8 @@
 
 我们需要社区的力量来扩展 Benchmark 的覆盖范围。我们欢迎通过 Pull Request (PR) 的方式提交新的工程问题。如果你希望贡献，请遵循以下标准和流程：
 
-> **AI 辅助贡献**：我们欢迎使用 AI 工具辅助创建的贡献。如果您使用 AI 助手来帮助完成贡献，我们建议将本仓库中的提示词指南（`AGENT.md` 或 `AGENT_zh-CN.md`）提供给您的 AI 助手，以确保其遵循我们的标准和要求。**但是，请不要过度依赖 AI 工具或完全放手不管**。人工审查和监督对于确保质量和正确性至关重要。
+> **AI 辅助贡献**：我们欢迎使用 AI 工具辅助创建的贡献。如果您使用 AI 助手来帮助完成贡献，我们建议将本仓库中的提示词指南（`AGENT.md`）提供给您的 AI 助手，以确保其遵循我们的标准和要求。**但是，请不要过度依赖 AI 工具或完全放手不管**。人工审查和监督对于确保质量和正确性至关重要。
+
 ### 样本要求
 
 1. **Reality Gap**: 必须贴近现实，考虑现实影响因素，非单纯数学抽象。
@@ -43,6 +44,12 @@
 │   ├── references/                  # 参考资料目录
 │   │   ├── constants.json           # 物理常数、仿真参数等
 │   │   └── manuals.pdf              # 领域知识手册、物理方程或约束条件文档
+│   ├── frontier_eval/               # [必选] Frontier Eval 的 unified-task 元数据
+│   │   ├── initial_program.txt      # 初始可编辑程序路径（相对任务根目录）
+│   │   ├── eval_command.txt         # `task=unified` 使用的评测命令模板
+│   │   ├── agent_files.txt          # 提供给 Agent 的上下文文件
+│   │   ├── artifact_files.txt       # 评测后需要收集的输出/日志文件
+│   │   └── constraints.txt          # 可选的任务约束/说明
 │   ├── verification/                # 验证与评分系统
 │   │   ├── evaluator.py             # [核心] 评分脚本入口
 │   │   ├── requirements.txt         # 运行评分环境所需的依赖
@@ -55,12 +62,14 @@
     └── ...
 ```
 > 上述目录结构仅作为参考模板。在确保包含所有核心要素（如背景、输入输出、评测指标）的前提下，贡献者可根据具体情况调整文件组织方式。同时，验证代码的编程语言与格式均不作限制。
+>
+> 新增 benchmark 贡献默认必须通过 unified task 格式接入。也就是说，需要在 `<Task_Name>/frontier_eval/` 下补齐 benchmark 本地元数据，并使用 `task=unified` 完成框架适配验证。除非能够明确说明 unified 格式无法表达该任务、且已与维护者先沟通达成一致，否则不要再新增 `frontier_eval/tasks/<task>/...` 这种自定义 task 实现。完整 unified 元数据说明见 `frontier_eval/README_zh-CN.md`。
 
 ### 提交规范
 
 1. 运行测试命令尽量简短（最好单行命令）提交前必须测试！
     1. python verification/evaluator.py scripts/init.py # 在benchmark下的运行，使用verification/evaluator.py作为评测入口，测试的目标也即agent evolve的目标为scripts/init.py
-    2. python -m frontier_eval task=<task_name> algorithm.iterations=0 # 与框架的适配验证。注意，请在README中说明任务注册的task_name
+    2. python -m frontier_eval task=unified task.benchmark=<Domain_Name>/<Task_Name> algorithm.iterations=0 # 新增 benchmark 的框架适配验证。请在 README 中写清 unified benchmark id，以及任何必要的 runtime 覆盖项（例如 `task.runtime.conda_env=...`）
 2. 请注意不要包含私人信息的文件，例如:.env、API keys、IDE 配置（.vscode/）、临时文件（*.log, temp/, __pycache__/）、个人测试脚本，同时请检查提交的内容中是否包含绝对路径，避免出现复现问题和个人隐私泄露。
 
 3. **EVOLVE-BLOCK 标记（ShinkaEvolve / ABMCTS 必需）**：被 Agent 演化（evolve）的文件（例如 `scripts/init.py`，或类似 `malloclab-handout/mm.c` 这类语言特定的 baseline）必须包含 `EVOLVE-BLOCK-START` 与 `EVOLVE-BLOCK-END` 标记，用于定义*唯一*允许修改的代码区域。
@@ -92,8 +101,12 @@
    * **Agent Review**: 提交 PR 后，首先由 **AI Agent** 进行自动化初步审查（包括代码规范、基础逻辑验证等），并可能在 PR 中直接提出修改建议。
    * **Maintainer Review**: Agent 审查通过后，**维护者** 将进行最终复核。确认无误后，你的贡献将被合并。
 ---
-> 💡 如果这是你第一次贡献，或者对目录结构有疑问，欢迎先提交 Issue 进行讨论。  
+> 💡 如果这是你第一次贡献，或者对目录结构有疑问，欢迎先提交 Issue 进行讨论。
+
 ## 📊 任务进度与规划
+
+下表列出了当前 Benchmark 各领域任务的覆盖情况。我们不仅欢迎代码贡献，也欢迎社区提出有挑战性的新工程问题构想。
+
 
 <table>
   <thead>
@@ -116,12 +129,19 @@
       <td>登月软着陆轨迹优化</td>
     </tr>
     <tr>
-      <td><b>ParticlePhysics</b></td>
+      <td rowspan="2"><b>ParticlePhysics</b></td>
       <td><code>MuonTomography</code></td>
       <td>已完成</td>
       <td>@SeanDF333</td>
       <td>@ahydchh</td>
       <td>考虑缪子通量、预算与开挖约束的探测器布局优化</td>
+    </tr>
+    <tr>
+      <td><code>ProtonTherapyPlanning</code></td>
+      <td>已完成</td>
+      <td>@SeanDF333</td>
+      <td>@ahydchh</td>
+      <td>在肿瘤覆盖、危及器官保护与束流成本约束下优化 IMPT 剂量权重</td>
     </tr>
     <tr>
       <td rowspan="3"><b>Kernel Engineering</b></td>
@@ -421,12 +441,19 @@
       <td>偏振复用全息</td>
     </tr>
     <tr>
-      <td><b>Computer Systems</b></td>
+      <td rowspan="2"><b>Computer Systems</b></td>
       <td><code>Malloc Lab</code></td>
       <td>已完成</td>
       <td>@ahydchh</td>
       <td>@ahydchh</td>
       <td>动态内存分配实验</td>
+    </tr>
+    <tr>
+      <td><code>DuckDBWorkloadOptimization</code></td>
+      <td>已完成</td>
+      <td>@DocZbs</td>
+      <td>@DocZbs</td>
+      <td>基于 DuckDB 官方 workload 的索引/物化视图选择与查询改写优化</td>
     </tr>
     <tr>
       <td><b>EngDesign</b></td>
@@ -545,7 +572,7 @@
       <td>经典 JSSP 的 YN 家族（Yamada & Nakano，1992）</td>
     </tr>
     <tr>
-      <td rowspan="3"><b>StructuralOptimization</b></td>
+      <td rowspan="4"><b>StructuralOptimization</b></td>
       <td><code>ISCSO2015</code></td>
       <td>已完成</td>
       <td>@yks23</td>
@@ -567,7 +594,14 @@
       <td>连续、体积约束的合规最小化, 连续、体积约束的合规最小化</td>
     </tr>
     <tr>
-      <td rowspan="5"><b>Robotics</b></td>
+      <td><code>PyMOTOSIMPCompliance</code></td>
+      <td>已完成</td>
+      <td>@DocZbs</td>
+      <td>@DocZbs</td>
+      <td>基于 pyMOTO 的二维梁拓扑优化（SIMP + OC/MMA），在体积分数约束下最小化柔度</td>
+    </tr>
+    <tr>
+      <td rowspan="6"><b>Robotics</b></td>
       <td><code>DynamicObstacleAvoidanceNavigation</code></td>
       <td>已完成</td>
       <td>@MichaelCaoo</td>
@@ -603,12 +637,26 @@
       <td>风场扰动下的无人机巡检</td>
     </tr>
     <tr>
-      <td><b>Aerodynamics</b></td>
+      <td><code>CoFlyersVasarhelyiTuning</code></td>
+      <td>已完成</td>
+      <td>@DocZbs</td>
+      <td>@DocZbs</td>
+      <td>调优 Vasarhelyi 群飞参数</td>
+    </tr>
+    <tr>
+      <td rowspan="2"><b>Aerodynamics</b></td>
       <td><code>CarAerodynamicsSensing</code></td>
       <td>已完成</td>
       <td>@LeiDQ, @llltttwww</td>
       <td>@llltttwww</td>
       <td>3D 汽车表面传感器布局优化，用于压力场重建</td>
+    </tr>
+    <tr>
+      <td><code>DawnAircraftDesignOptimization</code></td>
+      <td>已完成</td>
+      <td>@DocZbs</td>
+      <td>@DocZbs</td>
+      <td>在巡航高度、续航与载荷约束下，联合优化机翼/机身/动力参数以最小化飞机总重量</td>
     </tr>
     <tr>
       <td><b>WirelessChannelSimulation</b></td>
@@ -617,6 +665,22 @@
       <td>@tonyhaohan</td>
       <td>@yks23, @ahydchh</td>
       <td>使用重要性采样估计 Hamming(127,120) 的误码率</td>
+    </tr>
+    <tr>
+      <td><b>PowerSystems</b></td>
+      <td><code>EV2GymSmartCharging</code></td>
+      <td>已完成</td>
+      <td>@DocZbs</td>
+      <td>@DocZbs</td>
+      <td>电动车智能充电</td>
+    </tr>
+    <tr>
+      <td><b>AdditiveManufacturing</b></td>
+      <td><code>DiffSimThermalControl</code></td>
+      <td>已完成</td>
+      <td>@DocZbs</td>
+      <td>@DocZbs</td>
+      <td>研究增材制造中的 differentiable simulation 工艺优化</td>
     </tr>
   </tbody>
 </table>
@@ -633,3 +697,4 @@
 
 * 🟢 **飞书**: [点击这里加入我们的飞书讨论群](https://applink.feishu.cn/client/chat/chatter/add_by_link?link_token=21ak5858-60ba-44fd-9085-01f165c8771c)
 * 🔜 **Discord**: [点击这里加入我们的Discord社区](https://discord.gg/hxeVhZNN)
+

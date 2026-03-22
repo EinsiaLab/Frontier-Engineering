@@ -1,0 +1,6 @@
+name: unified
+benchmark: PowerSystems/EV2GymSmartCharging
+metadata_dir: frontier_eval
+runtime:
+  use_conda_run: false
+

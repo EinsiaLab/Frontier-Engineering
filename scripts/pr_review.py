@@ -3,7 +3,7 @@ import sys
 import requests
 from github import Github, Auth
 
-OPENROUTER_MODEL = "google/gemini-3-flash-preview"
+OPENROUTER_MODEL = "gemini-3-flash-preview"
 
 SYSTEM_PROMPT = """
 # Role & Objective
