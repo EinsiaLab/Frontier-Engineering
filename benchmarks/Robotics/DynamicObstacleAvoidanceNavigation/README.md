@@ -64,3 +64,13 @@ python verification/evaluator.py --submission submission.json
 - Score = average arrival time across all scenes (lower is better).
 - Any violation (collision, out-of-bounds, limit violation, timeout) makes that scene fail.
 - If any scene fails, final `feasible=false` and `score=null`.
+
+## Run with frontier_eval (unified)
+
+Unified benchmark: `task=unified task.benchmark=Robotics/DynamicObstacleAvoidanceNavigation`
+
+```bash
+python -m frontier_eval task=unified task.benchmark=Robotics/DynamicObstacleAvoidanceNavigation algorithm.iterations=0
+```
+
+Backwards-compatible alias (routes to the same unified benchmark via config): `task=dynamic_obstacle_navigation`.

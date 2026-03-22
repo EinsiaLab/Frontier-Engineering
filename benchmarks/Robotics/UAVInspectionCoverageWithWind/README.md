@@ -75,3 +75,13 @@ Evaluator output:
 - Per-scene score: `coverage_ratio * 100.0 - energy * 0.5`.
 - Final score: average over all scenes.
 - Any scene constraint violation (including dynamic-obstacle collision) => `feasible=false`, `score=null`.
+
+## Run with frontier_eval (unified)
+
+Unified benchmark: `task=unified task.benchmark=Robotics/UAVInspectionCoverageWithWind`
+
+```bash
+python -m frontier_eval task=unified task.benchmark=Robotics/UAVInspectionCoverageWithWind algorithm.iterations=0
+```
+
+Backwards-compatible alias (routes to the same unified benchmark via config): `task=uav_inspection_coverage`.

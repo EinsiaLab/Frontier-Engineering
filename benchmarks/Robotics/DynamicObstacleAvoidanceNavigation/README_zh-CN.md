@@ -64,3 +64,13 @@ python verification/evaluator.py --submission submission.json
 - 得分为 3 个场景到达时间平均值（越小越好）。
 - 任一场景发生碰撞、越界、限值违规或超时即失败。
 - 若任一场景失败，则最终 `feasible=false` 且 `score=null`。
+
+## 使用 frontier_eval 运行（unified）
+
+unified benchmark：`task=unified task.benchmark=Robotics/DynamicObstacleAvoidanceNavigation`
+
+```bash
+python -m frontier_eval task=unified task.benchmark=Robotics/DynamicObstacleAvoidanceNavigation algorithm.iterations=0
+```
+
+兼容别名（通过配置路由到相同 unified benchmark）：`task=dynamic_obstacle_navigation`。

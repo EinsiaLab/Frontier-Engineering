@@ -57,3 +57,15 @@ docker build -f docker/Dockerfile -t car-aero-eval .
 ## Notes
 - GPU is required. The evaluator uses CUDA and will fail on CPU.
 - The evaluator samples K=10 cases from case_76 to case_100 with seed 2025.
+
+## Run with frontier_eval (unified)
+
+Unified benchmark: `task=unified task.benchmark=Aerodynamics/CarAerodynamicsSensing`
+
+```bash
+python -m frontier_eval task=unified task.benchmark=Aerodynamics/CarAerodynamicsSensing task.runtime.conda_env=kernel algorithm.iterations=0
+```
+
+The same PhySense code, dataset, checkpoint, and reference point prerequisites above are still required before unified evaluation can run successfully.
+
+Backwards-compatible alias (routes to the same unified benchmark via config): `task=car_aerodynamics_sensing`.

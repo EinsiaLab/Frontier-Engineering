@@ -1,2 +1,4 @@
-name: quadruped_gait
-
+name: unified
+benchmark: Robotics/QuadrupedGaitOptimization
+runtime:
+  conda_env: libero

@@ -78,3 +78,13 @@ docker run --rm -v $(pwd)/../submission.json:/workspace/submission.json arm-eval
 - **Goal**: `[1.2, -0.3, 0.8, -0.8, 0.5, 0.8, 1.0]` rad
 - **Obstacle**: AABB at center `[0.45, -0.35, 0.65]`, half-extents `[0.08, 0.20, 0.08]` m
 - **Objective**: Minimize total time `T`
+
+## Run with frontier_eval (unified)
+
+Unified benchmark: `task=unified task.benchmark=Robotics/RobotArmCycleTimeOptimization`
+
+```bash
+python -m frontier_eval task=unified task.benchmark=Robotics/RobotArmCycleTimeOptimization task.runtime.conda_env=<your_env> algorithm.iterations=0
+```
+
+Backwards-compatible alias (routes to the same unified benchmark via config): `task=robot_arm_cycle_time`.

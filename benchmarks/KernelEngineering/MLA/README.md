@@ -32,12 +32,9 @@ POPCORN_FD=1 python eval.py leaderboard mla_bench.txt
 
 The above code will use `submission.custom_kernel` for evaluation. You can choose to replace `benchmarks/KernelEngineering/MLA/baseline/submission.py` with your own code, or replace all `from baseline.submission import custom_kernel` in `benchmarks/KernelEngineering/MLA/verification/eval.py` with importing from your specified code.
 
-## Evaluation in frontier_eval
+## Evaluation in frontier_eval (unified)
 
-`frontier_eval` integration logic for MLA:
-
-- `frontier_eval/tasks/mla/task.py`
-- `frontier_eval/tasks/mla/evaluator/python.py`
+Unified metadata for this benchmark lives in `benchmarks/KernelEngineering/MLA/frontier_eval/` and runs the task-local evaluator (`verification/eval.py`).
 
 Evaluation flow:
 
@@ -55,13 +52,15 @@ Evaluation flow:
 
 The evaluator also returns artifacts (stdout/stderr, `mla_bench.log`, error summary, task spec) for OpenEvolve follow-up rounds.
 
-### Run MLA with frontier_eval (Example)
+### Run MLA with frontier_eval (unified, example)
 
 ```bash
 OPENAI_MODEL=qwen/qwen3-coder-next \
-FRONTIER_EVAL_MLA_PYTHON=/path/to/envs/kernel/bin/python \
-/path/to/envs/frontier-eval-2/bin/python -m frontier_eval \
-task=mla \
+python -m frontier_eval \
+task=unified task.benchmark=KernelEngineering/MLA \
+task.runtime.conda_env=kernel \
 algorithm.iterations=20 \
 algorithm.oe.evaluator.timeout=1800
 ```
+
+Backwards-compatible alias (routes to the same unified benchmark via config): `task=mla`.

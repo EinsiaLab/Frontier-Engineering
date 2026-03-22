@@ -49,13 +49,15 @@ POPCORN_FD=1 python eval.py leaderboard mla_bench.txt
 
 评测产物（stdout/stderr、`mla_bench.log`、错误摘要、任务说明）会作为 artifacts 返回给 OpenEvolve，并在后续迭代 prompt 中提供给模型。
 
-### 使用 frontier_eval 运行 MLA（示例）
+### 使用 frontier_eval 运行 MLA（unified，示例）
 
 ```bash
 OPENAI_MODEL=qwen/qwen3-coder-next \
-FRONTIER_EVAL_MLA_PYTHON=/path/to/mla/bin/python \
-/path/to/frontier-eval-2/bin/python -m frontier_eval \
-task=mla \
+python -m frontier_eval \
+task=unified task.benchmark=KernelEngineering/MLA \
+task.runtime.conda_env=kernel \
 algorithm.iterations=20 \
 algorithm.oe.evaluator.timeout=1800
 ```
+
+兼容别名（通过配置路由到相同 unified benchmark）：`task=mla`。

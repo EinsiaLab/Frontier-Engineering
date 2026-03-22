@@ -47,3 +47,13 @@ python verification/evaluator.py --submission submission.json
 - 单场景分数：`(coverage_ratio^2) * 1e6 - energy`。
 - 总分：三场景平均分。
 - 任一场景违反硬约束（含动态障碍碰撞）则整体不可行：`feasible=false`, `score=null`。
+
+## 使用 frontier_eval 运行（unified）
+
+unified benchmark：`task=unified task.benchmark=Robotics/UAVInspectionCoverageWithWind`
+
+```bash
+python -m frontier_eval task=unified task.benchmark=Robotics/UAVInspectionCoverageWithWind algorithm.iterations=0
+```
+
+兼容别名（通过配置路由到相同 unified benchmark）：`task=uav_inspection_coverage`。

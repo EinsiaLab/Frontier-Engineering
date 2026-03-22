@@ -1,1 +1,4 @@
-name: pid_tuning
+name: unified
+benchmark: Robotics/PIDTuning
+runtime:
+  conda_env: frontier-eval-2

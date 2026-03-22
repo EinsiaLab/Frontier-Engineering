@@ -82,3 +82,13 @@ docker run --rm -v $(pwd)/submission.json:/workspace/submission.json quad-eval
 ## Objective
 
 - Maximise average forward speed over a fixed MuJoCo simulation horizon
+
+## Run with frontier_eval (unified)
+
+Unified benchmark: `task=unified task.benchmark=Robotics/QuadrupedGaitOptimization`
+
+```bash
+python -m frontier_eval task=unified task.benchmark=Robotics/QuadrupedGaitOptimization task.runtime.conda_env=<your_env> algorithm.iterations=0
+```
+
+Backwards-compatible alias (routes to the same unified benchmark via config): `task=quadruped_gait`.

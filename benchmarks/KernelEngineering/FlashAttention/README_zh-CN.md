@@ -108,18 +108,15 @@ def custom_kernel(data):
 - 运行时间越低越好。
 - 在 `frontier_eval` 中，可行运行会映射为 `combined_score = 1e9 / geom_mean_ns`，因此分数越高越好。
 
-## 使用 frontier_eval 运行
+## 使用 frontier_eval 运行（unified）
 
-任务名：`flash_attention`
+unified benchmark：`task=unified task.benchmark=KernelEngineering/FlashAttention`
 
 ```bash
-FRONTIER_EVAL_FLASH_ATTENTION_PYTHON=/path/to/kernel/python \
 python -m frontier_eval \
-task=flash_attention \
+task=unified task.benchmark=KernelEngineering/FlashAttention \
+task.runtime.conda_env=kernel \
 algorithm.iterations=10
 ```
 
-该任务在 `frontier_eval` 中的接入实现位于：
-
-- `frontier_eval/tasks/flash_attention/task.py`
-- `frontier_eval/tasks/flash_attention/evaluator/python.py`
+兼容别名（通过配置路由到相同 unified benchmark）：`task=flash_attention`。

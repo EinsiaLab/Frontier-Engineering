@@ -74,17 +74,14 @@ The candidate program must write `temp/submission.json` containing:
 - Infeasible submissions receive an invalid result.
 - In `frontier_eval`, feasible runs are converted to `combined_score = -compliance`, so higher is better there.
 
-## Run with frontier_eval
+## Run with frontier_eval (unified)
 
-Task name: `topology_optimization`
+Unified benchmark: `task=unified task.benchmark=StructuralOptimization/TopologyOptimization`
 
 ```bash
 python -m frontier_eval \
-task=topology_optimization \
+task=unified task.benchmark=StructuralOptimization/TopologyOptimization \
 algorithm.iterations=10
 ```
 
-The `frontier_eval` integration for this task is implemented in:
-
-- `frontier_eval/tasks/topology_optimization/task.py`
-- `frontier_eval/tasks/topology_optimization/evaluator/evaluate.py`
+Backwards-compatible alias (routes to the same unified benchmark via config): `task=topology_optimization`.

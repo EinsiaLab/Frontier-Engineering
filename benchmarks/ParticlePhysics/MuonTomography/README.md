@@ -33,18 +33,21 @@ The baseline above has been verified in this repository with the following resul
 
 ## 3. Run with `frontier_eval`
 
-This task is registered in `frontier_eval` as `muon_tomography`.
+This task now runs through the unified benchmark entry:
+`task=unified task.benchmark=ParticlePhysics/MuonTomography`.
 
 From the repository root, the standard compatibility check is:
 
 ```bash
 conda activate frontier-eval-2
-python -m frontier_eval task=muon_tomography algorithm=openevolve algorithm.iterations=0
+python -m frontier_eval task=unified task.benchmark=ParticlePhysics/MuonTomography algorithm=openevolve algorithm.iterations=0
 ```
 
 After completing the framework-level `.env` or model configuration described in [frontier_eval/README.md](../../../frontier_eval/README.md), you can start a real search by increasing `algorithm.iterations`, for example:
 
 ```bash
 conda activate frontier-eval-2
-python -m frontier_eval task=muon_tomography algorithm=openevolve algorithm.iterations=10
+python -m frontier_eval task=unified task.benchmark=ParticlePhysics/MuonTomography algorithm=openevolve algorithm.iterations=10
 ```
+
+The old alias `task=muon_tomography` is still supported and routes to the same unified benchmark via config.

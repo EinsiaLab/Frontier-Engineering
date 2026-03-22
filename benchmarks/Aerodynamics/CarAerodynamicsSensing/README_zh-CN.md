@@ -57,3 +57,15 @@ docker build -f docker/Dockerfile -t car-aero-eval .
 ## 备注
 - 需要 GPU。评测器使用 CUDA，CPU 环境会失败。
 - 评测器从 case_76 到 case_100 中以种子 2025 抽取 K=10 个工况。
+
+## 使用 frontier_eval 运行（unified）
+
+unified benchmark：`task=unified task.benchmark=Aerodynamics/CarAerodynamicsSensing`
+
+```bash
+python -m frontier_eval task=unified task.benchmark=Aerodynamics/CarAerodynamicsSensing task.runtime.conda_env=<your_env> algorithm.iterations=0
+```
+
+运行 unified 评测前，仍需先准备上面列出的 PhySense 代码、数据集、模型权重以及参考点文件。
+
+兼容别名（通过配置路由到相同 unified benchmark）：`task=car_aerodynamics_sensing`。
