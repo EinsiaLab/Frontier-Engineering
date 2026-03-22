@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# EVOLVE-BLOCK-START
 
 """Improved importance sampling for PMD simulation using adaptive exponential tilting."""
 
@@ -256,3 +257,4 @@ if __name__ == "__main__":
     )
     print(result)
 
+# EVOLVE-BLOCK-END

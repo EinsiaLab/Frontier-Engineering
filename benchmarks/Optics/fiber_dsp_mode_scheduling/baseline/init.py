@@ -1,3 +1,4 @@
+# EVOLVE-BLOCK-START
 """Baseline for Task 3: DSP mode scheduling (EDC vs DBP)."""
 
 from __future__ import annotations
@@ -34,3 +35,4 @@ def choose_dsp_mode(user_features, latency_budget_s, max_dbp_users=None, seed=0)
             count_dbp += 1
 
     return {"mode": mode}
+# EVOLVE-BLOCK-END

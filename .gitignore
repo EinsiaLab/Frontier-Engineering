@@ -9,6 +9,8 @@ __pycache__/
 .pytest_cache/
 runs/
 runs_old/
+runs_old_2/
+old_runs_0318/
 benchmarks/Astrodynamics/MannedLunarLanding/results.txt
 benchmarks/Astrodynamics/MannedLunarLanding/outputlog.txt
 .vscode
@@ -21,3 +23,4 @@ rawdata/
 eval.sh
 eval_single.sh
 rerun_batch_tasks.sh
+SKILL.md

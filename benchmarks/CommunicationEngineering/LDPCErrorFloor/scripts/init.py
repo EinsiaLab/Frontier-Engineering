@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# EVOLVE-BLOCK-START
 
 """Initial starter code for LDPC Error Floor estimation."""
 
@@ -83,3 +84,4 @@ if __name__ == "__main__":
     result = sampler.simulate_variance_controlled(code=code)
     print(result)
 
+# EVOLVE-BLOCK-END

@@ -1,3 +1,4 @@
+# EVOLVE-BLOCK-START
 from __future__ import annotations
 
 from typing import Dict, Mapping, Sequence
@@ -63,3 +64,4 @@ def decide_actions(observations: Mapping[str, Sequence[float]]) -> Dict[str, int
         "agent_dc": 1,
         "agent_bat": 2,
     }
+# EVOLVE-BLOCK-END

@@ -1,3 +1,4 @@
+# EVOLVE-BLOCK-START
 import numpy as np
 
 
@@ -16,3 +17,4 @@ def fuse_and_compute_dm_commands(
     fused = np.mean(slopes_multi, axis=0)
     u = reconstructor @ fused
     return np.clip(u, -max_voltage, max_voltage)
+# EVOLVE-BLOCK-END

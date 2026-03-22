@@ -1,3 +1,4 @@
+# EVOLVE-BLOCK-START
 """Baseline solver for Task 1: WDM channel + power allocation.
 
 Simple engineering baseline:
@@ -67,3 +68,4 @@ def allocate_wdm(
     power_dbm[used] = each_dbm
 
     return {"assignment": assignment, "power_dbm": power_dbm}
+# EVOLVE-BLOCK-END

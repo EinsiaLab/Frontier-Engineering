@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# EVOLVE-BLOCK-START
 """Baseline solver for Task 02: hard Fourier pattern holography."""
 
 from __future__ import annotations
@@ -132,3 +133,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+# EVOLVE-BLOCK-END

@@ -1,3 +1,4 @@
+# EVOLVE-BLOCK-START
 from __future__ import annotations
 
 from qiskit.circuit import QuantumCircuit
@@ -10,3 +11,4 @@ def optimize_circuit(input_circuit: QuantumCircuit, target: Target, case: dict) 
     """Rule-based baseline: structural rewrites without transpile."""
     _ = (target, case)
     return optimize_by_local_rewrite(input_circuit)
+# EVOLVE-BLOCK-END

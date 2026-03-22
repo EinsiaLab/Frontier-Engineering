@@ -1,3 +1,4 @@
+import math
 import argparse
 import importlib.util
 import json
@@ -7,6 +8,10 @@ import sys
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.ensemble import IsolationForest
+
+# aotools expects numpy.math, which is absent in newer NumPy releases.
+if not hasattr(np, "math"):
+    np.math = math
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 if str(REPO_ROOT) not in sys.path:

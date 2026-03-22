@@ -1,0 +1,256 @@
+version: 1
+
+# Unified benchmark sweep for all currently onboarded unified tasks.
+# This matrix is intended for LLM-driven evaluation runs where we want
+# the same 49 benchmarks across multiple algorithms and a single model.
+
+tasks:
+  - name: unified
+    label: CommunicationEngineering/LDPCErrorFloor
+    overrides:
+      - task.benchmark=CommunicationEngineering/LDPCErrorFloor
+  - name: unified
+    label: CommunicationEngineering/PMDSimulation
+    overrides:
+      - task.benchmark=CommunicationEngineering/PMDSimulation
+  - name: unified
+    label: CommunicationEngineering/RayleighFadingBER
+    overrides:
+      - task.benchmark=CommunicationEngineering/RayleighFadingBER
+  - name: unified
+    label: ComputerSystems/MallocLab
+    overrides:
+      - task.benchmark=ComputerSystems/MallocLab
+  - name: unified
+    label: EnergyStorage/BatteryFastChargingProfile
+    overrides:
+      - task.benchmark=EnergyStorage/BatteryFastChargingProfile
+  - name: unified
+    label: EnergyStorage/BatteryFastChargingSPMe
+    overrides:
+      - task.benchmark=EnergyStorage/BatteryFastChargingSPMe
+  - name: unified
+    label: EngDesign
+    overrides:
+      - task.benchmark=EngDesign
+      - task.runtime.use_conda_run=false
+  - name: unified
+    label: InventoryOptimization/disruption_eoqd
+    overrides:
+      - task.benchmark=InventoryOptimization/disruption_eoqd
+      - task.runtime.conda_env=stock
+  - name: unified
+    label: InventoryOptimization/finite_horizon_dp
+    overrides:
+      - task.benchmark=InventoryOptimization/finite_horizon_dp
+      - task.runtime.conda_env=stock
+  - name: unified
+    label: InventoryOptimization/general_meio
+    overrides:
+      - task.benchmark=InventoryOptimization/general_meio
+      - task.runtime.conda_env=stock
+  - name: unified
+    label: InventoryOptimization/joint_replenishment
+    overrides:
+      - task.benchmark=InventoryOptimization/joint_replenishment
+      - task.runtime.conda_env=stock
+  - name: unified
+    label: InventoryOptimization/tree_gsm_safety_stock
+    overrides:
+      - task.benchmark=InventoryOptimization/tree_gsm_safety_stock
+      - task.runtime.conda_env=stock
+  - name: unified
+    label: JobShop/abz
+    overrides:
+      - task.benchmark=JobShop/abz
+  - name: unified
+    label: JobShop/ft
+    overrides:
+      - task.benchmark=JobShop/ft
+  - name: unified
+    label: JobShop/la
+    overrides:
+      - task.benchmark=JobShop/la
+  - name: unified
+    label: JobShop/orb
+    overrides:
+      - task.benchmark=JobShop/orb
+  - name: unified
+    label: JobShop/swv
+    overrides:
+      - task.benchmark=JobShop/swv
+  - name: unified
+    label: JobShop/ta
+    overrides:
+      - task.benchmark=JobShop/ta
+  - name: unified
+    label: JobShop/yn
+    overrides:
+      - task.benchmark=JobShop/yn
+  - name: unified
+    label: MolecularMechanics/diverse_conformer_portfolio
+    overrides:
+      - task.benchmark=MolecularMechanics/diverse_conformer_portfolio
+      - task.runtime.conda_env=openff-dev
+  - name: unified
+    label: MolecularMechanics/torsion_profile_fitting
+    overrides:
+      - task.benchmark=MolecularMechanics/torsion_profile_fitting
+      - task.runtime.conda_env=openff-dev
+  - name: unified
+    label: MolecularMechanics/weighted_parameter_coverage
+    overrides:
+      - task.benchmark=MolecularMechanics/weighted_parameter_coverage
+      - task.runtime.conda_env=openff-dev
+  - name: unified
+    label: Optics/adaptive_constrained_dm_control
+    overrides:
+      - task.benchmark=Optics/adaptive_constrained_dm_control
+  - name: unified
+    label: Optics/adaptive_energy_aware_control
+    overrides:
+      - task.benchmark=Optics/adaptive_energy_aware_control
+  - name: unified
+    label: Optics/adaptive_fault_tolerant_fusion
+    overrides:
+      - task.benchmark=Optics/adaptive_fault_tolerant_fusion
+  - name: unified
+    label: Optics/adaptive_temporal_smooth_control
+    overrides:
+      - task.benchmark=Optics/adaptive_temporal_smooth_control
+  - name: unified
+    label: Optics/fiber_dsp_mode_scheduling
+    overrides:
+      - task.benchmark=Optics/fiber_dsp_mode_scheduling
+  - name: unified
+    label: Optics/fiber_guardband_spectrum_packing
+    overrides:
+      - task.benchmark=Optics/fiber_guardband_spectrum_packing
+  - name: unified
+    label: Optics/fiber_mcs_power_scheduling
+    overrides:
+      - task.benchmark=Optics/fiber_mcs_power_scheduling
+  - name: unified
+    label: Optics/fiber_wdm_channel_power_allocation
+    overrides:
+      - task.benchmark=Optics/fiber_wdm_channel_power_allocation
+  - name: unified
+    label: Optics/holographic_multifocus_power_ratio
+    overrides:
+      - task.benchmark=Optics/holographic_multifocus_power_ratio
+  - name: unified
+    label: Optics/holographic_multiplane_focusing
+    overrides:
+      - task.benchmark=Optics/holographic_multiplane_focusing
+  - name: unified
+    label: Optics/holographic_multispectral_focusing
+    overrides:
+      - task.benchmark=Optics/holographic_multispectral_focusing
+  - name: unified
+    label: Optics/holographic_polarization_multiplexing
+    overrides:
+      - task.benchmark=Optics/holographic_polarization_multiplexing
+  - name: unified
+    label: Optics/phase_dammann_uniform_orders
+    overrides:
+      - task.benchmark=Optics/phase_dammann_uniform_orders
+  - name: unified
+    label: Optics/phase_fourier_pattern_holography
+    overrides:
+      - task.benchmark=Optics/phase_fourier_pattern_holography
+  - name: unified
+    label: Optics/phase_large_scale_weighted_spot_array
+    overrides:
+      - task.benchmark=Optics/phase_large_scale_weighted_spot_array
+  - name: unified
+    label: Optics/phase_weighted_multispot_single_plane
+    overrides:
+      - task.benchmark=Optics/phase_weighted_multispot_single_plane
+  - name: unified
+    label: PyPortfolioOpt/cvar_stress_control
+    overrides:
+      - task.benchmark=PyPortfolioOpt/cvar_stress_control
+      - task.runtime.conda_env=pyportfolioopt
+  - name: unified
+    label: PyPortfolioOpt/discrete_rebalance_mip
+    overrides:
+      - task.benchmark=PyPortfolioOpt/discrete_rebalance_mip
+      - task.runtime.conda_env=pyportfolioopt
+  - name: unified
+    label: PyPortfolioOpt/robust_mvo_rebalance
+    overrides:
+      - task.benchmark=PyPortfolioOpt/robust_mvo_rebalance
+      - task.runtime.conda_env=pyportfolioopt
+  - name: unified
+    label: QuantumComputing/task_01_routing_qftentangled
+    overrides:
+      - task.benchmark=QuantumComputing/task_01_routing_qftentangled
+      - task.runtime.conda_env=mqt
+  - name: unified
+    label: QuantumComputing/task_02_clifford_t_synthesis
+    overrides:
+      - task.benchmark=QuantumComputing/task_02_clifford_t_synthesis
+      - task.runtime.conda_env=mqt
+  - name: unified
+    label: QuantumComputing/task_03_cross_target_qaoa
+    overrides:
+      - task.benchmark=QuantumComputing/task_03_cross_target_qaoa
+      - task.runtime.conda_env=mqt
+  - name: unified
+    label: ReactionOptimisation/dtlz2_pareto
+    overrides:
+      - task.benchmark=ReactionOptimisation/dtlz2_pareto
+      - task.runtime.conda_env=summit
+  - name: unified
+    label: ReactionOptimisation/mit_case1_mixed
+    overrides:
+      - task.benchmark=ReactionOptimisation/mit_case1_mixed
+      - task.runtime.conda_env=summit
+  - name: unified
+    label: ReactionOptimisation/reizman_suzuki_pareto
+    overrides:
+      - task.benchmark=ReactionOptimisation/reizman_suzuki_pareto
+      - task.runtime.conda_env=summit
+  - name: unified
+    label: ReactionOptimisation/snar_multiobjective
+    overrides:
+      - task.benchmark=ReactionOptimisation/snar_multiobjective
+      - task.runtime.conda_env=summit
+  - name: unified
+    label: SustainableDataCenterControl/hand_written_control
+    overrides:
+      - task.benchmark=SustainableDataCenterControl/hand_written_control
+      - task.runtime.conda_env=sustaindc
+
+algorithms:
+  - name: shinkaevolve
+    overrides:
+      - algorithm.max_generations=150
+      - algorithm.evaluator_timeout_s=300
+  - name: openevolve
+    overrides:
+      - algorithm.iterations=150
+      - algorithm.oe.evaluator.timeout=300
+  - name: abmcts
+    overrides:
+      - algorithm.iterations=150
+      - algorithm.variant=m
+      - algorithm.evaluator_timeout_s=300
+
+llms:
+  - name: openai__qwen3_coder_next
+    api_base: ${oc.env:OPENAI_API_BASE,https://api.openai.com/v1}
+    model: qwen3-coder-next
+    api_key_env: OPENAI_API_KEY
+
+llm_config: openai_compatible
+
+common_overrides:
+  - llm.temperature=0.7
+  - llm.timeout=60
+
+run:
+  name: unified_qwen3codernext_150
+  base_dir: runs/batch
+  max_parallel: 1
+  fail_fast: false

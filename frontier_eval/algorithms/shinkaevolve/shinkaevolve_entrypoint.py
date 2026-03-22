@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import argparse
+import importlib
 import json
 import os
 import sys
+import traceback
 import types
 from pathlib import Path
 from typing import Any
@@ -80,6 +82,15 @@ def _write_json(path: Path, obj: Any) -> None:
     path.write_text(json.dumps(obj, ensure_ascii=False, indent=2, default=str) + "\n", encoding="utf-8")
 
 
+def _write_text(path: Path, text: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text, encoding="utf-8", errors="replace")
+
+
+def _feedback_module():
+    return importlib.import_module("frontier_eval.algorithms.shinkaevolve.context_feedback")
+
+
 def _extract_metrics_and_artifacts(result: Any) -> tuple[dict[str, Any], dict[str, Any]]:
     if result is None:
         return {}, {}
@@ -100,177 +111,15 @@ def _extract_metrics_and_artifacts(result: Any) -> tuple[dict[str, Any], dict[st
 
 
 def _truncate_middle(text: str, limit: int) -> str:
-    if limit <= 0 or len(text) <= limit:
-        return text
-    if limit <= 64:
-        return text[:limit]
-    keep = max(1, (limit - 32) // 2)
-    omitted = len(text) - (2 * keep)
-    return text[:keep] + f"\n[... truncated {omitted} chars ...]\n" + text[-keep:]
+    return _feedback_module().truncate_middle(text, limit)
 
 
 def _stringify(value: Any) -> str:
-    if value is None:
-        return ""
-    if isinstance(value, bytes):
-        return value.decode("utf-8", errors="replace")
-    if isinstance(value, str):
-        return value
-    if isinstance(value, (dict, list, tuple)):
-        try:
-            return json.dumps(value, ensure_ascii=False, indent=2, default=str)
-        except Exception:
-            return str(value)
-    return str(value)
-
-
-def _artifact_basename(key: str) -> str:
-    stem = key.split("::", 1)[-1]
-    return Path(stem).name.lower()
-
-
-def _artifact_relpath(key: str) -> str:
-    return key.split("::", 1)[-1]
-
-
-def _render_section(title: str, body: Any, *, limit: int) -> str:
-    text = _stringify(body).strip()
-    if not text:
-        return ""
-    return f"## {title}\n{_truncate_middle(text, limit).strip()}"
-
-
-def _agent_file_sort_key(item: tuple[str, Any]) -> tuple[int, int, int, str]:
-    key, value = item
-    relpath = _artifact_relpath(key).lower()
-    basename = _artifact_basename(key)
-
-    if relpath.startswith("runtime/problem."):
-        priority = 0
-    elif relpath.startswith("baseline/solution."):
-        priority = 1
-    elif basename == "task.md":
-        priority = 2
-    elif basename == "task_zh-cn.md":
-        priority = 3
-    elif basename == "readme.md":
-        priority = 4
-    elif basename == "readme_zh-cn.md":
-        priority = 5
-    elif basename.endswith(".h"):
-        priority = 6
-    elif "interface" in basename or "config" in basename:
-        priority = 7
-    elif "source_manifest" in basename:
-        priority = 9
-    else:
-        priority = 8
-
-    return priority, len(relpath.split("/")), len(_stringify(value)), key
-
-
-def _collect_error_sections(artifacts: dict[str, Any]) -> list[str]:
-    sections: list[str] = []
-    seen_texts: set[str] = set()
-    alias_titles = {
-        "user_artifact::error_message": "Error Message",
-        "user_artifact::failure_summary": "Failure Summary",
-    }
-
-    for title, key, limit in (
-        ("Error Message", "error_message", 2200),
-        ("Failure Summary", "failure_summary", 2200),
-        ("Readonly Violations", "readonly_violations", 1800),
-        ("Artifacts JSON Error", "artifacts_json_error", 1200),
-        ("Metrics JSON Error", "metrics_json_error", 1200),
-    ):
-        if key not in artifacts:
-            continue
-        text = _stringify(artifacts.get(key)).strip()
-        if not text or text in seen_texts:
-            continue
-        seen_texts.add(text)
-        section = _render_section(title, text, limit=limit)
-        if section:
-            sections.append(section)
-
-    for key, value in sorted(artifacts.items()):
-        if not isinstance(key, str):
-            continue
-        lowered = key.lower()
-        if "error" not in lowered and "failure" not in lowered:
-            continue
-        if key in {"error_message", "failure_summary", "readonly_violations"}:
-            continue
-        text = _stringify(value).strip()
-        if not text or text in seen_texts:
-            continue
-        seen_texts.add(text)
-        title = alias_titles.get(key) or key.replace("user_artifact::", "").replace("::", " / ")
-        section = _render_section(title, text, limit=2200)
-        if section:
-            sections.append(section)
-
-    return sections
-
-
-def _select_agent_file_sections(artifacts: dict[str, Any]) -> list[str]:
-    agent_items = [
-        (key, value)
-        for key, value in artifacts.items()
-        if isinstance(key, str) and key.startswith("agent_file::") and "::error" not in key
-    ]
-    if not agent_items:
-        return []
-
-    chosen: list[tuple[str, Any]] = []
-    seen: set[str] = set()
-
-    def add_first_matching(patterns: tuple[str, ...]) -> None:
-        for key, value in sorted(agent_items, key=_agent_file_sort_key):
-            rel = _artifact_relpath(key).lower()
-            if rel in seen:
-                continue
-            if any(rel == pattern or rel.endswith(pattern) for pattern in patterns):
-                chosen.append((key, value))
-                seen.add(rel)
-                return
-
-    add_first_matching(("runtime/problem.py",))
-    add_first_matching(("baseline/solution.py",))
-    add_first_matching(("task.md",))
-    add_first_matching(("readme.md",))
-
-    for key, value in sorted(agent_items, key=_agent_file_sort_key):
-        rel = _artifact_relpath(key).lower()
-        if rel in seen:
-            continue
-        if len(chosen) >= 4:
-            break
-        chosen.append((key, value))
-        seen.add(rel)
-
-    sections: list[str] = []
-    for key, value in chosen:
-        rel = _artifact_relpath(key)
-        limit = 4000 if rel == "runtime/problem.py" else 1800
-        section = _render_section(f"Agent File: {rel}", value, limit=limit)
-        if section:
-            sections.append(section)
-    return sections
+    return _feedback_module().stringify(value)
 
 
 def _primary_error_message(artifacts: dict[str, Any]) -> str:
-    for key in (
-        "error_message",
-        "user_artifact::error_message",
-        "failure_summary",
-        "user_artifact::failure_summary",
-    ):
-        text = _stringify(artifacts.get(key)).strip()
-        if text:
-            return text
-    return ""
+    return _feedback_module().primary_error_message(artifacts)
 
 
 def _synthesize_text_feedback(
@@ -279,72 +128,25 @@ def _synthesize_text_feedback(
     *,
     max_chars: int = 16_000,
 ) -> str:
-    existing = _stringify(metrics.get("text_feedback")).strip()
-    if existing:
-        return _truncate_middle(existing, max_chars)
+    bundle = _build_context_bundle(metrics, artifacts, text_feedback_max_chars=max_chars)
+    return bundle.text_feedback
 
-    if not artifacts:
-        return ""
 
-    sections: list[str] = []
-
-    metric_lines: list[str] = []
-    for key in (
-        "combined_score",
-        "valid",
-        "runtime_s",
-        "timeout",
-        "benchmark_returncode",
-        "make_returncode",
-        "mdriver_returncode",
-        "errors_count",
-        "testcases_passed",
-        "testcases_total",
-        "score_100",
-        "geom_mean_ns",
-    ):
-        if key in metrics:
-            metric_lines.append(f"{key}: {_stringify(metrics.get(key)).strip()}")
-    if metric_lines:
-        sections.append(_render_section("Metric Summary", "\n".join(metric_lines), limit=800))
-
-    sections.extend(_collect_error_sections(artifacts))
-
-    agent_files = _stringify(artifacts.get("agent_files")).strip()
-    if agent_files:
-        sections.append(_render_section("Agent Files", agent_files, limit=1000))
-
-    for title, key, limit in (
-        ("Constraint Summary", "constraints", 2000),
-        ("Interface Contract", "interface_contract", 2000),
-        ("Task Spec", "task_spec_zh_cn", 1600),
-        ("Benchmark Check", "check", 600),
-        ("Score Line", "score_line", 600),
-    ):
-        if key in artifacts:
-            section = _render_section(title, artifacts.get(key), limit=limit)
-            if section:
-                sections.append(section)
-
-    sections.extend(_select_agent_file_sections(artifacts))
-
-    for title, key, limit in (
-        ("Make Stdout", "make_stdout", 2500),
-        ("Make Stderr", "make_stderr", 2500),
-        ("Mdriver Stdout", "mdriver_stdout", 3000),
-        ("Mdriver Stderr", "mdriver_stderr", 3000),
-        ("Benchmark Stdout", "benchmark_stdout", 3000),
-        ("Benchmark Stderr", "benchmark_stderr", 3000),
-        ("CUDA Probe Stdout", "cuda_probe_stdout", 1200),
-        ("CUDA Probe Stderr", "cuda_probe_stderr", 1200),
-    ):
-        if key in artifacts:
-            section = _render_section(title, artifacts.get(key), limit=limit)
-            if section:
-                sections.append(section)
-
-    feedback = "\n\n".join(section for section in sections if section).strip()
-    return _truncate_middle(feedback, max_chars) if feedback else ""
+def _build_context_bundle(
+    metrics: dict[str, Any],
+    artifacts: dict[str, Any],
+    *,
+    text_feedback_max_chars: int = 8_000,
+    stdout_bridge_max_chars: int = 6_000,
+    stderr_bridge_max_chars: int = 12_000,
+) -> Any:
+    return _feedback_module().build_context_bundle(
+        metrics,
+        artifacts,
+        text_feedback_max_chars=text_feedback_max_chars,
+        stdout_bridge_max_chars=stdout_bridge_max_chars,
+        stderr_bridge_max_chars=stderr_bridge_max_chars,
+    )
 
 
 def _task_cfg_from_env(task_name: str) -> dict[str, Any]:
@@ -390,34 +192,43 @@ def main(program_path: str, results_dir: str, *, task_name: str | None = None) -
     error_msg = ""
     metrics: dict[str, Any] = {}
     artifacts: dict[str, Any] = {}
+    bundle: Any | None = None
     try:
         raw = task.evaluate_program(program_path_p)
         metrics, artifacts = _extract_metrics_and_artifacts(raw)
-        text_feedback = _synthesize_text_feedback(metrics, artifacts)
-        if text_feedback:
-            metrics = dict(metrics)
-            metrics["text_feedback"] = text_feedback
-
-        valid = metrics.get("valid", None)
-        if isinstance(valid, (int, float)) and not isinstance(valid, bool):
-            correct = float(valid) > 0.0
-        else:
-            correct = True
-
-        err = _primary_error_message(artifacts) if isinstance(artifacts, dict) else ""
-        if err:
-            error_msg = err
-            if correct:
-                correct = False
+        bundle = _build_context_bundle(metrics, artifacts)
     except Exception as e:
-        correct = False
-        error_msg = str(e)
-        metrics = {"combined_score": 0.0, "valid": 0.0, "error": error_msg}
+        metrics = {"combined_score": 0.0, "valid": 0.0, "error": str(e)}
+        artifacts = {
+            "error_message": str(e),
+            "traceback": traceback.format_exc(),
+        }
+        bundle = _build_context_bundle(metrics, artifacts)
+
+    metrics = dict(bundle.metrics) if bundle is not None else dict(metrics)
+    artifacts = dict(bundle.artifacts) if bundle is not None else dict(artifacts)
+    if bundle is not None and bundle.text_feedback:
+        metrics["text_feedback"] = bundle.text_feedback
+
+    correct = bundle.correct if bundle is not None else False
+    error_msg = bundle.primary_error if bundle is not None else ""
 
     _write_json(results_dir_p / "metrics.json", metrics)
     _write_json(results_dir_p / "correct.json", {"correct": bool(correct), "error": error_msg})
     if artifacts:
         _write_json(results_dir_p / "artifacts.json", artifacts)
+    if bundle is not None:
+        _write_text(results_dir_p / "text_feedback.txt", bundle.text_feedback)
+        _write_text(results_dir_p / "stdout_bridge.txt", bundle.stdout_bridge)
+        _write_text(results_dir_p / "stderr_bridge.txt", bundle.stderr_bridge)
+        _write_json(
+            results_dir_p / "context_manifest.json",
+            _feedback_module().build_context_manifest(bundle),
+        )
+        if bundle.stdout_bridge.strip():
+            print(bundle.stdout_bridge, flush=True)
+        if bundle.stderr_bridge.strip():
+            print(bundle.stderr_bridge, file=sys.stderr, flush=True)
 
     # Shinka's local job runner treats non-zero exit codes as evaluation crashes and
     # may raise before loading `metrics.json`. Always exit 0 and rely on correct.json.

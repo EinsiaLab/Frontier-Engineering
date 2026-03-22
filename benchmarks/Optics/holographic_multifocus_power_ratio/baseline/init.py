@@ -1,3 +1,4 @@
+# EVOLVE-BLOCK-START
 """Baseline solver for Task 1: multifocus with target power ratios."""
 
 from __future__ import annotations
@@ -92,3 +93,4 @@ def solve(spec: dict[str, Any] | None = None, device: str | None = None, seed: i
         "target_field": target_field,
         "loss_history": losses,
     }
+# EVOLVE-BLOCK-END

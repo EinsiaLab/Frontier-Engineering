@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# EVOLVE-BLOCK-START
 
 """Initial starter code for Rayleigh Fading BER analysis."""
 
@@ -84,3 +85,4 @@ if __name__ == "__main__":
         snr_db=10.0,
     )
     print(result)
+# EVOLVE-BLOCK-END

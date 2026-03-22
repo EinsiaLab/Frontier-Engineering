@@ -1,3 +1,4 @@
+# EVOLVE-BLOCK-START
 """Baseline implementation for Task 01.
 
 This module intentionally avoids stockpyl and only contains a simple
@@ -29,3 +30,4 @@ def solve(_unused=None) -> dict[int, int]:
         cst[idx] = 1 if float(processing_time) >= 2.0 else 0
 
     return cst
+# EVOLVE-BLOCK-END

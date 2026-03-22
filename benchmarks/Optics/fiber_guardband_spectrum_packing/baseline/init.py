@@ -1,3 +1,4 @@
+# EVOLVE-BLOCK-START
 """Baseline for Task 4: spectrum packing with guard bands."""
 
 from __future__ import annotations
@@ -42,3 +43,4 @@ def pack_spectrum(user_demand_slots, n_slots, guard_slots=1, seed=0):
             alloc[u] = (-1, 0)
 
     return {"alloc": np.asarray(alloc, dtype=int)}
+# EVOLVE-BLOCK-END
