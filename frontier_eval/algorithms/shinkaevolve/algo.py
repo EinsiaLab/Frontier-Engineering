@@ -72,6 +72,30 @@ def _hms_from_seconds(seconds: int) -> str:
     return f"{h:02d}:{m:02d}:{s:02d}"
 
 
+def _normalize_api_base(api_base: str) -> str:
+    return str(api_base or "").strip().rstrip("/")
+
+
+def _resolve_shinka_model_name(*, model: str, api_base: str) -> str:
+    model_name = str(model or "").strip()
+    if not model_name:
+        return ""
+
+    normalized_api_base = _normalize_api_base(api_base)
+    if not normalized_api_base:
+        return model_name
+
+    # Shinka selects the transport backend from the model string alone. When Frontier Eval
+    # is configured against a custom OpenAI-compatible gateway (for example LiteLLM serving
+    # Gemini), route through Shinka's local OpenAI-compatible backend so the custom base URL
+    # is actually respected instead of falling back to a provider-native client.
+    if model_name.startswith(("local/", "openrouter/", "azure-")):
+        return model_name
+    if normalized_api_base in {"https://api.openai.com", "https://api.openai.com/v1"}:
+        return model_name
+    return f"local/{model_name}@{normalized_api_base}"
+
+
 def _infer_shinka_language(program_path: Path) -> str:
     suffix = program_path.suffix.lower()
     suffix_to_language = {
@@ -201,6 +225,7 @@ class ShinkaEvolveAlgorithm(Algorithm):
         api_base = str(getattr(llm_cfg, "api_base", "") or "")
         api_key = str(getattr(llm_cfg, "api_key", "") or "")
         model = str(getattr(llm_cfg, "model", "") or "")
+        shinka_model = _resolve_shinka_model_name(model=model, api_base=api_base)
 
         has_any_api_key = bool(api_key) or any(
             bool(os.environ.get(k))
@@ -244,6 +269,7 @@ class ShinkaEvolveAlgorithm(Algorithm):
             # ShinkaEvolve loads its own `.env` with `override=True`, so env vars may exist
             # but be empty. When the user provides `llm.api_key`, treat it as authoritative.
             os.environ["OPENAI_API_KEY"] = api_key
+            os.environ["LOCAL_OPENAI_API_KEY"] = api_key
             if api_base:
                 os.environ["OPENAI_API_BASE"] = api_base
                 os.environ["OPENAI_BASE_URL"] = api_base
@@ -267,7 +293,7 @@ class ShinkaEvolveAlgorithm(Algorithm):
             "num_generations": int(num_generations),
             "max_parallel_jobs": int(max_parallel),
             "job_type": job_type,
-            "llm_models": [model] if model else None,
+            "llm_models": [shinka_model] if shinka_model else None,
             "llm_kwargs": {
                 "temperatures": float(getattr(llm_cfg, "temperature", 0.7)),
                 "max_tokens": int(getattr(llm_cfg, "max_tokens", 4096)),

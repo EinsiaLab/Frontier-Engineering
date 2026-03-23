@@ -7,6 +7,7 @@ import os
 import re
 import shlex
 import shutil
+import signal
 import sys
 import time
 import uuid
@@ -288,11 +289,14 @@ def _build_runs(
                     f"llm={llm_default_config if llm is None else (llm.llm_config or llm_default_config)}",
                     f"run.output_dir={run_dir.as_posix()}",
                 ]
-                overrides.extend(task_spec.overrides)
+                # Precedence is ordered from broad defaults to run-specific overrides so
+                # later entries can intentionally override earlier ones when Hydra resolves
+                # repeated keys on the command line.
                 overrides.extend(common_overrides)
                 overrides.extend(algo.overrides)
                 if llm is not None:
                     overrides.extend(llm.overrides)
+                overrides.extend(task_spec.overrides)
                 overrides.extend(extra_overrides)
 
                 env = os.environ.copy()
@@ -436,6 +440,51 @@ def _extract_abmcts_best_metrics(output_dir: Path) -> dict[str, Any] | None:
     return None
 
 
+async def _terminate_subprocess_tree(
+    proc: asyncio.subprocess.Process,
+    *,
+    grace_s: float = 5.0,
+) -> None:
+    if proc.returncode is not None:
+        return
+
+    pgid: int | None = None
+    if os.name == "posix":
+        try:
+            pgid = os.getpgid(proc.pid)
+        except ProcessLookupError:
+            pgid = None
+
+    try:
+        if pgid is not None:
+            os.killpg(pgid, signal.SIGTERM)
+        else:
+            proc.terminate()
+    except ProcessLookupError:
+        return
+
+    try:
+        await asyncio.wait_for(proc.wait(), timeout=grace_s)
+        return
+    except asyncio.TimeoutError:
+        pass
+    except ProcessLookupError:
+        return
+
+    try:
+        if pgid is not None:
+            os.killpg(pgid, signal.SIGKILL)
+        else:
+            proc.kill()
+    except ProcessLookupError:
+        return
+
+    try:
+        await proc.wait()
+    except ProcessLookupError:
+        return
+
+
 async def _run_one(run: RunSpec) -> dict[str, Any]:
     start = time.time()
     run.output_dir.mkdir(parents=True, exist_ok=True)
@@ -463,8 +512,13 @@ async def _run_one(run: RunSpec) -> dict[str, Any]:
             env=run.env,
             stdout=f_out,
             stderr=f_err,
+            start_new_session=(os.name == "posix"),
         )
-        returncode = await proc.wait()
+        try:
+            returncode = await proc.wait()
+        except asyncio.CancelledError:
+            await _terminate_subprocess_tree(proc)
+            raise
 
     elapsed_s = time.time() - start
     metrics: dict[str, Any] | None = None
