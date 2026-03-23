@@ -62,6 +62,29 @@ pip install -e third_party/ShinkaEvolve
 pip install -e "git+https://github.com/SakanaAI/ShinkaEvolve.git#egg=shinka"
 ```
 
+Using your own model with `algorithm=shinkaevolve`:
+
+- If you point `OPENAI_API_BASE` / `llm.api_base` at a self-hosted or OpenAI-compatible endpoint, ShinkaEvolve still resolves model routing and cost metadata from `third_party/ShinkaEvolve/shinka/llm/providers/pricing.csv`.
+- If `OPENAI_MODEL` / `llm.model` is missing from that table, ShinkaEvolve may fail with errors such as `Model ... not supported.` or `Model ... not found in pricing data`.
+- If you need to patch `pricing.csv`, `client.py`, or `query.py`, use Option A above (`third_party/ShinkaEvolve` checkout), not the VCS install.
+- For a custom model on an OpenAI-compatible endpoint, add a row to `third_party/ShinkaEvolve/shinka/llm/providers/pricing.csv` and usually set `provider` to `openai`, because the `openai` backend is the one that honors `OPENAI_API_BASE`.
+
+Example `pricing.csv` row for a self-hosted OpenAI-compatible model:
+
+```csv
+my-model,openai,N/A,N/A,,,," False"," 0"," 0"
+```
+
+Then set the same model name in your runtime config:
+
+```bash
+export OPENAI_API_BASE=http://<your-endpoint>/v1
+export OPENAI_API_KEY=<your-key>
+export OPENAI_MODEL=my-model
+```
+
+If your model needs a new provider or a non-standard API, editing `pricing.csv` is not enough. Follow `third_party/ShinkaEvolve/docs/support_local_llm.md` and update `shinka/llm/client.py` plus `shinka/llm/query.py`.
+
 Optional (AB-MCTS via TreeQuest):
 
 ```bash

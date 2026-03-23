@@ -62,6 +62,29 @@ pip install -e third_party/ShinkaEvolve
 pip install -e "git+https://github.com/SakanaAI/ShinkaEvolve.git#egg=shinka"
 ```
 
+使用自定义模型运行 `algorithm=shinkaevolve` 时，请注意：
+
+- 即使你把 `OPENAI_API_BASE` / `llm.api_base` 指向了自托管或 OpenAI-compatible 接口，ShinkaEvolve 仍然会从 `third_party/ShinkaEvolve/shinka/llm/providers/pricing.csv` 里解析模型路由和计价元信息。
+- 如果 `OPENAI_MODEL` / `llm.model` 不在这张表里，ShinkaEvolve 很容易报 `Model ... not supported.` 或 `Model ... not found in pricing data`。
+- 如果你要修改 `pricing.csv`、`client.py` 或 `query.py`，请优先使用上面的方式 A（本地 checkout），不要只做 VCS 安装。
+- 对于挂在 OpenAI-compatible 接口后的自定义模型，通常应该在 `third_party/ShinkaEvolve/shinka/llm/providers/pricing.csv` 里新增一行，并把 `provider` 设为 `openai`，因为真正会读取 `OPENAI_API_BASE` 的是 `openai` backend。
+
+自托管 OpenAI-compatible 模型的 `pricing.csv` 示例：
+
+```csv
+my-model,openai,N/A,N/A,,,," False"," 0"," 0"
+```
+
+然后在运行环境里把模型名设成同一个值：
+
+```bash
+export OPENAI_API_BASE=http://<your-endpoint>/v1
+export OPENAI_API_KEY=<your-key>
+export OPENAI_MODEL=my-model
+```
+
+如果你的模型需要新的 provider 或非标准 API，仅修改 `pricing.csv` 还不够。请参考 `third_party/ShinkaEvolve/docs/support_local_llm.md`，同时修改 `shinka/llm/client.py` 和 `shinka/llm/query.py`。
+
 可选（AB-MCTS / TreeQuest）：
 
 ```bash
