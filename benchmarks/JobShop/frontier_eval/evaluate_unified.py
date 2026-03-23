@@ -91,6 +91,7 @@ def _compute_metrics(results: list[Any]) -> dict[str, float]:
     baseline_runtime_s: list[float] = []
     reference_runtime_s: list[float] = []
 
+    baseline_failures = 0
     reference_failures = 0
     for row in results:
         target = row.optimum if row.optimum is not None else row.upper_bound
@@ -108,31 +109,45 @@ def _compute_metrics(results: list[Any]) -> dict[str, float]:
         if r_lb is not None:
             reference_lb_scores.append(r_lb)
 
-        if row.optimum is not None and row.optimum > 0:
+        if (
+            row.optimum is not None
+            and row.optimum > 0
+            and row.baseline_makespan is not None
+        ):
             baseline_opt_gaps.append(
                 100.0 * (float(row.baseline_makespan) - float(row.optimum)) / float(row.optimum)
             )
-            if row.reference_makespan is not None:
-                reference_opt_gaps.append(
-                    100.0 * (float(row.reference_makespan) - float(row.optimum)) / float(row.optimum)
-                )
+        if row.optimum is not None and row.optimum > 0 and row.reference_makespan is not None:
+            reference_opt_gaps.append(
+                100.0 * (float(row.reference_makespan) - float(row.optimum)) / float(row.optimum)
+            )
 
         baseline_runtime_s.append(float(row.baseline_elapsed_s))
         if row.reference_elapsed_s is not None:
             reference_runtime_s.append(float(row.reference_elapsed_s))
+        if not bool(getattr(row, "baseline_valid", row.baseline_makespan is not None)):
+            baseline_failures += 1
         if row.reference_error is not None:
             reference_failures += 1
 
     instances = len(results)
+    baseline_successes = max(instances - baseline_failures, 0)
     reference_successes = max(instances - reference_failures, 0)
+    baseline_success_rate = (
+        float(baseline_successes) / float(instances) if instances > 0 else 0.0
+    )
     reference_success_rate = (
         float(reference_successes) / float(instances) if instances > 0 else 0.0
     )
 
     score_best_avg_baseline = _to_float(_mean(baseline_best_scores))
+    valid = 1.0 if instances > 0 and baseline_failures == 0 else 0.0
 
     return {
         "instances": float(instances),
+        "baseline_failures": float(baseline_failures),
+        "baseline_successes": float(baseline_successes),
+        "baseline_success_rate": baseline_success_rate,
         "reference_failures": float(reference_failures),
         "reference_successes": float(reference_successes),
         "reference_success_rate": reference_success_rate,
@@ -144,8 +159,8 @@ def _compute_metrics(results: list[Any]) -> dict[str, float]:
         "optimality_gap_avg_reference": _to_float(_mean(reference_opt_gaps)),
         "baseline_runtime_avg_s": _to_float(_mean(baseline_runtime_s)),
         "reference_runtime_avg_s": _to_float(_mean(reference_runtime_s)),
-        "combined_score": score_best_avg_baseline,
-        "valid": 1.0 if instances > 0 else 0.0,
+        "combined_score": score_best_avg_baseline if valid > 0.0 else 0.0,
+        "valid": valid,
     }
 
 
@@ -252,11 +267,20 @@ def main() -> int:
         if max_instances is not None:
             metrics["max_instances"] = float(max_instances)
 
+        baseline_errors: list[dict[str, str]] = []
         reference_errors: list[dict[str, str]] = []
         for row in results:
+            if not bool(getattr(row, "baseline_valid", row.baseline_makespan is not None)):
+                baseline_errors.append(
+                    {
+                        "instance": row.name,
+                        "error": str(getattr(row, "baseline_note", "invalid baseline schedule")),
+                    }
+                )
             if row.reference_error is None:
                 continue
             reference_errors.append({"instance": row.name, "error": row.reference_error})
+        artifacts["baseline_errors"] = baseline_errors
         artifacts["reference_errors"] = reference_errors
         artifacts["report"] = report_text
         artifacts["evaluation_wall_time_s"] = metrics["evaluation_wall_time_s"]

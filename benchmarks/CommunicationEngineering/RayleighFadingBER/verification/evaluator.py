@@ -28,12 +28,13 @@ DIVERSITY_TYPE = "MRC"
 MODULATION = "BPSK"
 
 EPSILON = 2.0  # Increased tolerance for initial submissions
-INVALID_SCORE_SCALE = 0.1
-INVALID_SCORE_CAP = 0.1
 # Reference values (to be calibrated with baseline solution)
 R0_DEV = 1e-5  # Reference BER (adjusted for initial testing)
 R0_LOG_DEV = float(math.log(R0_DEV))
 T0_DEV = 10.0
+ERR_RATIO_REL_TOL = 1e-6
+ERR_RATIO_ABS_TOL = 1e-12
+INTEGER_TOL = 1e-6
 
 
 def _is_repo_root(path: Path) -> bool:
@@ -113,23 +114,110 @@ def _resolve_program_path(program_path: str, repo_root: Path) -> Path:
     return (task_root / raw).resolve()
 
 
-def _normalize_result(result: Any) -> tuple[float, float, float, float, float, float]:
+def _normalize_result(result: Any) -> dict[str, float | bool]:
+    required_keys = (
+        "errors_log",
+        "weights_log",
+        "err_ratio",
+        "total_samples",
+        "actual_std",
+        "converged",
+    )
     if isinstance(result, dict):
-        return (
-            float(result["errors_log"]),
-            float(result["weights_log"]),
-            float(result.get("err_ratio", np.nan)),
-            float(result.get("total_samples", np.nan)),
-            float(result.get("actual_std", np.nan)),
-            1.0 if bool(result.get("converged", False)) else 0.0,
-        )
-    if isinstance(result, (tuple, list)) and len(result) >= 6:
-        return (
-            float(result[0]), float(result[1]), float(result[2]),
-            float(result[3]), float(result[4]),
-            1.0 if bool(result[5]) else 0.0,
-        )
-    raise ValueError("simulate_variance_controlled 返回值格式不支持")
+        missing = [key for key in required_keys if key not in result]
+        if missing:
+            raise ValueError(f"simulate_variance_controlled 缺少字段: {missing}")
+        payload = result
+    elif isinstance(result, (tuple, list)) and len(result) == 6:
+        payload = {
+            "errors_log": result[0],
+            "weights_log": result[1],
+            "err_ratio": result[2],
+            "total_samples": result[3],
+            "actual_std": result[4],
+            "converged": result[5],
+        }
+    else:
+        raise ValueError("simulate_variance_controlled 返回值格式不支持")
+
+    converged = payload["converged"]
+    if isinstance(converged, (np.bool_, bool)):
+        converged_value = bool(converged)
+    elif isinstance(converged, (int, float)) and converged in (0, 1):
+        converged_value = bool(converged)
+    else:
+        raise ValueError("converged 必须是布尔值或 0/1")
+
+    return {
+        "errors_log": float(payload["errors_log"]),
+        "weights_log": float(payload["weights_log"]),
+        "err_ratio": float(payload["err_ratio"]),
+        "total_samples": float(payload["total_samples"]),
+        "actual_std": float(payload["actual_std"]),
+        "converged": converged_value,
+    }
+
+
+def _validate_result(payload: dict[str, float | bool]) -> dict[str, float | bool]:
+    errors_log = float(payload["errors_log"])
+    weights_log = float(payload["weights_log"])
+    err_ratio = float(payload["err_ratio"])
+    total_samples = float(payload["total_samples"])
+    actual_std = float(payload["actual_std"])
+    converged = bool(payload["converged"])
+
+    if not np.isfinite(weights_log):
+        raise ValueError("weights_log 必须是有限值")
+    if np.isnan(errors_log) or errors_log == float("inf"):
+        raise ValueError("errors_log 必须是有限值或 -inf")
+    if not np.isfinite(total_samples) or total_samples <= 0:
+        raise ValueError("total_samples 必须是正数")
+    rounded_samples = int(round(total_samples))
+    if abs(total_samples - rounded_samples) > INTEGER_TOL:
+        raise ValueError("total_samples 必须是整数")
+    if rounded_samples > MAX_SAMPLES:
+        raise ValueError(f"total_samples={rounded_samples} 超过 max_samples={MAX_SAMPLES}")
+    if np.isnan(actual_std) or actual_std < 0.0:
+        raise ValueError("actual_std 必须是非负数或 inf")
+    if converged and (not np.isfinite(actual_std) or actual_std > TARGET_STD + ERR_RATIO_ABS_TOL):
+        raise ValueError("converged=True 但 actual_std 未达到 target_std")
+
+    if errors_log == float("-inf"):
+        if not np.isfinite(err_ratio) or not math.isclose(err_ratio, 0.0, abs_tol=ERR_RATIO_ABS_TOL):
+            raise ValueError("errors_log=-inf 时 err_ratio 必须为 0")
+        if converged:
+            raise ValueError("未观测到错误时不应标记 converged=True")
+        derived_err_ratio = 0.0
+        err_rate_log = -20.0
+    else:
+        if not np.isfinite(errors_log):
+            raise ValueError("errors_log 必须是有限值或 -inf")
+        if not np.isfinite(err_ratio) or err_ratio < 0.0 or err_ratio > 1.0 + ERR_RATIO_REL_TOL:
+            raise ValueError("err_ratio 必须位于 [0, 1]")
+        log_ratio = errors_log - weights_log
+        if log_ratio > math.log1p(ERR_RATIO_REL_TOL):
+            raise ValueError("errors_log 对应的误差权重不能超过总权重")
+        derived_err_ratio = float(math.exp(log_ratio))
+        if not math.isclose(
+            err_ratio,
+            derived_err_ratio,
+            rel_tol=ERR_RATIO_REL_TOL,
+            abs_tol=ERR_RATIO_ABS_TOL,
+        ):
+            raise ValueError(
+                "err_ratio 与 errors_log/weights_log 推导出的误码率不一致"
+            )
+        err_rate_log = float(log_ratio)
+
+    return {
+        "errors_log": errors_log,
+        "weights_log": weights_log,
+        "err_ratio": derived_err_ratio,
+        "total_samples": float(rounded_samples),
+        "actual_std": actual_std,
+        "converged": converged,
+        "err_rate_log": err_rate_log,
+    }
 
 
 def _build_channel(repo_root: Path):
@@ -172,6 +260,7 @@ def evaluate(program_path: str, *, repo_root: Path | None = None):
         samples: list[float] = []
         stds: list[float] = []
         converged_flags: list[float] = []
+        repetition_diagnostics: list[dict[str, float | bool]] = []
         
         for rep in range(REPEATS):
             channel = _build_channel(repo_root)
@@ -199,32 +288,37 @@ def evaluate(program_path: str, *, repo_root: Path | None = None):
                 raise RuntimeError(f"simulate_variance_controlled 执行失败: {e}") from e
             dt = time.time() - t0
             
-            errors_log, weights_log, err_ratio, total_samples, actual_std, converged = _normalize_result(result)
-            err_rate_log = float(errors_log - weights_log)
-            
-            # Handle case when no errors found (errors_log = -inf)
-            if not np.isfinite(err_rate_log):
-                # Use a very small error rate estimate instead of -inf
-                # This allows evaluation to continue but will result in valid=0
-                err_rate_log = float('-20.0')  # log(2e-9), very small but finite
+            normalized = _normalize_result(result)
+            validated = _validate_result(normalized)
+            err_rate_log = float(validated["err_rate_log"])
             
             runtimes.append(float(dt))
             err_logs.append(err_rate_log)
-            ratios.append(err_ratio)
-            samples.append(total_samples)
-            stds.append(actual_std)
-            converged_flags.append(converged)
+            ratios.append(float(validated["err_ratio"]))
+            samples.append(float(validated["total_samples"]))
+            stds.append(float(validated["actual_std"]))
+            converged_flags.append(1.0 if bool(validated["converged"]) else 0.0)
+            repetition_diagnostics.append({
+                "repeat": rep,
+                "runtime_s": float(dt),
+                "err_ratio": float(validated["err_ratio"]),
+                "err_rate_log": err_rate_log,
+                "total_samples": float(validated["total_samples"]),
+                "actual_std": float(validated["actual_std"]),
+                "converged": bool(validated["converged"]),
+            })
         
         runtime_median = float(np.median(runtimes))
         err_log_median = float(np.median(err_logs))
         err_log_ratio = float(abs(err_log_median - R0_LOG_DEV))
+        actual_std_median = float(np.nanmedian(stds))
+        converged_rate = float(np.mean(converged_flags))
+        variance_ok = actual_std_median <= TARGET_STD + ERR_RATIO_ABS_TOL
+        convergence_ok = math.isclose(converged_rate, 1.0, abs_tol=ERR_RATIO_ABS_TOL)
         
-        valid = float(err_log_ratio < EPSILON)
+        valid = float(err_log_ratio < EPSILON and variance_ok and convergence_ok)
         raw_score = float(T0_DEV / (runtime_median * err_log_ratio + 1e-6))
-        if valid > 0:
-            score = raw_score
-        else:
-            score = min(raw_score * INVALID_SCORE_SCALE, INVALID_SCORE_CAP)
+        score = raw_score if valid > 0 else 0.0
         
         metrics.update({
             "combined_score": score,
@@ -235,8 +329,10 @@ def evaluate(program_path: str, *, repo_root: Path | None = None):
             "err_rate_log_median": err_log_median,
             "err_ratio_median": float(np.nanmedian(ratios)),
             "actual_samples_median": float(np.nanmedian(samples)),
-            "actual_std_median": float(np.nanmedian(stds)),
-            "converged_rate": float(np.mean(converged_flags)),
+            "actual_std_median": actual_std_median,
+            "converged_rate": converged_rate,
+            "variance_ok": 1.0 if variance_ok else 0.0,
+            "convergence_ok": 1.0 if convergence_ok else 0.0,
             "snr_db": SNR_DB,
         })
         artifacts["dev_constants"] = json.dumps({
@@ -249,6 +345,11 @@ def evaluate(program_path: str, *, repo_root: Path | None = None):
             "t0_dev": T0_DEV,
             "repeats": REPEATS,
         }, ensure_ascii=False, indent=2)
+        artifacts["replicate_diagnostics"] = json.dumps(
+            repetition_diagnostics,
+            ensure_ascii=False,
+            indent=2,
+        )
     except (AttributeError, TypeError, ValueError, RuntimeError, ImportError, ModuleNotFoundError, KeyError) as e:
         metrics["combined_score"] = 0.0
         metrics["valid"] = 0.0
@@ -285,4 +386,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

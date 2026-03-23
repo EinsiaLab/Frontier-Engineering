@@ -117,6 +117,8 @@ We adopt the standard GitHub collaboration flow:
 
 The table below lists the current coverage of domain tasks in the Benchmark. We welcome not only code contributions but also ideas for challenging new engineering problems from the community.
 
+Note: the current effective `v1` benchmark pool contains `50` tasks. `MuonTomography` remains listed below for completeness, but is temporarily excluded from the effective `v1` pool pending objective / evaluator redesign.
+
 <table>
   <thead>
     <tr>
@@ -145,8 +147,8 @@ The table below lists the current coverage of domain tasks in the Benchmark. We 
       <td>Completed</td>
       <td>@SeanDF333</td>
       <td>@ahydchh</td>
-      <td>Muon detector placement optimization under flux, budget, and excavation constraints</td>
-      <td>v1</td>
+      <td>Muon detector placement optimization under flux, budget, and excavation constraints; temporarily excluded from the effective v1 pool pending redesign</td>
+      <td></td>
     </tr>
     <tr>
       <td><code>ProtonTherapyPlanning</code></td>
@@ -785,4 +787,3 @@ Welcome to our developer community! Whether you want to discuss new engineering 
 * 🟢 **Feishu (Lark)**: [Click here to join our Feishu discussion group](https://applink.feishu.cn/client/chat/chatter/add_by_link?link_token=21ak5858-60ba-44fd-9085-01f165c8771c)
 
 * 🔜 **Discord**: [Click here to join our Discord community](https://discord.gg/hxeVhZNN)
-

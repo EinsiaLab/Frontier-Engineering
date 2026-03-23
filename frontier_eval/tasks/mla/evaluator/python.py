@@ -89,21 +89,71 @@ def _read_text(path: Path) -> str | None:
         return None
 
 
-def _write_mla_compat_runner(path: Path) -> None:
+def _write_spec_benchmark_file(path: Path) -> None:
+    """Match the public task statement's benchmark cases."""
+    path.write_text(
+        "\n".join(
+            [
+                "batchsize: 128; dim: 7168; dq: 1536; prefill: 512; seed: 2197",
+                "batchsize: 128; dim: 7168; dq: 1536; prefill: 2048; seed: 9817",
+                "batchsize: 128; dim: 7168; dq: 1536; prefill: 4096; seed: 9817",
+                "batchsize: 128; dim: 7168; dq: 1536; prefill: 6144; seed: 5291",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
+def _write_mla_eval_runner(path: Path, *, serial: bool = False) -> None:
     """
-    Write a wrapper that keeps evaluator compatibility with common MLA submission variants.
+    Write a wrapper that keeps evaluator compatibility with common MLA submission variants
+    while hardening the timing harness against object-reuse exploits.
 
     Why:
     - Some generated submissions keep type hints `input_t` / `output_t` but drop imports.
       Without postponed annotation evaluation this raises NameError at import time.
     - Some submissions call `cache.update(...)` / `cache.reset()`, while the official
       benchmark cache exposes `forward(...)` / `zero()`.
+    - The upstream benchmark warms the candidate and performs an untimed correctness call
+      before timed runs, then reuses the same `(config, x, kv_cache)` objects inside the
+      timing loop. That lets a submission shift model construction or per-object caches
+      outside the measured region. The wrapper below keeps the same CLI/logging surface
+      but patches the runtime so every timed run receives fresh objects and the first
+      measured call is also correctness-checked.
     """
-    path.write_text(
+    serial_patch = ""
+    if serial:
+        serial_patch = (
+            "import multiprocessing\n"
+            "\n"
+            "class _SerialPool:\n"
+            "    def __enter__(self):\n"
+            "        return self\n"
+            "    def __exit__(self, exc_type, exc_val, exc_tb):\n"
+            "        return False\n"
+            "    def apply(self, fn, args=(), kwds=None):\n"
+            "        kwds = {} if kwds is None else kwds\n"
+            "        return fn(*args, **kwds)\n"
+            "\n"
+            "class _Ctx:\n"
+            "    def Pool(self, *_args, **_kwargs):\n"
+            "        return _SerialPool()\n"
+            "\n"
+            "def _get_context(_method='spawn'):\n"
+            "    return _Ctx()\n"
+            "\n"
+            "multiprocessing.get_context = _get_context\n"
+            "\n"
+        )
+
+    runner_text = (
         "import builtins\n"
         "import sys\n"
+        "import time\n"
         "\n"
-        "# 1) Provide fallback symbols for runtime-evaluated type annotations.\n"
+        + serial_patch
+        + "# 1) Provide fallback symbols for runtime-evaluated type annotations.\n"
         "try:\n"
         "    from baseline import task as _task\n"
         "    builtins.input_t = getattr(_task, 'input_t', tuple)\n"
@@ -124,12 +174,51 @@ def _write_mla_compat_runner(path: Path) -> None:
         "except Exception:\n"
         "    pass\n"
         "\n"
+        "import torch\n"
         "import eval as mla_eval\n"
         "\n"
+        "def _hardened_warm_up(_test):\n"
+        "    # Do not pre-run the candidate outside the timed region.\n"
+        "    try:\n"
+        "        torch.cuda.synchronize()\n"
+        "    except Exception:\n"
+        "        pass\n"
+        "\n"
+        "def _hardened_benchmark(test, recheck, max_repeats, max_time_ns):\n"
+        "    durations = []\n"
+        "    with torch.no_grad():\n"
+        "        for i in range(max_repeats):\n"
+        "            config, data, kv_cache = mla_eval.generate_input(**test.args)\n"
+        "            should_recheck = bool(recheck) or i == 0\n"
+        "            config_copy = None\n"
+        "            kv_cache_copy = None\n"
+        "            if should_recheck:\n"
+        "                kv_cache_copy = mla_eval.copy_kv_cache(kv_cache, config.kv_cache_shape)\n"
+        "                config_copy = mla_eval.copy_config_weights(config)\n"
+        "            torch.cuda.synchronize()\n"
+        "            start = time.perf_counter_ns()\n"
+        "            output = mla_eval.custom_kernel((config, data, kv_cache))\n"
+        "            torch.cuda.synchronize()\n"
+        "            end = time.perf_counter_ns()\n"
+        "            if should_recheck:\n"
+        "                error = mla_eval.check_implementation((config_copy, data, kv_cache_copy), output)\n"
+        "                if error:\n"
+        "                    return error\n"
+        "            durations.append(end - start)\n"
+        "            del output\n"
+        "            if i > 1:\n"
+        "                stats = mla_eval.calculate_stats(durations)\n"
+        "                if stats.err / max(stats.mean, 1.0) < 0.01 or stats.mean * stats.runs > max_time_ns:\n"
+        "                    break\n"
+        "    return mla_eval.calculate_stats(durations)\n"
+        "\n"
+        "mla_eval.warm_up = _hardened_warm_up\n"
+        "mla_eval.benchmark = _hardened_benchmark\n"
+        "\n"
         "if __name__ == '__main__':\n"
-        "    sys.exit(mla_eval.main())\n",
-        encoding="utf-8",
+        "    sys.exit(mla_eval.main())\n"
     )
+    path.write_text(runner_text, encoding="utf-8")
 
 
 def evaluate(
@@ -280,11 +369,14 @@ def evaluate(
                 env.pop("POPCORN_FD", None)
 
         wrapper_path = (sandbox_verification / "_mla_eval_runner.py").resolve()
-        _write_mla_compat_runner(wrapper_path)
+        _write_mla_eval_runner(wrapper_path)
+        bench_path = (sandbox_verification / "_fe_mla_bench_spec.txt").resolve()
+        _write_spec_benchmark_file(bench_path)
 
-        cmd = [kernel_python, str(wrapper_path), "benchmark", "mla_bench.txt"]
-        artifacts["runner_mode"] = "compat_wrapper"
+        cmd = [kernel_python, str(wrapper_path), "benchmark", str(bench_path)]
+        artifacts["runner_mode"] = "compat_wrapper_hardened"
         artifacts["benchmark_cmd"] = " ".join(cmd)
+        artifacts["benchmark_spec_path"] = str(bench_path)
 
         try:
             proc = _run_with_log(cmd)
@@ -300,56 +392,9 @@ def evaluate(
 
         if proc.returncode != 0 and "PermissionError" in proc.stderr and "SemLock" in proc.stderr:
             wrapper_path = (sandbox_verification / "_serial_eval_runner.py").resolve()
-            wrapper_path.write_text(
-                "import multiprocessing\n"
-                "import builtins\n"
-                "import sys\n"
-                "\n"
-                "class _SerialPool:\n"
-                "    def __enter__(self):\n"
-                "        return self\n"
-                "    def __exit__(self, exc_type, exc_val, exc_tb):\n"
-                "        return False\n"
-                "    def apply(self, fn, args=(), kwds=None):\n"
-                "        kwds = {} if kwds is None else kwds\n"
-                "        return fn(*args, **kwds)\n"
-                "\n"
-                "class _Ctx:\n"
-                "    def Pool(self, *_args, **_kwargs):\n"
-                "        return _SerialPool()\n"
-                "\n"
-                "def _get_context(_method='spawn'):\n"
-                "    return _Ctx()\n"
-                "\n"
-                "multiprocessing.get_context = _get_context\n"
-                "\n"
-                "try:\n"
-                "    from baseline import task as _task\n"
-                "    builtins.input_t = getattr(_task, 'input_t', tuple)\n"
-                "    builtins.output_t = getattr(_task, 'output_t', tuple)\n"
-                "except Exception:\n"
-                "    builtins.input_t = tuple\n"
-                "    builtins.output_t = tuple\n"
-                "\n"
-                "try:\n"
-                "    from baseline import reference as _ref\n"
-                "    _kv_cls = getattr(_ref, 'KVCache', None)\n"
-                "    if _kv_cls is not None:\n"
-                "        if (not hasattr(_kv_cls, 'update')) and hasattr(_kv_cls, 'forward'):\n"
-                "            _kv_cls.update = _kv_cls.forward\n"
-                "        if (not hasattr(_kv_cls, 'reset')) and hasattr(_kv_cls, 'zero'):\n"
-                "            _kv_cls.reset = _kv_cls.zero\n"
-                "except Exception:\n"
-                "    pass\n"
-                "\n"
-                "import eval as mla_eval\n"
-                "\n"
-                "if __name__ == '__main__':\n"
-                "    sys.exit(mla_eval.main())\n",
-                encoding="utf-8",
-            )
-            cmd = [kernel_python, str(wrapper_path), "benchmark", "mla_bench.txt"]
-            artifacts["runner_mode"] = "serial_fallback"
+            _write_mla_eval_runner(wrapper_path, serial=True)
+            cmd = [kernel_python, str(wrapper_path), "benchmark", str(bench_path)]
+            artifacts["runner_mode"] = "serial_fallback_hardened"
             artifacts["benchmark_cmd"] = " ".join(cmd)
             artifacts["fallback_reason"] = "PermissionError SemLock"
             try:

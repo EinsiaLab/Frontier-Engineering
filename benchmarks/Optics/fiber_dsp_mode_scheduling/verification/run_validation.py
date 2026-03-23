@@ -101,20 +101,31 @@ def build_scenario(seed=7):
     }
 
 
-def check_valid_output(result, n_users):
+def check_valid_output(result, n_users, max_dbp_users=None):
     if not isinstance(result, dict) or "mode" not in result:
         return False, "Output must be {'mode': ...}"
-    mode = np.asarray(result["mode"])
+    try:
+        mode = np.asarray(result["mode"], dtype=float)
+    except Exception as exc:
+        return False, f"mode 无法转换为数值数组: {exc}"
     if mode.shape != (n_users,):
         return False, f"mode shape must be {(n_users,)}"
+    if np.any(~np.isfinite(mode)):
+        return False, "mode must be finite"
+    if np.any(mode != np.round(mode)):
+        return False, "mode must contain only integer 0/1 values"
+    mode = mode.astype(int)
     if np.any(~np.isin(mode, np.array([0, 1]))):
         return False, "mode must contain only 0/1"
+    if max_dbp_users is not None and int(np.sum(mode)) > int(max_dbp_users):
+        return False, f"DBP users exceed cap: {int(np.sum(mode))} > {int(max_dbp_users)}"
     return True, "ok"
 
 
 def evaluate(result, scenario):
     mode = np.asarray(result["mode"], dtype=int)
     feat = scenario["user_features"]
+    max_dbp_users = scenario.get("max_dbp_users")
 
     est = np.asarray(feat["est_snr_db"], dtype=float)
     gain = np.asarray(feat["dbp_gain_db"], dtype=float)
@@ -142,20 +153,44 @@ def evaluate(result, scenario):
     ber_pass = float(np.mean(ber <= target_ber))
     weighted_utility = float(np.sum(utility) / np.sum(w))
     dbp_ratio = float(np.mean(mode))
+    dbp_users = int(np.sum(mode))
 
     latency_over = max(0.0, (latency - budget) / max(budget, 1e-12))
+    dbp_cap_ok = max_dbp_users is None or dbp_users <= int(max_dbp_users)
+    latency_ok = latency <= budget * 1.001
+    ber_ok = ber_pass >= 0.18
 
-    score = 0.65 * weighted_utility + 0.30 * ber_pass + 0.05 * (1.0 - dbp_ratio) - 0.70 * latency_over
-    is_valid = (latency <= budget * 1.001) and (ber_pass >= 0.18)
+    raw_score = (
+        0.65 * weighted_utility
+        + 0.30 * ber_pass
+        + 0.05 * (1.0 - dbp_ratio)
+        - 0.70 * latency_over
+    )
+    is_valid = latency_ok and ber_ok and dbp_cap_ok
+    constraint_violations = []
+    if not latency_ok:
+        constraint_violations.append("latency_budget")
+    if not ber_ok:
+        constraint_violations.append("min_ber_pass_ratio")
+    if not dbp_cap_ok:
+        constraint_violations.append("max_dbp_users")
+    score = float(raw_score if is_valid else 0.0)
 
     return {
         "is_valid": bool(is_valid),
-        "score": float(score),
+        "score": score,
+        "raw_score": float(raw_score),
         "weighted_utility": weighted_utility,
         "ber_pass_ratio": ber_pass,
         "dbp_ratio": dbp_ratio,
+        "dbp_users": dbp_users,
+        "max_dbp_users": None if max_dbp_users is None else int(max_dbp_users),
+        "dbp_cap_ok": bool(dbp_cap_ok),
         "latency_s": latency,
         "latency_budget_s": budget,
+        "latency_ok": bool(latency_ok),
+        "ber_ok": bool(ber_ok),
+        "constraint_violations": constraint_violations,
         "mode": mode.tolist(),
         "effective_snr_db": eff_snr.tolist(),
         "ber": ber.tolist(),
@@ -231,7 +266,11 @@ def main():
     fn = load_solver(Path(args.solver))
     result = fn(**scenario)
 
-    ok, msg = check_valid_output(result, n_users=len(scenario["user_features"]["est_snr_db"]))
+    ok, msg = check_valid_output(
+        result,
+        n_users=len(scenario["user_features"]["est_snr_db"]),
+        max_dbp_users=scenario.get("max_dbp_users"),
+    )
     if not ok:
         summary = {"is_valid": False, "error": msg}
         print(json.dumps(summary, indent=2))
