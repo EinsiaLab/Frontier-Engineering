@@ -1,1 +1,1 @@
-{python} "{repo_root_raw}/frontier_eval/tasks/unified/evaluator/legacy_runner.py" --callable frontier_eval.tasks.topology_optimization.evaluator.evaluate:evaluate --candidate {candidate} --repo-root {repo_root} --metrics-out metrics.json --artifacts-out artifacts.json
+{python} frontier_eval/run_eval.py --candidate {candidate} --metrics-out metrics.json --artifacts-out artifacts.json

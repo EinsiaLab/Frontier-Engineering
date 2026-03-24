@@ -1,4 +1,5 @@
 README.md
+README_zh-CN.md
 TASK.md
 TASK_zh-CN.md
 baseline/structural_optimizer.py
