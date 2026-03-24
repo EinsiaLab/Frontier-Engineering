@@ -1,0 +1,81 @@
+version: 1
+
+# Focused revalidation batch for tasks with anomaly follow-up fixes or
+# explicitly requested cryptographic rechecks.
+
+tasks:
+  - name: unified
+    label: QuantumComputing/task_01_routing_qftentangled
+    overrides:
+      - task.benchmark=QuantumComputing/task_01_routing_qftentangled
+      - task.runtime.conda_env=mqt
+
+  - name: unified
+    label: QuantumComputing/task_02_clifford_t_synthesis
+    overrides:
+      - task.benchmark=QuantumComputing/task_02_clifford_t_synthesis
+      - task.runtime.conda_env=mqt
+
+  - name: unified
+    label: QuantumComputing/task_03_cross_target_qaoa
+    overrides:
+      - task.benchmark=QuantumComputing/task_03_cross_target_qaoa
+      - task.runtime.conda_env=mqt
+
+  - name: unified
+    label: Cryptographic/AES-128
+    overrides:
+      - task.benchmark=Cryptographic/AES-128
+
+  - name: unified
+    label: Cryptographic/SHA-256
+    overrides:
+      - task.benchmark=Cryptographic/SHA-256
+
+  - name: unified
+    label: Cryptographic/SHA3-256
+    overrides:
+      - task.benchmark=Cryptographic/SHA3-256
+
+  - name: unified
+    label: CommunicationEngineering/LDPCErrorFloor
+    overrides:
+      - task.benchmark=CommunicationEngineering/LDPCErrorFloor
+
+  - name: unified
+    label: CommunicationEngineering/PMDSimulation
+    overrides:
+      - task.benchmark=CommunicationEngineering/PMDSimulation
+
+  - name: unified
+    label: CommunicationEngineering/RayleighFadingBER
+    overrides:
+      - task.benchmark=CommunicationEngineering/RayleighFadingBER
+
+algorithms:
+  - name: openevolve
+    overrides:
+      - algorithm.iterations=100
+      - algorithm.oe.evaluator.timeout=300
+
+llms:
+  - name: ark__seed-2.0-pro-260215
+    api_base: ${oc.env:ARK_API_BASE,http://ark-cn-beijing.bytedance.net/api/v3}
+    model: ${oc.env:ARK_MODEL,ep-20260224151831-9z6zv}
+    api_key_env: API_KEY
+    env:
+      ALL_PROXY: ${oc.env:ALL_PROXY,socks5://127.0.0.1:50003}
+      HTTP_PROXY: ${oc.env:HTTP_PROXY,socks5://127.0.0.1:50003}
+      HTTPS_PROXY: ${oc.env:HTTPS_PROXY,socks5://127.0.0.1:50003}
+
+llm_config: openai_compatible
+
+common_overrides:
+  - llm.temperature=0.7
+  - llm.timeout=60
+
+run:
+  name: v1_cpu_openevolve_p8_i100_followup_seed-2.0-pro
+  base_dir: runs/batch
+  max_parallel: 8
+  fail_fast: false

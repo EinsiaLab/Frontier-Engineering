@@ -5,6 +5,7 @@ import os
 import re
 import shutil
 import subprocess
+import sys
 import tempfile
 import time
 from pathlib import Path
@@ -51,6 +52,95 @@ def _read_text(path: Path) -> str | None:
         return path.read_text(encoding="utf-8", errors="replace")
     except Exception:
         return None
+
+
+def _openssl_header_present(include_dir: Path) -> bool:
+    return any(
+        (include_dir / header_rel).is_file()
+        for header_rel in ("openssl/evp.h", "openssl/sha.h", "openssl/rand.h")
+    )
+
+
+def _libcrypto_present(lib_dir: Path) -> bool:
+    return any(
+        (lib_dir / lib_name).exists()
+        for lib_name in ("libcrypto.so", "libcrypto.so.3", "libcrypto.dylib", "libcrypto.a", "libcrypto.lib")
+    )
+
+
+def _discover_openssl_paths() -> tuple[list[str], list[str], dict[str, str]]:
+    prefix_values = [
+        os.environ.get("CONDA_PREFIX"),
+        sys.prefix,
+        "/usr",
+        "/usr/local",
+        "/opt/homebrew",
+        "/opt/local",
+    ]
+
+    prefix_candidates: list[Path] = []
+    include_candidates: list[Path] = []
+    lib_candidates: list[Path] = []
+    seen_prefixes: set[str] = set()
+
+    def _append_unique(target: list[Path], raw_path: Path) -> None:
+        try:
+            path = raw_path.expanduser().resolve()
+        except Exception:
+            path = raw_path.expanduser()
+        if not path.is_dir() or path in target:
+            return
+        target.append(path)
+
+    for raw_prefix in prefix_values:
+        if not raw_prefix:
+            continue
+        try:
+            prefix = Path(raw_prefix).expanduser().resolve()
+        except Exception:
+            prefix = Path(raw_prefix).expanduser()
+        key = str(prefix)
+        if key in seen_prefixes:
+            continue
+        seen_prefixes.add(key)
+        prefix_candidates.append(prefix)
+        _append_unique(include_candidates, prefix / "include")
+        _append_unique(lib_candidates, prefix / "lib")
+        _append_unique(lib_candidates, prefix / "lib64")
+
+    for extra_include in ("/usr/include", "/usr/local/include"):
+        _append_unique(include_candidates, Path(extra_include))
+    for extra_lib in (
+        "/usr/lib",
+        "/usr/lib64",
+        "/usr/lib/x86_64-linux-gnu",
+        "/usr/local/lib",
+        "/usr/local/lib64",
+        "/lib",
+        "/lib64",
+        "/lib/x86_64-linux-gnu",
+    ):
+        _append_unique(lib_candidates, Path(extra_lib))
+
+    include_dir = next((path for path in include_candidates if _openssl_header_present(path)), None)
+    lib_dir = next((path for path in lib_candidates if _libcrypto_present(path)), None)
+
+    compile_flags: list[str] = []
+    link_flags: list[str] = []
+    debug_artifacts: dict[str, str] = {
+        "openssl_prefix_candidates": "\n".join(str(path) for path in prefix_candidates),
+        "openssl_include_candidates": "\n".join(str(path) for path in include_candidates),
+        "openssl_lib_candidates": "\n".join(str(path) for path in lib_candidates),
+    }
+
+    if include_dir is not None:
+        compile_flags.extend(["-isystem", str(include_dir)])
+        debug_artifacts["openssl_include_dir"] = str(include_dir)
+    if lib_dir is not None:
+        link_flags.extend(["-L", str(lib_dir), f"-Wl,-rpath,{lib_dir}"])
+        debug_artifacts["openssl_lib_dir"] = str(lib_dir)
+
+    return compile_flags, link_flags, debug_artifacts
 
 
 def _remaining_timeout(deadline_s: float) -> float:
@@ -280,13 +370,28 @@ def evaluate(
             metrics["runtime_s"] = float(time.time() - start)
             return _wrap(metrics, artifacts)
 
+        openssl_compile_flags, openssl_link_flags, openssl_debug = _discover_openssl_paths()
+        artifacts.update(openssl_debug)
+        if not openssl_compile_flags:
+            artifacts["openssl_resolution_warning"] = (
+                "No explicit OpenSSL include directory detected; falling back to compiler defaults"
+            )
+        if not openssl_link_flags:
+            artifacts["openssl_resolution_warning"] = (
+                artifacts.get("openssl_resolution_warning", "")
+                + ("\n" if artifacts.get("openssl_resolution_warning") else "")
+                + "No explicit libcrypto directory detected; falling back to linker defaults"
+            )
+
         compile_validate_cmd = [
             "g++",
             "-std=c++17",
             "-O3",
+            *openssl_compile_flags,
             str(sandbox_verification / "validate.cpp"),
             "-o",
             str(validate_binary),
+            *openssl_link_flags,
             "-lcrypto",
         ]
         artifacts["compile_validate_cmd"] = " ".join(compile_validate_cmd)

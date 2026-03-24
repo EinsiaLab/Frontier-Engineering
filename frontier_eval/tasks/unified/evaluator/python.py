@@ -14,6 +14,8 @@ from typing import Any
 
 from ..spec import UnifiedTaskSpec
 
+INVALID_COMBINED_SCORE = -1e18
+
 
 def _tail(text: str, limit: int = 8000) -> str:
     if len(text) <= limit:
@@ -376,11 +378,12 @@ def evaluate(program_path: str, *, spec: UnifiedTaskSpec) -> Any:
     program_path_p = Path(program_path).expanduser().resolve()
 
     metrics: dict[str, float] = {
-        "combined_score": 0.0,
+        "combined_score": INVALID_COMBINED_SCORE,
         "valid": 0.0,
         "timeout": 0.0,
         "runtime_s": 0.0,
     }
+    explicit_metric_keys: set[str] = set()
     artifacts: dict[str, Any] = {
         "benchmark_id": spec.benchmark_id,
         "benchmark_dir": str(spec.benchmark_dir),
@@ -538,6 +541,7 @@ def evaluate(program_path: str, *, spec: UnifiedTaskSpec) -> Any:
                 loaded_metrics = True
                 numeric_metrics, non_numeric_metrics = _extract_numeric_metrics(metrics_payload)
                 metrics.update(numeric_metrics)
+                explicit_metric_keys.update(numeric_metrics)
                 if non_numeric_metrics:
                     artifacts["metrics_non_numeric"] = json.dumps(
                         non_numeric_metrics,
@@ -557,6 +561,7 @@ def evaluate(program_path: str, *, spec: UnifiedTaskSpec) -> Any:
                 if numeric_metrics:
                     loaded_metrics = True
                     metrics.update(numeric_metrics)
+                    explicit_metric_keys.update(numeric_metrics)
                 if non_numeric_metrics:
                     artifacts["stdout_json_non_numeric"] = json.dumps(
                         non_numeric_metrics,
@@ -589,14 +594,16 @@ def evaluate(program_path: str, *, spec: UnifiedTaskSpec) -> Any:
             artifacts=artifacts,
         )
 
-        if "valid" not in metrics:
+        if "valid" not in explicit_metric_keys:
             metrics["valid"] = 1.0 if proc.returncode == 0 else 0.0
-        if "combined_score" not in metrics:
-            metrics["combined_score"] = 1.0 if metrics.get("valid", 0.0) > 0 else 0.0
+        if "combined_score" not in explicit_metric_keys:
+            metrics["combined_score"] = (
+                1.0 if metrics.get("valid", 0.0) > 0 else INVALID_COMBINED_SCORE
+            )
 
         if proc.returncode != 0:
             metrics["valid"] = 0.0
-            metrics["combined_score"] = 0.0
+            metrics["combined_score"] = INVALID_COMBINED_SCORE
             if "error_message" not in artifacts:
                 artifacts["error_message"] = (
                     f"evaluation command failed with return code {proc.returncode}"
@@ -607,7 +614,7 @@ def evaluate(program_path: str, *, spec: UnifiedTaskSpec) -> Any:
             if violations:
                 metrics["readonly_violation"] = 1.0
                 metrics["valid"] = 0.0
-                metrics["combined_score"] = 0.0
+                metrics["combined_score"] = INVALID_COMBINED_SCORE
                 artifacts["readonly_violations"] = "\n".join(violations[:200])
                 if "error_message" not in artifacts:
                     artifacts["error_message"] = "readonly files modified by evaluation run"

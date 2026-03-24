@@ -9,6 +9,8 @@ import traceback
 from pathlib import Path
 from typing import Any
 
+INVALID_COMBINED_SCORE = -1e18
+
 
 def _write_json(path: Path, obj: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -102,7 +104,7 @@ def main(argv: list[str]) -> int:
     artifacts_out = Path(args.artifacts_out).expanduser().resolve()
 
     metrics: dict[str, Any] = {
-        "combined_score": 0.0,
+        "combined_score": INVALID_COMBINED_SCORE,
         "valid": 0.0,
     }
     artifacts: dict[str, Any] = {
@@ -133,7 +135,7 @@ def main(argv: list[str]) -> int:
         artifacts.update(evaluator_artifacts)
     except Exception as exc:
         metrics = {
-            "combined_score": 0.0,
+            "combined_score": INVALID_COMBINED_SCORE,
             "valid": 0.0,
         }
         artifacts["error_message"] = str(exc)

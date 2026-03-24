@@ -1,0 +1,38 @@
+version: 1
+
+# Dedicated Docker batch for EngDesign.
+#
+# Required before launch:
+#   export ENGDESIGN_EVAL_MODE=docker
+#   export ENGDESIGN_DOCKER_IMAGE=engdesign-sim
+#
+# Recommended launch:
+#   conda run -n frontier-eval-2 python -m frontier_eval.batch \
+#     --matrix frontier_eval/conf/batch/v1_engdesign_openevolve_qwen3codernext_100.yaml
+
+tasks:
+  - engdesign
+
+algorithms:
+  - name: openevolve
+    overrides:
+      - algorithm.iterations=100
+      - algorithm.oe.evaluator.timeout=600
+
+llms:
+  - name: openai__qwen3_coder_next
+    api_base: ${oc.env:OPENAI_API_BASE,https://api.openai.com/v1}
+    model: qwen3-coder-next
+    api_key_env: OPENAI_API_KEY
+
+llm_config: openai_compatible
+
+common_overrides:
+  - llm.temperature=0.7
+  - llm.timeout=60
+
+run:
+  name: v1_engdesign_openevolve_qwen3codernext_100
+  base_dir: runs/batch
+  max_parallel: 1
+  fail_fast: false

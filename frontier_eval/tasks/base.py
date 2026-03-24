@@ -2,9 +2,14 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from omegaconf import DictConfig
+if TYPE_CHECKING:
+    from omegaconf import DictConfig
+else:
+    # Task subclasses only need this for static typing; specialized eval envs
+    # should not have to install Hydra/OmegaConf just to import the base class.
+    DictConfig = Any
 
 
 class Task(ABC):
