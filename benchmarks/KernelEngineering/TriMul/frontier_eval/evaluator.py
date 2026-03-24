@@ -232,7 +232,7 @@ def evaluate(
                 "    sys.exit(tri_eval.main())\n",
                 encoding="utf-8",
             )
-            cmd = [kernel_python, str(wrapper_path), "benchmark", "tri_bench_24g.txt"]
+            cmd = [kernel_python, str(wrapper_path), "benchmark", "tri_bench.txt"]
             artifacts["runner_mode"] = "serial_fallback"
             artifacts["benchmark_cmd"] = " ".join(cmd)
             artifacts["fallback_reason"] = "PermissionError SemLock"

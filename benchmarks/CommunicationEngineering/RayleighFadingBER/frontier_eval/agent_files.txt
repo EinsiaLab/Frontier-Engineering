@@ -4,5 +4,5 @@ Task.md
 Task_zh-CN.md
 runtime/
 verification/evaluator.py
-baseline/solution.py
+scripts/init.py
 frontier_eval/constraints.txt
