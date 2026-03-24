@@ -1,11 +1,5 @@
 function aerodynamics_check_octave_full()
 % Octave-compatible version of aerodynamics_check.m
-pkg load signal;
-
-clc
-clear
-close all
-warning off
 opt=odeset('RelTol', 1e-12, 'AbsTol', 1e-12);
 if exist('outputlog.txt', 'file')
    delete('outputlog.txt');
@@ -320,10 +314,8 @@ for i=1:length(C0)
            end
            % Octave-compatible findpeaks for negative values
            if  event3==4
-               % For Octave: find peaks in -d_r_earth (valleys in d_r_earth)
-               % a contains peaks of (-d_r_earth), which are valleys of d_r_earth
-               % Logic must be IDENTICAL to Matlab version
-               [a,b] = findpeaks(-d_r_earth, "DoubleSided");
+               % Avoid depending on the optional `signal` package in unified runs.
+               a = local_maxima(-d_r_earth);
                if ~isempty(a)
                    if length(a)==1
                        if min(-a)< -1e-6
@@ -484,4 +476,20 @@ function ds=Dynamic_CRTBP(t,s,mu)
    ds(1:2)=s(3:4);
    ds(3)=2*dy+x-(1-mu)*(x+mu)/norm(r1)^3-mu*(x-1+mu)/norm(r2)^3;
    ds(4)=-2*dx+y-(1-mu)*y/norm(r1)^3-mu*y/norm(r2)^3;
+end
+
+function peaks = local_maxima(values)
+peaks = [];
+n = length(values);
+if n < 3
+   return;
+end
+for idx = 2:(n-1)
+   left = values(idx-1);
+   center = values(idx);
+   right = values(idx+1);
+   if (center >= left && center > right) || (center > left && center >= right)
+      peaks(end+1,1) = center;
+   end
+end
 end

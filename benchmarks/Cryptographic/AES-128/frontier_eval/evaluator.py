@@ -23,8 +23,33 @@ def _flag_from_env(name: str) -> bool:
     return raw in {"1", "true", "yes", "on"}
 
 
-def evaluate(program_path: str, *, repo_root: Path | None = None) -> Any:
+def _resolve_benchmark_name() -> str:
+    env_candidates = (
+        os.environ.get("FRONTIER_EVAL_UNIFIED_SOURCE_BENCHMARK_DIR", ""),
+        os.environ.get("FRONTIER_EVAL_UNIFIED_BENCHMARK_DIR", ""),
+    )
+    for raw in env_candidates:
+        text = str(raw or "").strip()
+        if not text:
+            continue
+        benchmark_name = Path(text).expanduser().resolve().name
+        if benchmark_name in _SPEC_BY_BENCHMARK:
+            return benchmark_name
+
     benchmark_name = Path(__file__).resolve().parents[1].name
+    if benchmark_name in _SPEC_BY_BENCHMARK:
+        return benchmark_name
+
+    raise KeyError(
+        "Unable to resolve cryptographic benchmark name from "
+        f"FRONTIER_EVAL_UNIFIED_SOURCE_BENCHMARK_DIR={env_candidates[0]!r}, "
+        f"FRONTIER_EVAL_UNIFIED_BENCHMARK_DIR={env_candidates[1]!r}, "
+        f"local_path={Path(__file__).resolve()}"
+    )
+
+
+def evaluate(program_path: str, *, repo_root: Path | None = None) -> Any:
+    benchmark_name = _resolve_benchmark_name()
     spec = _SPEC_BY_BENCHMARK[benchmark_name]
     return _evaluate(
         program_path,

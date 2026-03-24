@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import re
+import shlex
 import shutil
 import subprocess
 import sys
@@ -41,6 +42,72 @@ def _truncate_middle(text: str, limit: int = 200_000) -> str:
     keep = max(0, (limit - 128) // 2)
     omitted = len(text) - (2 * keep)
     return text[:keep] + f"\n\n[... truncated {omitted} chars ...]\n\n" + text[-keep:]
+
+
+def _resolve_octave_executable() -> str | None:
+    candidate_paths: list[Path] = []
+    seen: set[str] = set()
+
+    for env_name in (
+        "FRONTIER_EVAL_UNIFIED_OCTAVE_EXECUTABLE",
+        "FRONTIER_EVAL_UNIFIED_OCTAVE",
+        "OCTAVE",
+    ):
+        raw = str(os.environ.get(env_name, "") or "").strip()
+        if raw:
+            candidate_paths.append(Path(raw).expanduser())
+
+    for prefix_raw in (os.environ.get("CONDA_PREFIX", ""), sys.prefix):
+        prefix = str(prefix_raw or "").strip()
+        if not prefix:
+            continue
+        prefix_path = Path(prefix).expanduser()
+        candidate_paths.append(prefix_path / "bin" / "octave-cli")
+        candidate_paths.append(prefix_path / "bin" / "octave")
+
+    for name in ("octave-cli", "octave"):
+        resolved = shutil.which(name)
+        if resolved:
+            candidate_paths.append(Path(resolved).expanduser())
+
+    for candidate in candidate_paths:
+        path = candidate.expanduser()
+        if not path.is_absolute():
+            path = path.resolve()
+        key = os.path.realpath(path)
+        if key in seen:
+            continue
+        seen.add(key)
+        if path.is_file() and os.access(path, os.X_OK):
+            return str(path)
+    return None
+
+
+def _octave_support_roots() -> list[Path]:
+    roots: list[Path] = []
+    seen: set[str] = set()
+    prefix_candidates = (
+        os.environ.get("OCTAVE_HOME", ""),
+        os.environ.get("CONDA_PREFIX", ""),
+        sys.prefix,
+    )
+    for raw_prefix in prefix_candidates:
+        prefix = str(raw_prefix or "").strip()
+        if not prefix:
+            continue
+        prefix_path = Path(prefix).expanduser()
+        for candidate in sorted((prefix_path / "share" / "octave").glob("*/m")):
+            key = candidate.as_posix()
+            if key in seen or not candidate.is_dir():
+                continue
+            seen.add(key)
+            roots.append(candidate)
+        site_m = prefix_path / "share" / "octave" / "site" / "m"
+        key = site_m.as_posix()
+        if key not in seen and site_m.is_dir():
+            seen.add(key)
+            roots.append(site_m)
+    return roots
 
 
 def evaluate(program_path: str, *, repo_root: Path | None = None):
@@ -111,14 +178,27 @@ def evaluate(program_path: str, *, repo_root: Path | None = None):
             metrics["runtime_s"] = float(time.time() - start)
             return _wrap(metrics, artifacts)
 
-        octave_expr = (
-            f"addpath('{eval_dir.as_posix()}'); "
-            "aerodynamics_check_octave_full; "
-        )
+        octave_prelude = []
+        for root in _octave_support_roots():
+            octave_prelude.append(f"addpath(genpath('{root.as_posix()}')); ")
+        octave_prelude.append(f"addpath('{eval_dir.as_posix()}'); ")
+        octave_expr = "".join(octave_prelude) + "aerodynamics_check_octave_full; "
+        octave_executable = _resolve_octave_executable()
+        if not octave_executable:
+            artifacts["error_message"] = "octave executable not found"
+            metrics["runtime_s"] = float(time.time() - start)
+            return _wrap(metrics, artifacts)
+
+        octave_cmd = [octave_executable]
+        if not Path(octave_executable).name.startswith("octave-cli"):
+            octave_cmd.append("--no-gui")
+        octave_cmd.extend(["--quiet", "--eval", octave_expr])
+        artifacts["octave_executable"] = octave_executable
+        artifacts["octave_command"] = " ".join(shlex.quote(part) for part in octave_cmd)
 
         try:
             proc2 = subprocess.run(
-                ["octave", "--no-gui", "--quiet", "--eval", octave_expr],
+                ["bash", "-lc", artifacts["octave_command"]],
                 cwd=str(work_dir),
                 capture_output=True,
                 text=True,
