@@ -21,11 +21,16 @@ Optional arguments:
 - `--json-out <path>`: save the evaluation report as JSON.
 
 ## File Structure
-- `baseline/solve.py`: the only file intended for agent evolve.
-- `baseline/structural_optimizer.py`: current rule-based baseline optimizer implementation.
+- `baseline/solve.py`: the evolve entrypoint; current baseline combines local rewrites with a high-effort `clifford+t` transpilation pass.
+- `baseline/structural_optimizer.py`: local rewrite helper used before and after transpilation.
 - `verification/evaluate.py`: single evaluation entrypoint; includes candidate and `opt0..opt3` reference comparison.
 - `verification/utils.py`: task-local helper functions.
 - `tests/case_*.json`: differentiated test cases.
 - `TASK.md`: task details in English.
 - `TASK_zh-CN.md`: task details in Chinese.
 - `runs/`: generated artifacts for each evaluation run.
+
+## Current Baseline
+- First apply `optimize_by_local_rewrite(..., max_rounds=20)`.
+- Then transpile aggressively at `optimization_level=3` with an explicit `clifford+t` basis.
+- Finally run another local rewrite pass on the transpiled circuit.

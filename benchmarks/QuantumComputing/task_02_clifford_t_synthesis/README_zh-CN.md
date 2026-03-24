@@ -21,11 +21,16 @@ python verification/evaluate.py
 - `--json-out <path>`：保存 JSON 评测报告。
 
 ## 文件结构
-- `baseline/solve.py`：agent evolve 主要修改入口。
-- `baseline/structural_optimizer.py`：当前规则重写基线实现。
+- `baseline/solve.py`：agent evolve 主要修改入口；当前 baseline 将 local rewrite 与高强度 `clifford+t` transpile 结合起来。
+- `baseline/structural_optimizer.py`：在 transpile 前后都会复用的 local-rewrite 辅助实现。
 - `verification/evaluate.py`：单一评测入口；同时输出 candidate 与 `opt0..opt3` 对比。
 - `verification/utils.py`：本题公共工具函数。
 - `tests/case_*.json`：多个有差异的测试样例。
 - `TASK.md`：英文任务说明。
 - `TASK_zh-CN.md`：中文任务说明。
 - `runs/`：每次评测生成的产物目录。
+
+## 当前 Baseline 策略
+- 先执行一次 `optimize_by_local_rewrite(..., max_rounds=20)`。
+- 再在显式 `clifford+t` basis 下做 `optimization_level=3` 的 transpile。
+- 最后对 transpile 后的电路再做一轮 local rewrite。
