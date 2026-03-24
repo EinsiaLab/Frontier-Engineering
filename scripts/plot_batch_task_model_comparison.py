@@ -37,6 +37,12 @@ def _parse_args() -> argparse.Namespace:
         help="Batch run root directory.",
     )
     parser.add_argument(
+        "--sub-dir",
+        type=str,
+        default="init",
+        help="Batch run sub directory.",
+    )
+    parser.add_argument(
         "--output-dir",
         type=Path,
         default=Path("runs/batch_analysis/task_model_plots"),
@@ -638,7 +644,7 @@ def _plot_task(task_name: str, runs, output_dir: Path, *, mode: str, timeline: s
 def main() -> int:
     args = _parse_args()
     mode = _normalize_mode(args.mode)
-    runs = dedupe_latest_runs(scan_batch_task_runs(args.batch_dir))
+    runs = dedupe_latest_runs(scan_batch_task_runs(args.batch_dir / args.sub_dir))
     grouped: dict[str, list] = {}
     for run in runs:
         if not _matches_filters(run.task_name, run.model_name, args.task, args.model):
@@ -657,7 +663,7 @@ def main() -> int:
             out_path, series = _plot_task(
                 task_name,
                 grouped[task_name],
-                args.output_dir,
+                args.output_dir / args.sub_dir,
                 mode=mode,
                 timeline=args.timeline,
             )
@@ -677,14 +683,14 @@ def main() -> int:
 
     page_count = _write_overview_pages(
         overview_panels,
-        args.overview_dir,
+        args.overview_dir / args.sub_dir,
         mode=mode,
         timeline=args.timeline,
         page_size=args.page_size,
     )
     print(
-        f"Generated {generated} plot(s) in {args.output_dir}; "
-        f"generated {page_count} overview page(s) in {args.overview_dir}; "
+        f"Generated {generated} plot(s) in {args.output_dir / args.sub_dir}; "
+        f"generated {page_count} overview page(s) in {args.overview_dir / args.sub_dir}; "
         f"skipped {skipped} task(s)"
     )
     return 0
