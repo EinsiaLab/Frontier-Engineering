@@ -256,7 +256,7 @@ English | [简体中文](README_zh-CN.md)
       <td>@WayneJin0918</td>
       <td>@ahydchh</td>
       <td>使用重要性采样估计LDPC码错误地板，针对trapping sets</td>
-      <td>v1</td>
+      <td></td>
     </tr>
     <tr>
       <td><code>PMDSimulation</code></td>
@@ -264,7 +264,7 @@ English | [简体中文](README_zh-CN.md)
       <td>@WayneJin0918</td>
       <td>@ahydchh</td>
       <td>极化模色散（PMD）仿真</td>
-      <td>v1</td>
+      <td></td>
     </tr>
     <tr>
       <td><code>RayleighFadingBER</code></td>
@@ -272,7 +272,7 @@ English | [简体中文](README_zh-CN.md)
       <td>@WayneJin0918</td>
       <td>@ahydchh</td>
       <td>瑞利衰落信道误码率分析，使用重要性采样模拟深衰落事件</td>
-      <td>v1</td>
+      <td></td>
     </tr>
     <tr>
       <td rowspan="2"><b>EnergyStorage</b></td>

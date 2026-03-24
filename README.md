@@ -265,7 +265,7 @@ Note: the current effective `v1` benchmark pool contains `50` tasks. `MuonTomogr
       <td>@WayneJin0918</td>
       <td>@ahydchh</td>
       <td>LDPC code error floor estimation using importance sampling for trapping sets</td>
-      <td>v1</td>
+      <td></td>
     </tr>
     <tr>
       <td><code>PMDSimulation</code></td>
@@ -273,7 +273,7 @@ Note: the current effective `v1` benchmark pool contains `50` tasks. `MuonTomogr
       <td>@WayneJin0918</td>
       <td>@ahydchh</td>
       <td>Polarization Mode Dispersion simulation with importance sampling for rare outage events</td>
-      <td>v1</td>
+      <td></td>
     </tr>
     <tr>
       <td><code>RayleighFadingBER</code></td>
@@ -281,7 +281,7 @@ Note: the current effective `v1` benchmark pool contains `50` tasks. `MuonTomogr
       <td>@WayneJin0918</td>
       <td>@ahydchh</td>
       <td>BER analysis under Rayleigh fading with importance sampling for deep fade events</td>
-      <td>v1</td>
+      <td></td>
     </tr>
     <tr>
       <td rowspan="2"><b>EnergyStorage</b></td>
