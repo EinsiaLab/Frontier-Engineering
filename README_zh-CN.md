@@ -122,7 +122,7 @@ English | [简体中文](README_zh-CN.md)
 
 下表列出了当前 Benchmark 各领域任务的覆盖情况。我们不仅欢迎代码贡献，也欢迎社区提出有挑战性的新工程问题构想。
 
-说明：当前有效的 `v1` benchmark 任务池为 `50` 个题。为保留任务目录完整性，`MuonTomography` 仍保留在下表中，但目前暂不计入有效 `v1` 任务池，后续需先完成目标函数 / evaluator 对齐后的 benchmark 重构。
+说明：当前有效的 `v1` benchmark 任务池为 `47` 个题。为保留任务目录完整性，`MuonTomography` 仍保留在下表中，但目前暂不计入有效 `v1` 任务池，后续需先完成目标函数 / evaluator 对齐后的 benchmark 重构。
 
 
 <table>

@@ -132,7 +132,7 @@ We adopt the standard GitHub collaboration flow:
 
 The table below lists the current coverage of domain tasks in the Benchmark. We welcome not only code contributions but also ideas for challenging new engineering problems from the community.
 
-Note: the current effective `v1` benchmark pool contains `50` tasks. `MuonTomography` remains listed below for completeness, but is temporarily excluded from the effective `v1` pool pending objective / evaluator redesign.
+Note: the current effective `v1` benchmark pool contains `47` tasks. `MuonTomography` remains listed below for completeness, but is temporarily excluded from the effective `v1` pool pending objective / evaluator redesign.
 
 <table>
   <thead>
