@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-import argparse
 import json
 import re
 import sys
@@ -11,6 +10,8 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[4]
 BENCHMARKS_ROOT = REPO_ROOT / "benchmarks"
 FRAMEWORK_DOCS = [
+    REPO_ROOT / "README.md",
+    REPO_ROOT / "README_zh-CN.md",
     REPO_ROOT / "frontier_eval" / "README.md",
     REPO_ROOT / "frontier_eval" / "README_zh-CN.md",
 ]
@@ -202,6 +203,8 @@ def print_report(report: dict) -> None:
 
 
 def main() -> int:
+    import argparse
+
     parser = argparse.ArgumentParser(
         description="Discover Frontier-Engineering benchmark environment docs."
     )
@@ -244,3 +247,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

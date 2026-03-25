@@ -1,0 +1,5 @@
+interface:
+  display_name: "Frontier Evaluator"
+  short_description: "Set up and run Frontier benchmark evaluations"
+  default_prompt: "Help set up, run, or debug Frontier-Engineering benchmark evaluations. Read the benchmark README files first, preserve runtime overrides, and start with the lightest valid check."
+

@@ -4,7 +4,8 @@ Evaluation framework for `Frontier-Engineering`.
 
 ## Layout
 
-- `frontier_eval/cli.py`: main entrypoint (`python -m frontier_eval`)
+- `frontier_eval/cli.py`: main evaluation entrypoint (`python -m frontier_eval`)
+- `frontier_eval/skill_cli.py`: bundled skill installer (`python -m frontier_eval skill`)
 - `frontier_eval/tasks/`: all evaluation tasks
 - `frontier_eval/algorithms/`: all algorithms (currently supports `abmcts`, `openevolve`, `shinkaevolve`)
 - `frontier_eval/conf/`: Hydra configs (`task` / `algorithm` / `llm`)
@@ -54,7 +55,7 @@ Common examples in this repository:
 - `JobShop` uses an explicit `task.runtime.python_path`.
 - `EngDesign` uses Docker-first execution or local fallback.
 
-If you want an agent to help discover and configure the required environments, use `.codex/skills/frontier-benchmark-env-setup/SKILL.md`.
+To install a project-local agent skill, run `python -m frontier_eval skill` for interactive selection, or use `python -m frontier_eval skill evaluator codex` for a direct install. The packaged sources live under `skill/`.
 
 Note on `third_party/`:
 

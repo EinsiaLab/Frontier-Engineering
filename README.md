@@ -19,7 +19,7 @@ Many benchmark families require their own runtime environment, extra `requiremen
 
 Examples already in this repository include `ReactionOptimisation` (`summit`), `MolecularMechanics` (`openff-dev`), `SustainableDataCenterControl` (`sustaindc`), `PyPortfolioOpt` (`pyportfolioopt`), `QuantumComputing` (`mqt`), `InventoryOptimization` (`stock`), `JobShop` (custom `python_path`), and `EngDesign` (Docker / local mode).
 
-If you use Codex or another agent to prepare environments, see `.codex/skills/frontier-benchmark-env-setup/SKILL.md`.
+Project-local agent skills are bundled under `skill/`. Run `python -m frontier_eval skill` to choose interactively, or use `python -m frontier_eval skill evaluator codex` for a direct install.
 
 ### `v1` Merged Task Environments
 
@@ -64,7 +64,7 @@ Current AI4Research evaluation systems have the following limitations:
 
 We need the power of the community to expand the coverage of the Benchmark. We welcome the submission of new engineering problems via Pull Requests (PR). If you wish to contribute, please follow the standards and processes below:
 
-> **AI-Assisted Contributions**: We welcome contributions created with the assistance of AI tools. If you're using an AI assistant to help with your contribution, we recommend providing the prompt guide from this repository (`AGENT.md`) to ensure your AI assistant follows our standards and requirements. **However, please do not over-rely on AI tools or leave the process entirely to AI**. Human review and supervision are essential to ensure quality and correctness.
+> **AI-Assisted Contributions**: We welcome contributions created with the assistance of AI tools. If you're using an agent to help with your contribution, run `python -m frontier_eval skill` and install `Contributor`, or use `skill/source/frontier-contributor/SKILL.md` directly. **However, please do not over-rely on AI tools or leave the process entirely to AI**. Human review and supervision are essential to ensure quality and correctness.
 
 ### Sample Requirements
 

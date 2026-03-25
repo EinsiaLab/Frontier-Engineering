@@ -19,7 +19,7 @@ English | [简体中文](README_zh-CN.md)
 
 仓库里已经有多类不同模式，例如 `ReactionOptimisation`（`summit`）、`MolecularMechanics`（`openff-dev`）、`SustainableDataCenterControl`（`sustaindc`）、`PyPortfolioOpt`（`pyportfolioopt`）、`QuantumComputing`（`mqt`）、`InventoryOptimization`（`stock`）、`JobShop`（自定义 `python_path`）以及 `EngDesign`（Docker / 本地模式）。
 
-如果你希望借助 Codex 或其他 agent 自动准备环境，可参考 `.codex/skills/frontier-benchmark-env-setup/SKILL.md`。
+仓库内已经打包了项目级 agent skill，位于 `skill/`。运行 `python -m frontier_eval skill` 可交互式选择；也可以用 `python -m frontier_eval skill evaluator codex` 直接安装。
 
 ### `v1` 合并任务环境说明
 
@@ -64,7 +64,7 @@ English | [简体中文](README_zh-CN.md)
 
 我们需要社区的力量来扩展 Benchmark 的覆盖范围。我们欢迎通过 Pull Request (PR) 的方式提交新的工程问题。如果你希望贡献，请遵循以下标准和流程：
 
-> **AI 辅助贡献**：我们欢迎使用 AI 工具辅助创建的贡献。如果您使用 AI 助手来帮助完成贡献，我们建议将本仓库中的提示词指南（`AGENT.md`）提供给您的 AI 助手，以确保其遵循我们的标准和要求。**但是，请不要过度依赖 AI 工具或完全放手不管**。人工审查和监督对于确保质量和正确性至关重要。
+> **AI 辅助贡献**：我们欢迎使用 AI 工具辅助创建的贡献。如果你使用 agent 来协助贡献，建议运行 `python -m frontier_eval skill` 安装 `Contributor`，或者直接把 `skill/source/frontier-contributor/SKILL.md` 作为提示词来源。**但是，请不要过度依赖 AI 工具或完全放手不管**。人工审查和监督对于确保质量和正确性至关重要。
 
 ### 样本要求
 

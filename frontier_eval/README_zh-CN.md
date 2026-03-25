@@ -4,7 +4,8 @@
 
 ## 结构
 
-- `frontier_eval/cli.py`: 主程序入口（`python -m frontier_eval`）
+- `frontier_eval/cli.py`: 评测主入口（`python -m frontier_eval`）
+- `frontier_eval/skill_cli.py`: 内置 skill 安装入口（`python -m frontier_eval skill`）
 - `frontier_eval/tasks/`: 所有评测任务
 - `frontier_eval/algorithms/`: 所有算法（目前支持接入 `abmcts`、`openevolve`、`shinkaevolve`）
 - `frontier_eval/conf/`: Hydra 配置（task / algorithm / llm）
@@ -54,7 +55,7 @@ pip install -r frontier_eval/requirements.txt
 - `JobShop` 使用显式 `task.runtime.python_path`。
 - `EngDesign` 优先走 Docker，也支持本地回退。
 
-如果你希望让 agent 协助发现并配置这些环境，可使用 `.codex/skills/frontier-benchmark-env-setup/SKILL.md`。
+如果你希望安装项目级 agent skill 来协助环境准备或 benchmark 评测，可运行 `python -m frontier_eval skill` 进行交互式选择；也可以用 `python -m frontier_eval skill evaluator codex` 直接安装。打包好的 skill 源文件位于 `skill/`。
 
 关于 `third_party/`：
 

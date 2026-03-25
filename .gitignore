@@ -28,8 +28,14 @@ runs_old_2
 third_party
 SKILL.md
 SKILL_zh-CN.md
-!.codex/skills/**/SKILL.md
-!.codex/skills/**/SKILL_zh-CN.md
+!/skill/**/SKILL.md
+!/skill/**/SKILL_zh-CN.md
+# Local personal agent configuration
+/AGENT.md
+/AGENT_zh-CN.md
+/.codex/
+/.claude/
+/.cursor/
 submission.json
 outputlog.txt
 frontier_eval/conf/batch/*
