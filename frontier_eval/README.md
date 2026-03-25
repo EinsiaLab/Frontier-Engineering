@@ -32,6 +32,30 @@ conda install -c conda-forge octave octave-signal octave-control -y
 pip install -r frontier_eval/requirements.txt
 ```
 
+Important:
+
+The setup above only prepares the `frontier_eval` framework. Many benchmarks in this repository need a separate runtime environment, extra benchmark-local requirements, `third_party/` repos, or Docker.
+
+Before running a specific benchmark, always read:
+
+1. `benchmarks/<Domain>/README*.md`
+2. `benchmarks/<Domain>/<Task>/README*.md` when that task has its own README
+
+Treat those benchmark README files as the source of truth for runtime setup and copy the documented overrides into your command, such as `task.runtime.conda_env=...`, `task.runtime.python_path=...`, or `task.runtime.use_conda_run=false`.
+
+Common examples in this repository:
+
+- `ReactionOptimisation` uses `summit` for benchmark runtime.
+- `MolecularMechanics` uses `openff-dev`.
+- `SustainableDataCenterControl` uses `sustaindc`.
+- `PyPortfolioOpt` uses `pyportfolioopt`.
+- `QuantumComputing` uses `mqt`.
+- `InventoryOptimization` uses `stock`.
+- `JobShop` uses an explicit `task.runtime.python_path`.
+- `EngDesign` uses Docker-first execution or local fallback.
+
+If you want an agent to help discover and configure the required environments, use `.codex/skills/frontier-benchmark-env-setup/SKILL.md`.
+
 Note on `third_party/`:
 
 Some optional algorithms/benchmarks depend on extra repos under `third_party/`. In this repo, `third_party/` is meant for local checkouts and is ignored by git (see `.gitignore`), so if you see commands like `pip install -e third_party/...`, clone the corresponding repo first, e.g.:
@@ -243,6 +267,12 @@ For specific examples, please refer to `benchmarks/ComputerSystems/MallocLab/fro
 - override env name: `task.runtime.conda_env=<env_name>`
 - pass explicit Python path: `task.runtime.python_path=/path/to/python`
 
+Important:
+
+- The default `frontier-eval-2` is only a fallback for unified runs.
+- Many benchmarks in this repository should not use that default as their actual runtime.
+- Always check the benchmark README first and prefer its documented env name / Python path / Docker mode over the generic default shown here.
+
 Example:
 
 ```bash
@@ -301,3 +331,5 @@ Unified baseline sweep example:
 - Required default for new benchmark contributions: use `task=unified` + benchmark-local metadata files (section above). New benchmark PRs should onboard through the unified format instead of adding new Python task code under `frontier_eval/tasks/`.
 - New custom task (only when unified is insufficient and the exception has been discussed with maintainers): implement a `frontier_eval/tasks/base.py` `Task` subclass (`initial_program_path()` + `evaluate_program()`), and register it in `frontier_eval/registry_tasks.py` (or keep using `frontier_eval/registry.py`'s `get_task`).
 - New algorithm: implement a `frontier_eval/algorithms/base.py` `Algorithm` subclass, and register it in `frontier_eval/registry_algorithms.py`.
+
+<!-- AI_GENERATED -->

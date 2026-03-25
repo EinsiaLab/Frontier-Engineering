@@ -8,12 +8,14 @@ from pathlib import Path
 from typing import Any
 
 from batch_model_analysis_lib import (
+    ALGORITHM_COLORS,
+    algorithm_sort_key,
     MODEL_COLORS,
     chronological_entries,
     dedupe_latest_runs,
     format_number,
     format_pct,
-    load_history_entries,
+    load_run_entries,
     model_sort_key,
     safe_filename,
     scan_batch_task_runs,
@@ -25,9 +27,9 @@ from batch_model_analysis_lib import (
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
-            "Plot one SVG per task comparing model trajectories from runs/batch. "
+            "Plot one SVG per task comparing model or algorithm trajectories from runs/batch. "
             "The default x-axis is chronological discovery order, with score on the main panel "
-            "and generation on a lower strip."
+            "and generation/step on a lower strip."
         ),
     )
     parser.add_argument(
@@ -86,6 +88,21 @@ def _parse_args() -> argparse.Namespace:
         help="Model name filter. Can be repeated.",
     )
     parser.add_argument(
+        "--algorithm",
+        action="append",
+        default=[],
+        help="Algorithm name filter. Can be repeated.",
+    )
+    parser.add_argument(
+        "--compare-by",
+        choices=("auto", "model", "algorithm"),
+        default="auto",
+        help=(
+            "Which series dimension to compare inside each task plot. "
+            "`auto` uses models when only one algorithm is present, otherwise algorithms."
+        ),
+    )
+    parser.add_argument(
         "--limit",
         type=int,
         default=0,
@@ -100,10 +117,19 @@ def _parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def _matches_filters(task_name: str, model_name: str, task_filters: list[str], model_filters: list[str]) -> bool:
+def _matches_filters(
+    task_name: str,
+    model_name: str,
+    algorithm_name: str,
+    task_filters: list[str],
+    model_filters: list[str],
+    algorithm_filters: list[str],
+) -> bool:
     if task_filters and task_name not in task_filters:
         return False
     if model_filters and model_name not in model_filters:
+        return False
+    if algorithm_filters and algorithm_name not in algorithm_filters:
         return False
     return True
 
@@ -112,6 +138,71 @@ def _normalize_mode(mode: str) -> str:
     if mode == "iteration-max":
         return "candidate-score"
     return mode
+
+
+def _resolve_compare_by(compare_by: str, runs) -> str:
+    if compare_by != "auto":
+        return compare_by
+    algorithms = {run.algorithm_name for run in runs}
+    if len(algorithms) <= 1:
+        return "model"
+    return "algorithm"
+
+
+def _facet_by(compare_by: str, runs) -> str | None:
+    if compare_by == "model":
+        algorithms = {run.algorithm_name for run in runs}
+        return "algorithm" if len(algorithms) > 1 else None
+    models = {run.model_name for run in runs}
+    return "model" if len(models) > 1 else None
+
+
+def _series_value(run, compare_by: str) -> str:
+    return run.model_name if compare_by == "model" else run.algorithm_name
+
+
+def _series_label(run, compare_by: str) -> str:
+    return _series_value(run, compare_by)
+
+
+def _series_color(run, compare_by: str) -> str:
+    if compare_by == "model":
+        return MODEL_COLORS.get(run.model_name, "#444444")
+    return ALGORITHM_COLORS.get(run.algorithm_name, "#444444")
+
+
+def _series_sort(run, compare_by: str) -> tuple[int, str]:
+    if compare_by == "model":
+        return model_sort_key(run.model_name)
+    return algorithm_sort_key(run.algorithm_name)
+
+
+def _series_heading(compare_by: str) -> str:
+    return "Models" if compare_by == "model" else "Algorithms"
+
+
+def _facet_value(run, facet_by: str | None) -> str | None:
+    if facet_by == "model":
+        return run.model_name
+    if facet_by == "algorithm":
+        return run.algorithm_name
+    return None
+
+
+def _panel_title(task_name: str, facet_value: str | None) -> str:
+    if facet_value:
+        return f"{task_name} [{facet_value}]"
+    return task_name
+
+
+def _facet_sort_key(facet_value: str | None, facet_by: str | None) -> tuple[int, str]:
+    if facet_value is None:
+        return (-1, "")
+    if facet_by == "model":
+        return model_sort_key(facet_value)
+    if facet_by == "algorithm":
+        return algorithm_sort_key(facet_value)
+    return (0, facet_value)
 
 
 def _nice_ticks(vmin: float, vmax: float, count: int = 6) -> list[float]:
@@ -186,8 +277,15 @@ def _timeline_axis(entries, timeline: str) -> tuple[list[float], str, bool, str]
     )
 
 
-def _build_model_series(run, *, mode: str, timeline: str) -> dict[str, object] | None:
-    entries = load_history_entries(run.history_index_path)
+def _build_series_item(
+    run,
+    *,
+    mode: str,
+    timeline: str,
+    series_label: str,
+    series_color: str,
+) -> dict[str, object] | None:
+    entries = load_run_entries(run)
     scored_entries = [entry for entry in chronological_entries(entries) if entry.score is not None]
     if not scored_entries:
         return None
@@ -216,7 +314,7 @@ def _build_model_series(run, *, mode: str, timeline: str) -> dict[str, object] |
             best_so_far = score
         line_score = best_so_far if mode == "cumulative-best" else score
         hover = (
-            f"{run.model_name}"
+            f"{run.algorithm_name}/{run.model_name}"
             f" | order={order}"
             f" | score={format_number(score)}"
             f" | iter={entry.iteration}"
@@ -253,15 +351,15 @@ def _build_model_series(run, *, mode: str, timeline: str) -> dict[str, object] |
     )
 
     return {
-        "model": run.model_name,
-        "color": MODEL_COLORS.get(run.model_name, "#444444"),
+        "series_key": series_label,
+        "color": series_color,
         "entries": entries,
         "scatter_points": scatter_points,
         "line_points": line_points,
         "x_label": x_label,
         "x_is_integer": x_is_integer,
         "timeline_desc": timeline_desc,
-        "label": run.model_name,
+        "label": series_label,
         "summary": summary,
         "root_score": root_score,
         "best_score": best_score,
@@ -285,6 +383,7 @@ def _panel_svg_parts(
     tick_font_size: int = 12,
     include_subtitle: bool = True,
     include_local_legend: bool = True,
+    series_heading: str = "Models",
     margin_left: int = 90,
     margin_right: int = 430,
     margin_top: int = 76,
@@ -351,7 +450,7 @@ def _panel_svg_parts(
     y_ticks = _nice_ticks(y_min, y_max, count=6)
 
     mode_text = "best-so-far line" if mode == "cumulative-best" else "candidate-score line"
-    subtitle = f"x = {x_label.lower()} ({series[0]['timeline_desc']}) | upper = score | lower = generation | hollow dot = iter 0 | {mode_text}" if series else ""
+    subtitle = f"x = {x_label.lower()} ({series[0]['timeline_desc']}) | upper = score | lower = generation/step | hollow dot = iter 0 | {mode_text}" if series else ""
 
     parts: list[str] = []
     parts.append(f'<rect x="{origin_x}" y="{origin_y}" width="{width}" height="{height}" fill="white"/>')
@@ -403,7 +502,7 @@ def _panel_svg_parts(
         f'<text x="{origin_x + 24}" y="{score_top + score_h / 2:.2f}" transform="rotate(-90 {origin_x + 24} {score_top + score_h / 2:.2f})" text-anchor="middle" font-size="{label_font_size}" font-family="Arial, sans-serif">Combined Score</text>'
     )
     parts.append(
-        f'<text x="{origin_x + 24}" y="{generation_top + generation_h / 2:.2f}" transform="rotate(-90 {origin_x + 24} {generation_top + generation_h / 2:.2f})" text-anchor="middle" font-size="{label_font_size}" font-family="Arial, sans-serif">Generation</text>'
+        f'<text x="{origin_x + 24}" y="{generation_top + generation_h / 2:.2f}" transform="rotate(-90 {origin_x + 24} {generation_top + generation_h / 2:.2f})" text-anchor="middle" font-size="{label_font_size}" font-family="Arial, sans-serif">Generation / Step</text>'
     )
 
     for item in series:
@@ -454,7 +553,7 @@ def _panel_svg_parts(
         row_h = 72
         encoding_lines = [
             f"x = {x_label.lower()}",
-            "upper = score, lower = generation",
+            "upper = score, lower = generation/step",
             "hollow dot = iteration 0",
             "black center = root baseline",
             "outer ring = final best",
@@ -465,7 +564,7 @@ def _panel_svg_parts(
             f'<rect x="{legend_x - 16}" y="{legend_y - 22}" width="{legend_w}" height="{legend_h}" fill="#fafafa" stroke="#dddddd" rx="8"/>'
         )
         parts.append(
-            f'<text x="{legend_x}" y="{legend_y}" font-size="16" font-family="Arial, sans-serif" font-weight="bold">Models</text>'
+            f'<text x="{legend_x}" y="{legend_y}" font-size="16" font-family="Arial, sans-serif" font-weight="bold">{html.escape(series_heading)}</text>'
         )
         for idx, item in enumerate(series):
             y = legend_y + 26 + idx * row_h
@@ -494,7 +593,14 @@ def _panel_svg_parts(
     return parts
 
 
-def _build_svg(task_name: str, series: list[dict[str, object]], *, mode: str, timeline: str) -> str:
+def _build_svg(
+    task_name: str,
+    series: list[dict[str, object]],
+    *,
+    mode: str,
+    timeline: str,
+    series_heading: str,
+) -> str:
     width = 1460
     height = 860
     parts: list[str] = []
@@ -507,6 +613,7 @@ def _build_svg(task_name: str, series: list[dict[str, object]], *, mode: str, ti
             timeline=timeline,
             width=width,
             height=height,
+            series_heading=series_heading,
         )
     )
     parts.append("</svg>")
@@ -520,6 +627,8 @@ def _build_overview_svg(
     mode: str,
     timeline: str,
     page_size: int,
+    series_heading: str,
+    legend_items: list[tuple[str, str]],
 ) -> str:
     page_width = 1800
     page_height = 2400
@@ -546,20 +655,21 @@ def _build_overview_svg(
         f'<text x="{page_margin_x}" y="60" font-size="14" font-family="Arial, sans-serif" fill="#555">Alphabetical order | up to {page_size} tasks per page | x = {html.escape(timeline)} | {html.escape(mode_text)}</text>'
     )
     parts.append(
-        f'<text x="{page_margin_x}" y="82" font-size="13" font-family="Arial, sans-serif" fill="#666">Each panel: upper = score, lower = generation, hollow dots = iter 0, black center = root baseline, outer ring = final best</text>'
+        f'<text x="{page_margin_x}" y="82" font-size="13" font-family="Arial, sans-serif" fill="#666">Each panel: upper = score, lower = generation/step, hollow dots = iter 0, black center = root baseline, outer ring = final best</text>'
     )
 
     legend_x = page_width - 760
     legend_y = 34
-    parts.append(f'<text x="{legend_x}" y="{legend_y}" font-size="15" font-family="Arial, sans-serif" font-weight="bold">Color Legend</text>')
-    for idx, model_name in enumerate(MODEL_COLORS):
+    parts.append(
+        f'<text x="{legend_x}" y="{legend_y}" font-size="15" font-family="Arial, sans-serif" font-weight="bold">{html.escape(series_heading)} Legend</text>'
+    )
+    for idx, (label, color) in enumerate(legend_items):
         x = legend_x + (idx % 2) * 250
         y = legend_y + 24 + (idx // 2) * 24
-        color = MODEL_COLORS[model_name]
         parts.append(f'<line x1="{x}" y1="{y}" x2="{x + 26}" y2="{y}" stroke="{color}" stroke-width="3"/>')
         parts.append(f'<circle cx="{x + 13}" cy="{y}" r="4" fill="{color}" stroke="white" stroke-width="1"/>')
         parts.append(
-            f'<text x="{x + 36}" y="{y + 4}" font-size="12" font-family="Arial, sans-serif">{html.escape(model_name)}</text>'
+            f'<text x="{x + 36}" y="{y + 4}" font-size="12" font-family="Arial, sans-serif">{html.escape(label)}</text>'
         )
 
     for idx, panel in enumerate(panels):
@@ -583,6 +693,7 @@ def _build_overview_svg(
                 tick_font_size=9,
                 include_subtitle=False,
                 include_local_legend=False,
+                series_heading=series_heading,
                 margin_left=52,
                 margin_right=20,
                 margin_top=34,
@@ -607,6 +718,9 @@ def _write_overview_pages(
     mode: str,
     timeline: str,
     page_size: int,
+    page_prefix: str,
+    series_heading: str,
+    legend_items: list[tuple[str, str]],
 ) -> int:
     if not overview_panels:
         return 0
@@ -615,18 +729,41 @@ def _write_overview_pages(
     for page_index, panels in enumerate(pages, start=1):
         first_task = panels[0]["task_name"]
         last_task = panels[-1]["task_name"]
-        page_title = f"Task Model Comparison Page {page_index}: {first_task} ... {last_task}"
-        svg = _build_overview_svg(page_title, panels, mode=mode, timeline=timeline, page_size=page_size)
+        page_title = f"{page_prefix} Page {page_index}: {first_task} ... {last_task}"
+        svg = _build_overview_svg(
+            page_title,
+            panels,
+            mode=mode,
+            timeline=timeline,
+            page_size=page_size,
+            series_heading=series_heading,
+            legend_items=legend_items,
+        )
         out_path = overview_dir / f"{page_index:03d}__{safe_filename(first_task)}__to__{safe_filename(last_task)}.svg"
         out_path.write_text(svg, encoding="utf-8")
         print(f"[page] {out_path} ({len(panels)} tasks)")
     return len(pages)
 
 
-def _plot_task(task_name: str, runs, output_dir: Path, *, mode: str, timeline: str) -> tuple[Path, list[dict[str, object]]]:
+def _plot_task(
+    task_name: str,
+    output_name: str,
+    runs,
+    output_dir: Path,
+    *,
+    mode: str,
+    timeline: str,
+    compare_by: str,
+) -> tuple[Path, list[dict[str, object]]]:
     series: list[dict[str, object]] = []
-    for run in sorted(runs, key=lambda item: model_sort_key(item.model_name)):
-        item = _build_model_series(run, mode=mode, timeline=timeline)
+    for run in sorted(runs, key=lambda item: _series_sort(item, compare_by)):
+        item = _build_series_item(
+            run,
+            mode=mode,
+            timeline=timeline,
+            series_label=_series_label(run, compare_by),
+            series_color=_series_color(run, compare_by),
+        )
         if item is None:
             continue
         series.append(item)
@@ -634,9 +771,9 @@ def _plot_task(task_name: str, runs, output_dir: Path, *, mode: str, timeline: s
     if not series:
         raise RuntimeError(f"No plottable trajectories found for task {task_name}")
 
-    svg = _build_svg(task_name, series, mode=mode, timeline=timeline)
+    svg = _build_svg(task_name, series, mode=mode, timeline=timeline, series_heading=_series_heading(compare_by))
     output_dir.mkdir(parents=True, exist_ok=True)
-    out_path = output_dir / f"{safe_filename(task_name)}.svg"
+    out_path = output_dir / f"{safe_filename(output_name)}.svg"
     out_path.write_text(svg, encoding="utf-8")
     return out_path, series
 
@@ -645,49 +782,83 @@ def main() -> int:
     args = _parse_args()
     mode = _normalize_mode(args.mode)
     runs = dedupe_latest_runs(scan_batch_task_runs(args.batch_dir / args.sub_dir))
-    grouped: dict[str, list] = {}
-    for run in runs:
-        if not _matches_filters(run.task_name, run.model_name, args.task, args.model):
-            continue
-        grouped.setdefault(run.task_name, []).append(run)
+    compare_by = _resolve_compare_by(args.compare_by, runs)
+    facet_by = _facet_by(compare_by, runs)
 
-    task_names = sorted(grouped)
+    grouped: dict[tuple[str | None, str], list] = {}
+    for run in runs:
+        if not _matches_filters(run.task_name, run.model_name, run.algorithm_name, args.task, args.model, args.algorithm):
+            continue
+        grouped.setdefault((_facet_value(run, facet_by), run.task_name), []).append(run)
+
+    panel_keys = sorted(grouped, key=lambda item: (_facet_sort_key(item[0], facet_by), item[1]))
     if args.limit > 0:
-        task_names = task_names[: args.limit]
+        panel_keys = panel_keys[: args.limit]
 
     generated = 0
     skipped = 0
-    overview_panels: list[dict[str, Any]] = []
-    for task_name in task_names:
+    overview_panels: dict[str | None, list[dict[str, Any]]] = {}
+    for facet_value, task_name in panel_keys:
+        panel_runs = grouped[(facet_value, task_name)]
+        panel_title = _panel_title(task_name, facet_value)
+        output_dir = args.output_dir / args.sub_dir
+        if facet_value is not None:
+            output_dir = output_dir / safe_filename(facet_value)
         try:
             out_path, series = _plot_task(
+                panel_title,
                 task_name,
-                grouped[task_name],
-                args.output_dir / args.sub_dir,
+                panel_runs,
+                output_dir,
                 mode=mode,
                 timeline=args.timeline,
+                compare_by=compare_by,
             )
         except RuntimeError as exc:
-            print(f"[skip] {task_name}: {exc}")
+            print(f"[skip] {panel_title}: {exc}")
             skipped += 1
             continue
 
-        models = ", ".join(run.model_name for run in sorted(grouped[task_name], key=lambda item: model_sort_key(item.model_name)))
-        print(f"[plot] {task_name} -> {out_path} ({models})")
-        overview_panels.append({"task_name": task_name, "series": series})
+        series_labels = ", ".join(
+            _series_value(run, compare_by) for run in sorted(panel_runs, key=lambda item: _series_sort(item, compare_by))
+        )
+        print(f"[plot] {panel_title} -> {out_path} ({series_labels})")
+        overview_panels.setdefault(facet_value, []).append({"task_name": panel_title, "series": series})
         generated += 1
 
     if generated == 0:
         print("No tasks matched the requested filters.")
         return 1
 
-    page_count = _write_overview_pages(
-        overview_panels,
-        args.overview_dir / args.sub_dir,
-        mode=mode,
-        timeline=args.timeline,
-        page_size=args.page_size,
-    )
+    page_count = 0
+    for facet_value in sorted(overview_panels, key=lambda item: _facet_sort_key(item, facet_by)):
+        facet_panels = overview_panels[facet_value]
+        facet_overview_dir = args.overview_dir / args.sub_dir
+        if facet_value is not None:
+            facet_overview_dir = facet_overview_dir / safe_filename(facet_value)
+        legend_map: dict[str, str] = {}
+        for panel in facet_panels:
+            for series in panel["series"]:
+                label = str(series["label"])
+                legend_map.setdefault(label, str(series["color"]))
+        legend_items = sorted(
+            legend_map.items(),
+            key=lambda item: model_sort_key(item[0]) if compare_by == "model" else algorithm_sort_key(item[0]),
+        )
+        page_prefix = f"Task {_series_heading(compare_by)} Comparison"
+        if facet_value is not None:
+            page_prefix += f" [{facet_value}]"
+        page_count += _write_overview_pages(
+            facet_panels,
+            facet_overview_dir,
+            mode=mode,
+            timeline=args.timeline,
+            page_size=args.page_size,
+            page_prefix=page_prefix,
+            series_heading=_series_heading(compare_by),
+            legend_items=legend_items,
+        )
+
     print(
         f"Generated {generated} plot(s) in {args.output_dir / args.sub_dir}; "
         f"generated {page_count} overview page(s) in {args.overview_dir / args.sub_dir}; "

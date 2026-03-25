@@ -273,14 +273,10 @@ algorithms:
       - algorithm.oe.evaluator.timeout=300
 
 llms:
-  - name: ark__seed-2.0-pro-260215
-    api_base: ${oc.env:ARK_API_BASE,http://ark-cn-beijing.bytedance.net/api/v3}
-    model: ${oc.env:SEED_MODEL,ep-m-20260214185222-qmcqh}
-    api_key_env: SEED_KEY
-    env:
-      ALL_PROXY: ${oc.env:ALL_PROXY,socks5://127.0.0.1:50003}
-      HTTP_PROXY: ${oc.env:HTTP_PROXY,socks5://127.0.0.1:50003}
-      HTTPS_PROXY: ${oc.env:HTTPS_PROXY,socks5://127.0.0.1:50003}
+  - name: litellm__claude-opus-4.6
+    api_base: ${oc.env:OPENAI_API_BASE,https://litellm.nbdevenv.xiaoaojianghu.fun/v1}
+    model: claude-opus-4.6
+    api_key_env: OPENAI_API_KEY
 
 llm_config: openai_compatible
 
@@ -289,7 +285,7 @@ common_overrides:
   - llm.timeout=60
 
 run:
-  name: v1_cpu_openevolve_p8_i100_seed-2.0-pro
+  name: v1_cpu_openevolve_p8_i100_claude-opus-4.6
   base_dir: runs/batch
   max_parallel: 8
   fail_fast: false

@@ -12,6 +12,7 @@ from typing import Any
 
 
 MODEL_ORDER = (
+    "claude-opus-4.6",
     "gemini-3.1-pro-preview",
     "gpt-5.4",
     "grok-4.20",
@@ -20,15 +21,31 @@ MODEL_ORDER = (
 
 MODEL_COLORS = {
     # Okabe-Ito-style colorblind-friendlier palette.
+    "claude-opus-4.6": "#56B4E9",
     "gemini-3.1-pro-preview": "#0072B2",
     "gpt-5.4": "#D55E00",
     "grok-4.20": "#009E73",
     "seed-2.0-pro": "#CC79A7",
 }
 
+ALGORITHM_ORDER = (
+    "openevolve",
+    "shinkaevolve",
+    "abmcts",
+)
+
+ALGORITHM_COLORS = {
+    "openevolve": "#0072B2",
+    "shinkaevolve": "#E69F00",
+    "abmcts": "#009E73",
+}
+
 _RUN_NAME_MODEL_RE = re.compile(r"_i\d+_(.*?)__")
 _RUN_NAME_TS_RE = re.compile(r"__(\d{8}_\d{6})__")
 _SAFE_FILENAME_RE = re.compile(r"[^A-Za-z0-9._-]+")
+_GEN_DIR_RE = re.compile(r"^gen_(\d+)$")
+_INVALID_FAILURE_SCORE = -1e17
+_SUPPORTED_ALGORITHMS = frozenset(ALGORITHM_ORDER)
 
 
 @dataclass(frozen=True)
@@ -48,6 +65,7 @@ class BatchTaskRun:
     batch_run_name: str
     batch_run_dir: Path
     task_name: str
+    algorithm_name: str
     provider_name: str
     model_name: str
     output_dir: Path
@@ -104,6 +122,13 @@ def _as_float(value: Any) -> float | None:
     if not math.isfinite(result):
         return None
     return result
+
+
+def _normalize_score(value: Any) -> float | None:
+    score = _as_float(value)
+    if score is not None and score <= _INVALID_FAILURE_SCORE:
+        return None
+    return score
 
 
 def _as_int(value: Any) -> int | None:
@@ -185,6 +210,13 @@ def model_sort_key(model_name: str) -> tuple[int, str]:
         return (len(MODEL_ORDER), model_name)
 
 
+def algorithm_sort_key(algorithm_name: str) -> tuple[int, str]:
+    try:
+        return (ALGORITHM_ORDER.index(algorithm_name), algorithm_name)
+    except ValueError:
+        return (len(ALGORITHM_ORDER), algorithm_name)
+
+
 def parse_run_dir_timestamp(run_name: str) -> float | None:
     match = _RUN_NAME_TS_RE.search(run_name)
     if not match:
@@ -193,6 +225,16 @@ def parse_run_dir_timestamp(run_name: str) -> float | None:
         return datetime.strptime(match.group(1), "%Y%m%d_%H%M%S").timestamp()
     except Exception:
         return None
+
+
+def _has_algorithm_outputs(algo_dir: Path, algorithm_name: str) -> bool:
+    if algorithm_name == "openevolve":
+        return (algo_dir / "history" / "index.jsonl").is_file() or (algo_dir / "evolution_trace.jsonl").is_file()
+    if algorithm_name == "shinkaevolve":
+        return any(algo_dir.glob("gen_*/results/metrics.json"))
+    if algorithm_name == "abmcts":
+        return (algo_dir / "trace.jsonl").is_file() or (algo_dir / "baseline" / "metrics.json").is_file()
+    return False
 
 
 def scan_batch_task_runs(batch_dir: Path) -> list[BatchTaskRun]:
@@ -204,37 +246,41 @@ def scan_batch_task_runs(batch_dir: Path) -> list[BatchTaskRun]:
             fallback=batch_run_name,
         )
         for task_dir in sorted(p for p in batch_run_dir.iterdir() if p.is_dir()):
-            provider_root = task_dir / "openevolve"
-            if not provider_root.is_dir():
-                continue
-            for provider_dir in sorted(p for p in provider_root.iterdir() if p.is_dir()):
-                algo_dir = provider_dir / "openevolve"
-                history_index_path = algo_dir / "history" / "index.jsonl"
-                if not history_index_path.is_file():
-                    continue
-                launcher_result_path = provider_dir / "launcher_result.json"
-                launcher_run_path = provider_dir / "launcher_run.json"
-                launcher_result = _read_json(launcher_result_path)
-                launcher_run = _read_json(launcher_run_path)
-                model_name = normalize_model_name(
-                    (launcher_result or {}).get("model") or (launcher_run or {}).get("model") or (launcher_result or {}).get("llm") or (launcher_run or {}).get("llm"),
-                    fallback=inferred_model,
-                )
-                runs.append(
-                    BatchTaskRun(
-                        batch_run_name=batch_run_name,
-                        batch_run_dir=batch_run_dir,
-                        task_name=task_dir.name,
-                        provider_name=provider_dir.name,
-                        model_name=model_name,
-                        output_dir=provider_dir,
-                        algo_dir=algo_dir,
-                        history_index_path=history_index_path,
-                        launcher_run_path=launcher_run_path,
-                        launcher_result_path=launcher_result_path,
-                        best_info_path=algo_dir / "best" / "best_program_info.json",
+            algorithm_roots = [p for p in sorted(task_dir.iterdir()) if p.is_dir() and p.name in _SUPPORTED_ALGORITHMS]
+            for provider_root in algorithm_roots:
+                algorithm_name = provider_root.name
+                for provider_dir in sorted(p for p in provider_root.iterdir() if p.is_dir()):
+                    algo_dir = provider_dir / algorithm_name
+                    if not _has_algorithm_outputs(algo_dir, algorithm_name):
+                        continue
+                    history_index_path = algo_dir / "history" / "index.jsonl"
+                    launcher_result_path = provider_dir / "launcher_result.json"
+                    launcher_run_path = provider_dir / "launcher_run.json"
+                    launcher_result = _read_json(launcher_result_path)
+                    launcher_run = _read_json(launcher_run_path)
+                    model_name = normalize_model_name(
+                        (launcher_result or {}).get("model")
+                        or (launcher_run or {}).get("model")
+                        or (launcher_result or {}).get("llm")
+                        or (launcher_run or {}).get("llm"),
+                        fallback=inferred_model,
                     )
-                )
+                    runs.append(
+                        BatchTaskRun(
+                            batch_run_name=batch_run_name,
+                            batch_run_dir=batch_run_dir,
+                            task_name=task_dir.name,
+                            algorithm_name=algorithm_name,
+                            provider_name=provider_dir.name,
+                            model_name=model_name,
+                            output_dir=provider_dir,
+                            algo_dir=algo_dir,
+                            history_index_path=history_index_path,
+                            launcher_run_path=launcher_run_path,
+                            launcher_result_path=launcher_result_path,
+                            best_info_path=algo_dir / "best" / "best_program_info.json",
+                        )
+                    )
     return runs
 
 
@@ -269,13 +315,159 @@ def load_history_entries(history_index_path: Path) -> list[HistoryEntry]:
                 parent_id=str(record.get("parent_id")).strip() if record.get("parent_id") not in (None, "") else None,
                 generation=_as_int(record.get("generation")),
                 timestamp=timestamp,
-                score=_as_float(metrics.get("combined_score", metrics.get("score"))),
+                score=_normalize_score(metrics.get("combined_score", metrics.get("score"))),
                 valid=_as_float(metrics.get("valid")),
                 runtime_s=_as_float(metrics.get("runtime_s")),
             )
         )
     entries.sort(key=lambda item: (item.iteration, item.timestamp if item.timestamp is not None else float("inf"), item.program_id))
     return entries
+
+
+def _path_timestamp(path: Path | None) -> float | None:
+    if path is None or not path.exists():
+        return None
+    try:
+        return path.stat().st_mtime
+    except Exception:
+        return None
+
+
+def _load_shinkaevolve_entries(algo_dir: Path) -> list[HistoryEntry]:
+    entries: list[HistoryEntry] = []
+    previous_program_id: str | None = None
+    for metrics_path in sorted(algo_dir.glob("gen_*/results/metrics.json")):
+        gen_dir = metrics_path.parent.parent
+        match = _GEN_DIR_RE.match(gen_dir.name)
+        if not match:
+            continue
+        generation = _as_int(match.group(1))
+        metrics = _read_json(metrics_path)
+        if generation is None or not isinstance(metrics, dict):
+            continue
+        program_id = gen_dir.name
+        score = _normalize_score(metrics.get("combined_score", metrics.get("score")))
+        entries.append(
+            HistoryEntry(
+                iteration=generation,
+                program_id=program_id,
+                parent_id=previous_program_id,
+                generation=generation,
+                timestamp=_path_timestamp(metrics_path),
+                score=score,
+                valid=_as_float(metrics.get("valid")),
+                runtime_s=_as_float(metrics.get("runtime_s")),
+            )
+        )
+        previous_program_id = program_id
+    entries.sort(key=lambda item: (item.iteration, item.timestamp if item.timestamp is not None else float("inf"), item.program_id))
+    return entries
+
+
+def _load_openevolve_trace_entries(algo_dir: Path) -> list[HistoryEntry]:
+    entries: list[HistoryEntry] = []
+    baseline_added = False
+    for record in _iter_jsonl(algo_dir / "evolution_trace.jsonl"):
+        iteration = _as_int(record.get("iteration"))
+        timestamp = _as_float(record.get("timestamp"))
+        if iteration is None:
+            continue
+
+        parent_id = str(record.get("parent_id", "")).strip()
+        child_id = str(record.get("child_id", "")).strip()
+        parent_metrics = record.get("parent_metrics")
+        child_metrics = record.get("child_metrics")
+
+        if not baseline_added and parent_id and isinstance(parent_metrics, dict):
+            entries.append(
+                HistoryEntry(
+                    iteration=0,
+                    program_id=parent_id,
+                    parent_id=None,
+                    generation=0,
+                    timestamp=timestamp,
+                    score=_normalize_score(parent_metrics.get("combined_score", parent_metrics.get("score"))),
+                    valid=_as_float(parent_metrics.get("valid")),
+                    runtime_s=_as_float(parent_metrics.get("runtime_s")),
+                )
+            )
+            baseline_added = True
+
+        if not child_id or not isinstance(child_metrics, dict):
+            continue
+        entries.append(
+            HistoryEntry(
+                iteration=iteration,
+                program_id=child_id,
+                parent_id=parent_id or None,
+                generation=iteration,
+                timestamp=timestamp,
+                score=_normalize_score(child_metrics.get("combined_score", child_metrics.get("score"))),
+                valid=_as_float(child_metrics.get("valid")),
+                runtime_s=_as_float(child_metrics.get("runtime_s")),
+            )
+        )
+
+    entries.sort(key=lambda item: (item.iteration, item.timestamp if item.timestamp is not None else float("inf"), item.program_id))
+    return entries
+
+
+def _load_abmcts_entries(algo_dir: Path) -> list[HistoryEntry]:
+    entries: list[HistoryEntry] = []
+    baseline_metrics_path = algo_dir / "baseline" / "metrics.json"
+    baseline_metrics = _read_json(baseline_metrics_path)
+    if isinstance(baseline_metrics, dict):
+        entries.append(
+            HistoryEntry(
+                iteration=0,
+                program_id="baseline",
+                parent_id=None,
+                generation=0,
+                timestamp=_path_timestamp(baseline_metrics_path),
+                score=_normalize_score(baseline_metrics.get("combined_score", baseline_metrics.get("score"))),
+                valid=_as_float(baseline_metrics.get("valid")),
+                runtime_s=_as_float(baseline_metrics.get("runtime_s")),
+            )
+        )
+
+    for record in _iter_jsonl(algo_dir / "trace.jsonl"):
+        step = _as_int(record.get("step"))
+        if step is None:
+            continue
+        node_id = _as_int(record.get("node_id"))
+        metrics_path = algo_dir / "tree" / f"node_{node_id:06d}" / "metrics.json" if node_id is not None else None
+        metrics = _read_json(metrics_path) if metrics_path is not None and metrics_path.is_file() else None
+        score = _normalize_score(((metrics or {}).get("combined_score", (metrics or {}).get("score"))))
+        if score is None:
+            score = _normalize_score(record.get("combined_score", record.get("score")))
+        parent_node_id = _as_int(record.get("parent_id"))
+        entries.append(
+            HistoryEntry(
+                iteration=step,
+                program_id=f"node_{node_id:06d}" if node_id is not None else f"step_{step:06d}",
+                parent_id=f"node_{parent_node_id:06d}" if parent_node_id is not None and parent_node_id >= 0 else "baseline",
+                generation=step,
+                timestamp=_path_timestamp(metrics_path) or _path_timestamp(algo_dir / "trace.jsonl"),
+                score=score,
+                valid=_as_float((metrics or {}).get("valid")),
+                runtime_s=_as_float((metrics or {}).get("runtime_s")),
+            )
+        )
+
+    entries.sort(key=lambda item: (item.iteration, item.timestamp if item.timestamp is not None else float("inf"), item.program_id))
+    return entries
+
+
+def load_run_entries(run: BatchTaskRun) -> list[HistoryEntry]:
+    if run.algorithm_name == "openevolve":
+        if run.history_index_path.is_file():
+            return load_history_entries(run.history_index_path)
+        return _load_openevolve_trace_entries(run.algo_dir)
+    if run.algorithm_name == "shinkaevolve":
+        return _load_shinkaevolve_entries(run.algo_dir)
+    if run.algorithm_name == "abmcts":
+        return _load_abmcts_entries(run.algo_dir)
+    return load_history_entries(run.history_index_path)
 
 
 def _score_sort_key(entry: HistoryEntry) -> tuple[float, float, int]:
@@ -373,9 +565,9 @@ def _load_launcher_times(run: BatchTaskRun) -> tuple[float | None, float | None]
 
 
 def dedupe_latest_runs(runs: list[BatchTaskRun]) -> list[BatchTaskRun]:
-    latest: dict[tuple[str, str], BatchTaskRun] = {}
+    latest: dict[tuple[str, str, str], BatchTaskRun] = {}
     for run in runs:
-        key = (run.task_name, run.model_name)
+        key = (run.task_name, run.algorithm_name, run.model_name)
         current = latest.get(key)
         if current is None:
             latest[key] = run
@@ -393,7 +585,15 @@ def dedupe_latest_runs(runs: list[BatchTaskRun]) -> list[BatchTaskRun]:
         )
         if run_rank > current_rank:
             latest[key] = run
-    return sorted(latest.values(), key=lambda item: (item.task_name, model_sort_key(item.model_name), item.batch_run_name))
+    return sorted(
+        latest.values(),
+        key=lambda item: (
+            item.task_name,
+            algorithm_sort_key(item.algorithm_name),
+            model_sort_key(item.model_name),
+            item.batch_run_name,
+        ),
+    )
 
 
 def _compute_elapsed_s(
@@ -426,7 +626,7 @@ def _compute_elapsed_s(
 
 
 def summarize_run(run: BatchTaskRun) -> dict[str, Any]:
-    entries = load_history_entries(run.history_index_path)
+    entries = load_run_entries(run)
     launcher_run = _read_json(run.launcher_run_path)
     launcher_result = _read_json(run.launcher_result_path)
     best_info = _read_json(run.best_info_path)
@@ -444,7 +644,8 @@ def summarize_run(run: BatchTaskRun) -> dict[str, Any]:
     if best_info_timestamp is not None:
         observed_epochs.append(best_info_timestamp)
     latest_observed_epoch = max(observed_epochs, default=None)
-    best_file_score = _as_float(((best_info or {}).get("metrics") or {}).get("combined_score"))
+    best_file_metrics = (best_info or {}).get("metrics") or {}
+    best_file_score = _normalize_score(best_file_metrics.get("combined_score", best_file_metrics.get("score")))
     best_file_iteration = _as_int((best_info or {}).get("iteration"))
     best_file_generation = _as_int((best_info or {}).get("generation"))
     best_found_epoch = best_entry.timestamp if best_entry is not None else None
@@ -465,6 +666,7 @@ def summarize_run(run: BatchTaskRun) -> dict[str, Any]:
 
     return {
         "task_name": run.task_name,
+        "algorithm_name": run.algorithm_name,
         "model_name": run.model_name,
         "provider_name": run.provider_name,
         "batch_run_name": run.batch_run_name,

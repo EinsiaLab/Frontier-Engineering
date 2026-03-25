@@ -32,6 +32,30 @@ conda install -c conda-forge octave octave-signal octave-control -y
 pip install -r frontier_eval/requirements.txt
 ```
 
+重要说明：
+
+上面的安装步骤只会把 `frontier_eval` 框架本身准备好。仓库里的很多 benchmark 还需要单独的 runtime 环境、benchmark 本地依赖、`third_party/` 仓库，或者 Docker。
+
+在运行具体 benchmark 之前，请始终先看：
+
+1. `benchmarks/<Domain>/README*.md`
+2. 如果该 task 还有自己的 README，再继续看 `benchmarks/<Domain>/<Task>/README*.md`
+
+这些 benchmark README 才是 runtime 配置的最终依据。里面如果写了 `task.runtime.conda_env=...`、`task.runtime.python_path=...`、`task.runtime.use_conda_run=false` 等 override，请直接按文档带进运行命令。
+
+仓库里的常见例子包括：
+
+- `ReactionOptimisation` 使用 `summit` 作为 benchmark runtime。
+- `MolecularMechanics` 使用 `openff-dev`。
+- `SustainableDataCenterControl` 使用 `sustaindc`。
+- `PyPortfolioOpt` 使用 `pyportfolioopt`。
+- `QuantumComputing` 使用 `mqt`。
+- `InventoryOptimization` 使用 `stock`。
+- `JobShop` 使用显式 `task.runtime.python_path`。
+- `EngDesign` 优先走 Docker，也支持本地回退。
+
+如果你希望让 agent 协助发现并配置这些环境，可使用 `.codex/skills/frontier-benchmark-env-setup/SKILL.md`。
+
 关于 `third_party/`：
 
 本仓库会把部分第三方/较大依赖放在 `third_party/` 下，但这些目录内容默认不随 git 提交（见 `.gitignore`）。因此如果你看到类似 `pip install -e third_party/...` 的命令，需要先把对应仓库 clone 到本地，例如：
@@ -239,6 +263,12 @@ python -m frontier_eval task=unified \
 - 覆盖环境名：`task.runtime.conda_env=<env_name>`
 - 显式 Python 路径：`task.runtime.python_path=/path/to/python`
 
+重要：
+
+- `frontier-eval-2` 只是 unified 的默认兜底值。
+- 仓库里有不少 benchmark 并不应该直接用这个默认 runtime。
+- 运行前请先查 benchmark README，并优先使用其中写明的环境名、Python 路径或 Docker 运行方式。
+
 示例：
 
 ```bash
@@ -274,3 +304,5 @@ python -m frontier_eval.batch --matrix runs/batch/<batch_id>/matrix_resolved.yam
 - 新 benchmark 贡献的默认要求：直接使用 `task=unified` + benchmark 本地元数据文件（见上文）接入；新增 benchmark 的 PR 不应再默认新增 `frontier_eval/tasks/` 下的 Python task 代码。
 - 仅在 unified 明确无法满足需求、且已先与维护者沟通例外方案时：实现 `frontier_eval/tasks/base.py` 的 `Task` 子类（`initial_program_path()` + `evaluate_program()`），并在 `frontier_eval/registry_tasks.py` 注册（或继续用 `frontier_eval/registry.py` 的 `get_task`）。
 - 新增算法：实现 `frontier_eval/algorithms/base.py` 的 `Algorithm` 子类，并在 `frontier_eval/registry_algorithms.py` 注册。
+
+<!-- AI_GENERATED -->

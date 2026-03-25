@@ -28,5 +28,7 @@ runs_old_2
 third_party
 SKILL.md
 SKILL_zh-CN.md
+!.codex/skills/**/SKILL.md
+!.codex/skills/**/SKILL_zh-CN.md
 submission.json
 outputlog.txt

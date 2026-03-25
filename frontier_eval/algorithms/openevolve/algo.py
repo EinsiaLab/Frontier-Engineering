@@ -270,6 +270,12 @@ class OpenEvolveAlgorithm(Algorithm):
         if not api_key:
             api_key = os.environ.get("OPENAI_API_KEY", "") or ""
 
+        config.llm.temperature = float(getattr(llm_cfg, "temperature", 0.7))
+        config.llm.max_tokens = int(getattr(llm_cfg, "max_tokens", 4096))
+        config.llm.timeout = int(getattr(llm_cfg, "timeout", 60))
+        config.llm.retries = int(getattr(llm_cfg, "retries", 3))
+        config.llm.retry_delay = int(getattr(llm_cfg, "retry_delay", 5))
+
         config.llm.api_base = api_base
         if api_key:
             config.llm.api_key = api_key
@@ -277,13 +283,9 @@ class OpenEvolveAlgorithm(Algorithm):
         if not getattr(config.llm, "models", None):
             config.llm.primary_model = model
             config.llm.primary_model_weight = 1.0
+            # Rebuild after applying the top-level llm overrides so synthesized model
+            # entries inherit the requested timeout/retry settings rather than defaults.
             config.llm.rebuild_models()
-
-        config.llm.temperature = float(getattr(llm_cfg, "temperature", 0.7))
-        config.llm.max_tokens = int(getattr(llm_cfg, "max_tokens", 4096))
-        config.llm.timeout = int(getattr(llm_cfg, "timeout", 60))
-        config.llm.retries = int(getattr(llm_cfg, "retries", 3))
-        config.llm.retry_delay = int(getattr(llm_cfg, "retry_delay", 5))
 
         config.llm.update_model_params(
             {

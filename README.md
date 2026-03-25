@@ -6,6 +6,21 @@ English | [简体中文](README_zh-CN.md)
 
 Unlike existing benchmarks that focus on Computer Science (CS) or purely abstract mathematical problems, Frontier-Eng focuses on engineering challenges with actual **economic benefits** and **physical constraints**. It is expected to cover multiple fields such as aerospace, civil engineering, EDA, bioengineering, and more.
 
+## Runtime Environment Notes
+
+`frontier_eval/requirements.txt` only sets up the evaluation framework itself. It does **not** mean every benchmark can run inside the same environment.
+
+Before running any specific benchmark, always read the corresponding environment instructions in:
+
+- `benchmarks/<Domain>/README*.md`
+- `benchmarks/<Domain>/<Task>/README*.md` if the task has its own README
+
+Many benchmark families require their own runtime environment, extra `requirements.txt`, extra `third_party/` checkouts, or Docker-based execution. When a benchmark README documents runtime overrides such as `task.runtime.conda_env=...`, `task.runtime.python_path=...`, or `task.runtime.use_conda_run=false`, treat the benchmark README as the source of truth and copy those overrides into your run command.
+
+Examples already in this repository include `ReactionOptimisation` (`summit`), `MolecularMechanics` (`openff-dev`), `SustainableDataCenterControl` (`sustaindc`), `PyPortfolioOpt` (`pyportfolioopt`), `QuantumComputing` (`mqt`), `InventoryOptimization` (`stock`), `JobShop` (custom `python_path`), and `EngDesign` (Docker / local mode).
+
+If you use Codex or another agent to prepare environments, see `.codex/skills/frontier-benchmark-env-setup/SKILL.md`.
+
 ## 🎯 Motivation
 
 Current AI4Research evaluation systems have the following limitations:
@@ -71,7 +86,7 @@ Each Task should contain the following file structure:
 1. Keep test commands as short as possible (ideally single-line commands). Testing is mandatory before submission!
 
   1. `python verification/evaluator.py scripts/init.py` # Run under benchmark, using `verification/evaluator.py` as the evaluation entry point. The target of the test, i.e., the target of agent evolution, is `scripts/init.py`.
-  2. `python -m frontier_eval task=unified task.benchmark=<Domain_Name>/<Task_Name> algorithm.iterations=0` # Framework compatibility verification for new benchmark contributions. Please document the exact unified benchmark id and any required runtime overrides (for example `task.runtime.conda_env=...`) in the README.
+  2. `python -m frontier_eval task=unified task.benchmark=<Domain_Name>/<Task_Name> algorithm.iterations=0` # Framework compatibility verification for new benchmark contributions. Please document the exact unified benchmark id and any required runtime overrides (for example `task.runtime.conda_env=...`) in the README, and explicitly call out any benchmark-specific environment setup (extra envs, Docker, `third_party/`, custom `python_path`, etc.).
 
 2. Please avoid files containing private information, such as: `.env`, API keys, IDE configurations (`.vscode/`), temporary files (`*.log`, `temp/`, `__pycache__`, and personal test scripts). Also, please check that the submitted content does not contain absolute paths to avoid reproducibility issues and privacy leaks.
 
@@ -787,3 +802,5 @@ Welcome to our developer community! Whether you want to discuss new engineering 
 * 🟢 **Feishu (Lark)**: [Click here to join our Feishu discussion group](https://applink.feishu.cn/client/chat/chatter/add_by_link?link_token=21ak5858-60ba-44fd-9085-01f165c8771c)
 
 * 🔜 **Discord**: [Click here to join our Discord community](https://discord.gg/hxeVhZNN)
+
+<!-- AI_GENERATED -->

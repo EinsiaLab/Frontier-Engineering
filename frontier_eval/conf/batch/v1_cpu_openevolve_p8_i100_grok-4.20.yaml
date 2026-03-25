@@ -66,21 +66,6 @@ tasks:
       - task.benchmark=Cryptographic/SHA3-256
 
   - name: unified
-    label: CommunicationEngineering/LDPCErrorFloor
-    overrides:
-      - task.benchmark=CommunicationEngineering/LDPCErrorFloor
-
-  - name: unified
-    label: CommunicationEngineering/PMDSimulation
-    overrides:
-      - task.benchmark=CommunicationEngineering/PMDSimulation
-
-  - name: unified
-    label: CommunicationEngineering/RayleighFadingBER
-    overrides:
-      - task.benchmark=CommunicationEngineering/RayleighFadingBER
-
-  - name: unified
     label: EnergyStorage/BatteryFastChargingProfile
     overrides:
       - task.benchmark=EnergyStorage/BatteryFastChargingProfile

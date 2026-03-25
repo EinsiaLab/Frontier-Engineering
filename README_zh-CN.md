@@ -6,6 +6,21 @@ English | [简体中文](README_zh-CN.md)
 
 不同于现有的关注计算机科学（CS）或纯数学抽象问题的 Benchmark，Frontier-Eng 聚焦于具有实际**经济效益**和**物理约束**的工程难题，预期涵盖航天、土木、EDA、生物工程等多个领域。
 
+## 运行环境说明
+
+`frontier_eval/requirements.txt` 只负责把评测框架本身装起来，并不代表所有 benchmark 都能在同一个环境里直接运行。
+
+在运行任何具体 benchmark 之前，请先阅读对应的环境说明：
+
+- `benchmarks/<Domain>/README*.md`
+- 如果该 task 还有自己的 README，再继续看 `benchmarks/<Domain>/<Task>/README*.md`
+
+很多 benchmark 家族都需要自己的 runtime 环境、额外的 `requirements.txt`、额外的 `third_party/` checkout，或者 Docker 执行方式。只要 benchmark README 里写了 `task.runtime.conda_env=...`、`task.runtime.python_path=...`、`task.runtime.use_conda_run=false` 这类 runtime override，就应当以 benchmark README 为准，并把这些 override 原样带进运行命令。
+
+仓库里已经有多类不同模式，例如 `ReactionOptimisation`（`summit`）、`MolecularMechanics`（`openff-dev`）、`SustainableDataCenterControl`（`sustaindc`）、`PyPortfolioOpt`（`pyportfolioopt`）、`QuantumComputing`（`mqt`）、`InventoryOptimization`（`stock`）、`JobShop`（自定义 `python_path`）以及 `EngDesign`（Docker / 本地模式）。
+
+如果你希望借助 Codex 或其他 agent 自动准备环境，可参考 `.codex/skills/frontier-benchmark-env-setup/SKILL.md`。
+
 ## 🎯 动机
 
 当前的 AI4Research 评测体系存在以下局限性：
@@ -69,7 +84,7 @@ English | [简体中文](README_zh-CN.md)
 
 1. 运行测试命令尽量简短（最好单行命令）提交前必须测试！
     1. python verification/evaluator.py scripts/init.py # 在benchmark下的运行，使用verification/evaluator.py作为评测入口，测试的目标也即agent evolve的目标为scripts/init.py
-    2. python -m frontier_eval task=unified task.benchmark=<Domain_Name>/<Task_Name> algorithm.iterations=0 # 新增 benchmark 的框架适配验证。请在 README 中写清 unified benchmark id，以及任何必要的 runtime 覆盖项（例如 `task.runtime.conda_env=...`）
+    2. python -m frontier_eval task=unified task.benchmark=<Domain_Name>/<Task_Name> algorithm.iterations=0 # 新增 benchmark 的框架适配验证。请在 README 中写清 unified benchmark id、任何必要的 runtime 覆盖项（例如 `task.runtime.conda_env=...`），以及 benchmark 自己需要的环境准备方式（额外 env、Docker、`third_party/`、自定义 `python_path` 等）
 2. 请注意不要包含私人信息的文件，例如:.env、API keys、IDE 配置（.vscode/）、临时文件（*.log, temp/, __pycache__/）、个人测试脚本，同时请检查提交的内容中是否包含绝对路径，避免出现复现问题和个人隐私泄露。
 
 3. **EVOLVE-BLOCK 标记（ShinkaEvolve / ABMCTS 必需）**：被 Agent 演化（evolve）的文件（例如 `scripts/init.py`，或类似 `malloclab-handout/mm.c` 这类语言特定的 baseline）必须包含 `EVOLVE-BLOCK-START` 与 `EVOLVE-BLOCK-END` 标记，用于定义*唯一*允许修改的代码区域。
@@ -777,3 +792,5 @@ English | [简体中文](README_zh-CN.md)
 
 * 🟢 **飞书**: [点击这里加入我们的飞书讨论群](https://applink.feishu.cn/client/chat/chatter/add_by_link?link_token=21ak5858-60ba-44fd-9085-01f165c8771c)
 * 🔜 **Discord**: [点击这里加入我们的Discord社区](https://discord.gg/hxeVhZNN)
+
+<!-- AI_GENERATED -->

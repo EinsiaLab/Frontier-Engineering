@@ -273,23 +273,24 @@ algorithms:
       - algorithm.oe.evaluator.timeout=300
 
 llms:
-  - name: ark__seed-2.0-pro-260215
+  - name: ark__kimi_2.5
     api_base: ${oc.env:ARK_API_BASE,http://ark-cn-beijing.bytedance.net/api/v3}
-    model: ${oc.env:SEED_MODEL,ep-m-20260214185222-qmcqh}
-    api_key_env: SEED_KEY
+    model: ${oc.env:KIMI_MODEL,ep-20260323155442-m2j5k}
+    api_key_env: KIMI_KEY
     env:
-      ALL_PROXY: ${oc.env:ALL_PROXY,socks5://127.0.0.1:50003}
-      HTTP_PROXY: ${oc.env:HTTP_PROXY,socks5://127.0.0.1:50003}
-      HTTPS_PROXY: ${oc.env:HTTPS_PROXY,socks5://127.0.0.1:50003}
+      ALL_PROXY: ${oc.env:ALL_PROXY,socks5://10.0.0.22:50003}
+      HTTP_PROXY: ${oc.env:HTTP_PROXY,socks5://10.0.0.22:50003}
+      HTTPS_PROXY: ${oc.env:HTTPS_PROXY,socks5://10.0.0.22:50003}
 
 llm_config: openai_compatible
 
 common_overrides:
   - llm.temperature=0.7
-  - llm.timeout=60
+  - llm.timeout=360
+  - llm.retries=6
 
 run:
-  name: v1_cpu_openevolve_p8_i100_seed-2.0-pro
+  name: v1_cpu_openevolve_p8_i100_kimi_2.5
   base_dir: runs/batch
   max_parallel: 8
   fail_fast: false
