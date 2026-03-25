@@ -14,7 +14,7 @@ tasks:
     label: KernelEngineering/FlashAttention
     overrides:
       - task.benchmark=KernelEngineering/FlashAttention
-      - task.runtime.conda_env=optics
+      - task.runtime.conda_env=frontier-v1-main
 
 algorithms:
   - name: openevolve

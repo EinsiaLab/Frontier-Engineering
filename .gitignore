@@ -32,3 +32,9 @@ SKILL_zh-CN.md
 !.codex/skills/**/SKILL_zh-CN.md
 submission.json
 outputlog.txt
+frontier_eval/conf/batch/*
+!frontier_eval/conf/batch/example_matrix.yaml
+!frontier_eval/conf/batch/v1_cpu_openevolve_p8_i100_gemini-3.1-pro-preview.yaml
+!frontier_eval/conf/batch/v1_engdesign_openevolve_qwen3codernext_100.yaml
+!frontier_eval/conf/batch/v1_flashattention_openevolve_qwen3codernext_100.yaml
+!frontier_eval/conf/batch/v1_gpu_openevolve_qwen3codernext_100.yaml

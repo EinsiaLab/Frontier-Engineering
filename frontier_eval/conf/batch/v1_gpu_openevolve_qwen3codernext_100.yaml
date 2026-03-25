@@ -11,19 +11,19 @@ tasks:
     label: Robotics/QuadrupedGaitOptimization
     overrides:
       - task.benchmark=Robotics/QuadrupedGaitOptimization
-      - task.runtime.conda_env=motion
+      - task.runtime.conda_env=frontier-v1-main
 
   - name: unified
     label: Robotics/RobotArmCycleTimeOptimization
     overrides:
       - task.benchmark=Robotics/RobotArmCycleTimeOptimization
-      - task.runtime.conda_env=motion
+      - task.runtime.conda_env=frontier-v1-main
 
   - name: unified
     label: Aerodynamics/CarAerodynamicsSensing
     overrides:
       - task.benchmark=Aerodynamics/CarAerodynamicsSensing
-      - task.runtime.conda_env=optics
+      - task.runtime.conda_env=frontier-v1-main
 
 algorithms:
   - name: openevolve
