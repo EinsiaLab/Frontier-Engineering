@@ -21,6 +21,35 @@ English | [简体中文](README_zh-CN.md)
 
 如果你希望借助 Codex 或其他 agent 自动准备环境，可参考 `.codex/skills/frontier-benchmark-env-setup/SKILL.md`。
 
+### `v1` 合并任务环境说明
+
+为减少 `README` 中标记为有效 `v1` 任务池的 task runtime 环境数量，同时不破坏已有环境，仓库当前采用如下约定：
+
+- `frontier-eval-2` 仍然只作为评测框架 / driver 环境使用，保持不变。
+- 原有 task 环境（如 `bio`、`mqt`、`optics`、`stock`、`pyportfolioopt`、`motion`、`jobshop`、`summit`、`sustaindc`、`kernel`）不会被删除或覆盖。
+- 新增的合并环境会创建在当前 `conda` 指向的环境目录下，默认环境名为 `frontier-v1-main`、`frontier-v1-summit`、`frontier-v1-sustaindc`、`frontier-v1-kernel`。
+- 对于需要“直连解释器”而不是 `conda run` 的 `v1` 任务（当前主要是 `ReactionOptimisation/*` 与 `JobShop/*`），batch matrix 里使用可移植标记 `conda-env:<env-name>`，由 unified evaluator 在运行时解析为对应环境中的 Python 路径，因此不需要把机器本地前缀写进仓库。
+
+当前 `v1` task runtime 合并结果为：
+
+- `frontier-v1-main`：`SingleCellAnalysis/predict_modality`、`QuantumComputing/*`、`Optics/*`、`InventoryOptimization/*`、`PyPortfolioOpt/*`、`JobShop/*`、`Robotics/DynamicObstacleAvoidanceNavigation`、`Robotics/PIDTuning`、`Robotics/UAVInspectionCoverageWithWind`、`Robotics/QuadrupedGaitOptimization`、`Robotics/RobotArmCycleTimeOptimization`、`Aerodynamics/CarAerodynamicsSensing`、`KernelEngineering/FlashAttention`
+- `frontier-v1-summit`：`ReactionOptimisation/*`
+- `frontier-v1-sustaindc`：`SustainableDataCenterControl/*`
+- `frontier-v1-kernel`：`KernelEngineering/MLA`、`KernelEngineering/TriMul`
+
+如果某个历史 README 仍然写着旧环境名（例如 `mqt`、`stock`、`pyportfolioopt`、`jobshop` 等），对于当前 `v1` 批量运行，请优先以 `frontier_eval/conf/batch/` 下的 matrix 配置为准。
+
+环境准备与验证脚本：
+
+- 初始化合并环境：`bash scripts/setup_v1_merged_task_envs.sh`
+- 按 `iter=0` 验证合并环境：`DRIVER_ENV=frontier-eval-2 GPU_DEVICES=<gpu_id> bash scripts/validate_v1_merged_task_envs.sh`
+
+说明：
+
+- 上述验证默认使用 `conda run -n frontier-eval-2 python` 作为 driver，也可以通过 `DRIVER_PY=/path/to/python` 显式覆盖；脚本会验证 CPU `v1`、GPU `v1`、`FlashAttention`、`MLA`、`TriMul`。
+- `MuonTomography` 仍按本文后续说明，暂不计入当前有效 `v1` 任务池。
+- 已知限制：`KernelEngineering/TriMul` 的官方 full benchmark (`verification/tri_bench.txt`) 在 24GB 级别 GPU 上可能受显存上限影响；这通常是 task 本身的显存边界问题，而不是 `frontier-v1-kernel` 环境缺依赖。
+
 ## 🎯 动机
 
 当前的 AI4Research 评测体系存在以下局限性：

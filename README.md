@@ -21,6 +21,35 @@ Examples already in this repository include `ReactionOptimisation` (`summit`), `
 
 If you use Codex or another agent to prepare environments, see `.codex/skills/frontier-benchmark-env-setup/SKILL.md`.
 
+### `v1` Merged Task Environments
+
+To reduce the number of runtime environments used by the effective `v1` task pool without breaking existing setups, the repository now uses the following convention:
+
+- `frontier-eval-2` remains the evaluation-framework / driver environment and is left unchanged.
+- Existing task environments such as `bio`, `mqt`, `optics`, `stock`, `pyportfolioopt`, `motion`, `jobshop`, `summit`, `sustaindc`, and `kernel` are preserved and not overwritten.
+- New merged task environments are created under whichever environment prefix the current `conda` installation manages, with default names `frontier-v1-main`, `frontier-v1-summit`, `frontier-v1-sustaindc`, and `frontier-v1-kernel`.
+- For `v1` tasks that need a direct interpreter instead of `conda run` (currently `ReactionOptimisation/*` and `JobShop/*`), the batch matrices use the portable marker `conda-env:<env-name>`. The unified evaluator resolves that marker to the target env's Python executable at runtime, so repository files stay machine-independent.
+
+Current `v1` runtime consolidation:
+
+- `frontier-v1-main`: `SingleCellAnalysis/predict_modality`, `QuantumComputing/*`, `Optics/*`, `InventoryOptimization/*`, `PyPortfolioOpt/*`, `JobShop/*`, `Robotics/DynamicObstacleAvoidanceNavigation`, `Robotics/PIDTuning`, `Robotics/UAVInspectionCoverageWithWind`, `Robotics/QuadrupedGaitOptimization`, `Robotics/RobotArmCycleTimeOptimization`, `Aerodynamics/CarAerodynamicsSensing`, `KernelEngineering/FlashAttention`
+- `frontier-v1-summit`: `ReactionOptimisation/*`
+- `frontier-v1-sustaindc`: `SustainableDataCenterControl/*`
+- `frontier-v1-kernel`: `KernelEngineering/MLA`, `KernelEngineering/TriMul`
+
+If an older benchmark README still mentions legacy env names such as `mqt`, `stock`, `pyportfolioopt`, or `jobshop`, prefer the batch matrix files under `frontier_eval/conf/batch/` as the source of truth for current `v1` runs.
+
+Setup and validation scripts:
+
+- Initialize merged envs: `bash scripts/setup_v1_merged_task_envs.sh`
+- Validate merged envs with `iter=0`: `DRIVER_ENV=frontier-eval-2 GPU_DEVICES=<gpu_id> bash scripts/validate_v1_merged_task_envs.sh`
+
+Notes:
+
+- The validation script uses `conda run -n frontier-eval-2 python` as the default driver, and can also be overridden with `DRIVER_PY=/path/to/python`. It checks CPU `v1`, GPU `v1`, `FlashAttention`, `MLA`, and `TriMul`.
+- `MuonTomography` remains excluded from the current effective `v1` pool as described later in this README.
+- Known caveat: the official `KernelEngineering/TriMul` full benchmark (`verification/tri_bench.txt`) may still be VRAM-limited on 24GB-class GPUs; this is typically a task-level memory-bound issue rather than a missing dependency in `frontier-v1-kernel`.
+
 ## 🎯 Motivation
 
 Current AI4Research evaluation systems have the following limitations:
