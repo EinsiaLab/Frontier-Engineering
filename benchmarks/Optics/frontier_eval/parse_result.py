@@ -6,6 +6,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+INVALID_COMBINED_SCORE = -1e18
+
 
 def _maybe_float(value: Any) -> float | None:
     if isinstance(value, bool):
@@ -266,7 +268,7 @@ def main() -> None:
     args = parser.parse_args()
 
     metrics: dict[str, Any] = {
-        "combined_score": 0.0,
+        "combined_score": INVALID_COMBINED_SCORE,
         "valid": 0.0,
         "eval_returncode": float(args.eval_rc),
         "runtime_s": float(args.runtime_s),
@@ -309,11 +311,11 @@ def main() -> None:
     if "valid" not in metrics:
         metrics["valid"] = 1.0 if (args.eval_rc == 0 and payload is not None) else 0.0
 
-    # Keep invalid runs strictly at zero score.
+    # Keep invalid runs strictly below any feasible score, including negative ones.
     valid_v = _maybe_float(metrics.get("valid")) or 0.0
     if args.eval_rc != 0 or valid_v <= 0.0:
         metrics["valid"] = 0.0
-        metrics["combined_score"] = 0.0
+        metrics["combined_score"] = INVALID_COMBINED_SCORE
     elif "combined_score" not in metrics:
         cand = _maybe_float(metrics.get("candidate_score"))
         metrics["combined_score"] = float(cand) if cand is not None else 1.0

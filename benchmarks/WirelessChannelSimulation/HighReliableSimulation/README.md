@@ -4,7 +4,7 @@ Navigation document for this task.
 
 ## Goal
 
-Implement `MySampler` (inherits `SamplerBase`) and provide `simulate_variance_controlled(...)` to estimate BER for Hamming(127,120) over AWGN under fixed evaluator settings.
+Implement `MySampler` (inherits `SamplerBase`) and provide `simulate_variance_controlled(...)` for local compatibility. Official scoring uses the benchmark-owned variance-controlled loop with your sampler to estimate BER for Hamming(127,120) over AWGN under fixed evaluator settings.
 
 ## Files
 
@@ -39,7 +39,7 @@ Or run from the task directory:
 cd benchmarks/WirelessChannelSimulation/HighReliableSimulation && python verification/evaluator.py scripts/init.py
 ```
 
-`scripts/init.py` is expected to be runnable and should produce non-zero `runtime_s` and `valid=1.0` under a normal environment.
+`scripts/init.py` is expected to be runnable and should produce non-zero `runtime_s` under a normal environment. It is only a compatibility starter and is not guaranteed to achieve `valid=1.0` under the frozen target-std gate.
 
 ## Run with frontier_eval (unified)
 

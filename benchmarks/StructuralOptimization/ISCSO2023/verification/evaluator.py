@@ -14,6 +14,8 @@ from typing import Any
 
 import numpy as np
 
+INVALID_COMBINED_SCORE = -1e18
+
 
 def _find_repo_root(start: Path | None = None) -> Path:
     if "FRONTIER_ENGINEERING_ROOT" in os.environ:
@@ -237,7 +239,7 @@ def evaluate(program_path: str, *, repo_root: Path | None = None, algorithm_conf
     artifacts: dict[str, str] = {}
 
     metrics: dict[str, float] = {
-        "combined_score": 0.0,
+        "combined_score": INVALID_COMBINED_SCORE,
         "weight_kg": 0.0,
         "valid": 0.0,
         "feasible": 0.0,
@@ -248,7 +250,7 @@ def evaluate(program_path: str, *, repo_root: Path | None = None, algorithm_conf
     problem = load_problem_data(repo_root)
     if problem is None:
         metrics["runtime_s"] = float(time.time() - start)
-        metrics["combined_score"] = -1e18
+        metrics["combined_score"] = INVALID_COMBINED_SCORE
         metrics["valid"] = 0.0
         artifacts["error_message"] = "problem_data.json not found"
         shutil.rmtree(work_dir, ignore_errors=True)
@@ -274,7 +276,7 @@ def evaluate(program_path: str, *, repo_root: Path | None = None, algorithm_conf
     if proc.returncode != 0 or proc.stderr:
         metrics["timeout"] = 1.0 if proc.returncode == -1 else 0.0
         metrics["runtime_s"] = float(time.time() - start)
-        metrics["combined_score"] = -1e18
+        metrics["combined_score"] = INVALID_COMBINED_SCORE
         metrics["valid"] = 0.0
         artifacts["error_message"] = f"program failed with return code {proc.returncode}"
         artifacts["program_stderr"] = _tail(proc.stderr)
@@ -292,7 +294,7 @@ def evaluate(program_path: str, *, repo_root: Path | None = None, algorithm_conf
         submission_path = work_dir / "submission.json"
     if not submission_path.exists():
         metrics["runtime_s"] = float(time.time() - start)
-        metrics["combined_score"] = -1e18
+        metrics["combined_score"] = INVALID_COMBINED_SCORE
         metrics["valid"] = 0.0
         artifacts["error_message"] = "submission.json not found"
         shutil.rmtree(work_dir, ignore_errors=True)
@@ -304,7 +306,7 @@ def evaluate(program_path: str, *, repo_root: Path | None = None, algorithm_conf
 
     if "solution_vector" not in submission:
         metrics["runtime_s"] = float(time.time() - start)
-        metrics["combined_score"] = -1e18
+        metrics["combined_score"] = INVALID_COMBINED_SCORE
         metrics["valid"] = 0.0
         artifacts["error_message"] = "submission.json missing 'solution_vector'"
         shutil.rmtree(work_dir, ignore_errors=True)
@@ -315,7 +317,7 @@ def evaluate(program_path: str, *, repo_root: Path | None = None, algorithm_conf
     if max_eval is not None and num_eval > max_eval:
         metrics["runtime_s"] = float(time.time() - start)
         metrics["valid"] = 0.0
-        metrics["combined_score"] = -1e18
+        metrics["combined_score"] = INVALID_COMBINED_SCORE
         artifacts["error_message"] = f"Exceeded max evaluations: {num_eval} > {max_eval}"
         shutil.rmtree(work_dir, ignore_errors=True)
         return _wrap(metrics, artifacts)
@@ -339,7 +341,7 @@ def evaluate(program_path: str, *, repo_root: Path | None = None, algorithm_conf
         metrics["combined_score"] = -float(objective)
         metrics["valid"] = 1.0
     else:
-        metrics["combined_score"] = -1e18
+        metrics["combined_score"] = INVALID_COMBINED_SCORE
         metrics["valid"] = 0.0
 
     shutil.rmtree(work_dir, ignore_errors=True)
@@ -371,5 +373,4 @@ if __name__ == "__main__":
         else:
             output = result
         print(json.dumps(output, indent=2))
-
 

@@ -55,6 +55,7 @@ eval_rc = int(sys.argv[4])
 elapsed_s = float(sys.argv[5])
 candidate_path = sys.argv[6]
 eval_artifact_dir = sys.argv[7]
+INVALID_COMBINED_SCORE = -1e18
 
 
 def maybe_float(value):
@@ -74,7 +75,7 @@ def maybe_float(value):
 
 
 metrics = {
-    "combined_score": 0.0,
+    "combined_score": INVALID_COMBINED_SCORE,
     "valid": 0.0,
     "eval_returncode": float(eval_rc),
     "runtime_s": elapsed_s,
@@ -139,12 +140,20 @@ if score_0_to_3 is None and results:
 if score_0_to_3 is not None:
     metrics["candidate_score_0_to_3"] = float(score_0_to_3)
     metrics["candidate_score_ratio"] = float(score_0_to_3) / 3.0
-    metrics["combined_score"] = float(score_0_to_3)
+    if eval_rc == 0 and report is not None:
+        metrics["combined_score"] = float(score_0_to_3)
+        metrics["valid"] = 1.0
+elif eval_rc == 0 and report is not None:
+    artifacts.setdefault("error_message", "missing candidate score in eval_report.json")
 
-if eval_rc == 0 and report is not None:
-    metrics["valid"] = 1.0
 if eval_rc != 0:
     artifacts.setdefault("error_message", "verification/evaluate.py returned non-zero exit code")
+    metrics["combined_score"] = INVALID_COMBINED_SCORE
+    metrics["valid"] = 0.0
+elif report is None or score_0_to_3 is None:
+    artifacts.setdefault("error_message", "missing candidate score in eval_report.json")
+    metrics["combined_score"] = INVALID_COMBINED_SCORE
+    metrics["valid"] = 0.0
 
 metrics_path.write_text(json.dumps(metrics, indent=2, ensure_ascii=True), encoding="utf-8")
 artifacts_path.write_text(json.dumps(artifacts, indent=2, ensure_ascii=False), encoding="utf-8")

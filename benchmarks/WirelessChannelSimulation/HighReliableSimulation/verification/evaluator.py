@@ -22,8 +22,7 @@ MIN_ERRORS = 20
 REPEATS = 3
 
 EPSILON = 0.8
-INVALID_SCORE_SCALE = 0.1
-INVALID_SCORE_CAP = 0.1
+INVALID_COMBINED_SCORE = -1e18
 # Re-calibrated with baseline MySampler under sigma=0.268, max_samples=10_000_000,
 # 10 runs: BER uses arithmetic mean, runtime uses arithmetic mean.
 R0_DEV = 7.261287772505011e-07
@@ -124,13 +123,46 @@ def _build_code(repo_root: Path, seed: int):
     return code
 
 
+def _run_canonical_simulation(*, code: Any, sampler: Any):
+    # Use the benchmark-owned simulation loop so candidates cannot self-report
+    # forged aggregate metrics through their own wrapper method.
+    return code.simulate_variance_controlled(
+        noise_std=DEV_SIGMA,
+        target_std=TARGET_STD,
+        max_samples=MAX_SAMPLES,
+        sampler=sampler,
+        batch_size=BATCH_SIZE,
+        fix_tx=True,
+        min_errors=MIN_ERRORS,
+    )
+
+
+def _validate_repeat_stats(
+    *,
+    err_rate_log: float,
+    err_ratio: float,
+    total_samples: float,
+    actual_std: float,
+) -> None:
+    if not np.isfinite(err_rate_log):
+        raise ValueError("err_rate_log 非有限值")
+    if not np.isfinite(err_ratio) or not (0.0 <= err_ratio <= 1.0):
+        raise ValueError("err_ratio 不在 [0, 1] 范围内")
+    if not np.isfinite(total_samples) or total_samples <= 0:
+        raise ValueError("total_samples 非法")
+    if total_samples > MAX_SAMPLES:
+        raise ValueError("total_samples 超过评测上限")
+    if not np.isfinite(actual_std) or actual_std < 0.0:
+        raise ValueError("actual_std 非法")
+
+
 def evaluate(program_path: str, *, repo_root: Path | None = None):
     start = time.time()
     repo_root = _find_repo_root() if repo_root is None else repo_root.expanduser().resolve()
     program = _resolve_program_path(program_path, repo_root)
 
     metrics: dict[str, float] = {
-        "combined_score": 0.0,
+        "combined_score": INVALID_COMBINED_SCORE,
         "runtime_s": 0.0,
         "error_log_ratio": float("inf"),
         "valid": 0.0,
@@ -177,24 +209,19 @@ def evaluate(program_path: str, *, repo_root: Path | None = None):
 
             t0 = time.time()
             try:
-                result = sampler.simulate_variance_controlled(
-                    code=code,
-                    sigma=DEV_SIGMA,
-                    target_std=TARGET_STD,
-                    max_samples=MAX_SAMPLES,
-                    batch_size=BATCH_SIZE,
-                    fix_tx=True,
-                    min_errors=MIN_ERRORS,
-                )
+                result = _run_canonical_simulation(code=code, sampler=sampler)
             except Exception as e:
-                raise RuntimeError(f"simulate_variance_controlled 执行失败: {e}") from e
+                raise RuntimeError(f"canonical simulate_variance_controlled 执行失败: {e}") from e
             dt = time.time() - t0
 
             errors_log, weights_log, err_ratio, total_samples, actual_std, converged = _normalize_result(result)
             err_rate_log = float(errors_log - weights_log)
-
-            if not np.isfinite(err_rate_log):
-                raise ValueError("err_rate_log 非有限值")
+            _validate_repeat_stats(
+                err_rate_log=err_rate_log,
+                err_ratio=err_ratio,
+                total_samples=total_samples,
+                actual_std=actual_std,
+            )
 
             runtimes.append(float(dt))
             err_logs.append(err_rate_log)
@@ -206,14 +233,15 @@ def evaluate(program_path: str, *, repo_root: Path | None = None):
         runtime_median = float(np.median(runtimes))
         err_log_median = float(np.median(err_logs))
         err_log_ratio = float(abs(err_log_median - R0_LOG_DEV))
+        std_median = float(np.median(stds))
+        std_attainment_rate = float(np.mean(np.asarray(stds) <= TARGET_STD))
 
-        valid = float(err_log_ratio < EPSILON)
+        valid = float(err_log_ratio < EPSILON and std_median <= TARGET_STD)
         raw_score = float(T0_DEV / (runtime_median * err_log_ratio + 1e-6))
         if valid > 0:
             score = raw_score
         else:
-            # Invalid candidates still receive a heavily penalized score.
-            score = min(raw_score * INVALID_SCORE_SCALE, INVALID_SCORE_CAP)
+            score = INVALID_COMBINED_SCORE
 
         metrics.update(
             {
@@ -225,10 +253,12 @@ def evaluate(program_path: str, *, repo_root: Path | None = None):
                 "err_rate_log_median": err_log_median,
                 "err_ratio_median": float(np.nanmedian(ratios)),
                 "actual_samples_median": float(np.nanmedian(samples)),
-                "actual_std_median": float(np.nanmedian(stds)),
+                "actual_std_median": std_median,
+                "target_std_attainment_rate": std_attainment_rate,
                 "converged_rate": float(np.mean(converged_flags)),
                 "sigma": DEV_SIGMA,
                 "decoder_chase_t": 3.0,
+                "trusted_canonical_loop": 1.0,
             }
         )
         artifacts["dev_constants"] = json.dumps(
@@ -241,6 +271,7 @@ def evaluate(program_path: str, *, repo_root: Path | None = None):
                 "r0_dev": R0_DEV,
                 "t0_dev": T0_DEV,
                 "repeats": REPEATS,
+                "scoring_note": "score requires err_rate_log close to reference and median actual_std <= target_std",
             },
             ensure_ascii=False,
             indent=2,
@@ -266,7 +297,7 @@ def evaluate(program_path: str, *, repo_root: Path | None = None):
         ModuleNotFoundError,
         KeyError,
     ) as e:
-        metrics["combined_score"] = 0.0
+        metrics["combined_score"] = INVALID_COMBINED_SCORE
         metrics["valid"] = 0.0
         artifacts["error_message"] = str(e)
         artifacts["traceback"] = traceback.format_exc()

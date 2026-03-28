@@ -4,7 +4,7 @@
 
 ## 目标
 
-实现 `MySampler`（继承 `SamplerBase`），并提供 `simulate_variance_controlled(...)`，在固定评测配置下估计 AWGN 信道中 Hamming(127,120) 的 BER。
+实现 `MySampler`（继承 `SamplerBase`），并提供 `simulate_variance_controlled(...)` 以兼容本地调用。官方评分会使用 benchmark 自己的方差控制循环和你的 sampler，在固定评测配置下估计 AWGN 信道中 Hamming(127,120) 的 BER。
 
 ## 文件
 
@@ -39,7 +39,7 @@ python benchmarks/WirelessChannelSimulation/HighReliableSimulation/verification/
 cd benchmarks/WirelessChannelSimulation/HighReliableSimulation && python verification/evaluator.py scripts/init.py
 ```
 
-`scripts/init.py` 是可运行初始程序；在正常环境下应出现非零 `runtime_s`，且 `valid=1.0`。
+`scripts/init.py` 是可运行初始程序；在正常环境下应出现非零 `runtime_s`。它只是兼容性的 starter，不保证在冻结的 `target_std` 门槛下得到 `valid=1.0`。
 
 ## 使用 frontier_eval 运行（unified）
 

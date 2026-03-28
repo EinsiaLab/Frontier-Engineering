@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+INVALID_COMBINED_SCORE="-1e18"
+
 PYTHON_CMD="${1:?missing python command}"
 BENCHMARK_DIR="${2:?missing benchmark dir}"
 CANDIDATE_PATH="${3:-}"
@@ -111,7 +113,7 @@ set -e
 if [[ ${PARSE_RC} -ne 0 || ! -f "${METRICS_JSON}" ]]; then
   cat > "${METRICS_JSON}" <<EOF
 {
-  "combined_score": 0.0,
+  "combined_score": ${INVALID_COMBINED_SCORE},
   "valid": 0.0,
   "eval_returncode": ${EVAL_RC},
   "runtime_s": ${ELAPSED_S}

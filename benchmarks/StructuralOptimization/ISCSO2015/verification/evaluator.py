@@ -24,6 +24,8 @@ from typing import Any
 
 import numpy as np
 
+INVALID_COMBINED_SCORE = -1e18
+
 
 def _find_repo_root(start: Path | None = None) -> Path:
     """Locate the repository root directory."""
@@ -263,7 +265,7 @@ def evaluate(program_path: str, *, repo_root: Path | None = None) -> Any:
     artifacts: dict[str, str] = {}
 
     metrics: dict[str, float] = {
-        "combined_score": 0.0,
+        "combined_score": INVALID_COMBINED_SCORE,
         "weight_kg": 0.0,
         "valid": 0.0,
         "feasible": 0.0,
@@ -343,7 +345,7 @@ def evaluate(program_path: str, *, repo_root: Path | None = None) -> Any:
             metrics["valid"] = 1.0
         else:
             # Invalid: large negative so it's always worse than any feasible solution
-            metrics["combined_score"] = -1e18
+            metrics["combined_score"] = INVALID_COMBINED_SCORE
             metrics["valid"] = 0.0
 
         return _wrap(metrics, artifacts)
@@ -382,4 +384,3 @@ if __name__ == "__main__":
         else:
             output = result
         print(json.dumps(output, indent=2))
-

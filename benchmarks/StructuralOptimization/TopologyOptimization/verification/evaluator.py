@@ -17,6 +17,8 @@ import numpy as np
 from scipy.sparse import coo_matrix
 from scipy.sparse.linalg import spsolve
 
+INVALID_COMBINED_SCORE = -1e18
+
 
 def _find_repo_root(start: Path | None = None) -> Path:
     """Locate the repository root directory."""
@@ -272,7 +274,7 @@ def evaluate(program_path: str, *, repo_root: Path | None = None) -> Any:
     artifacts: dict[str, str] = {}
 
     metrics: dict[str, float] = {
-        "combined_score": 0.0,
+        "combined_score": INVALID_COMBINED_SCORE,
         "compliance": 0.0,
         "volume_fraction": 0.0,
         "valid": 0.0,
@@ -351,7 +353,7 @@ def evaluate(program_path: str, *, repo_root: Path | None = None) -> Any:
             metrics["combined_score"] = -float(result["compliance"])
             metrics["valid"] = 1.0
         else:
-            metrics["combined_score"] = -1e18
+            metrics["combined_score"] = INVALID_COMBINED_SCORE
             metrics["valid"] = 0.0
 
         return _wrap(metrics, artifacts)

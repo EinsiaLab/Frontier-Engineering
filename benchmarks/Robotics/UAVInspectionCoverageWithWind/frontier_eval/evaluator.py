@@ -11,6 +11,8 @@ import time
 from pathlib import Path
 from typing import Any
 
+INVALID_COMBINED_SCORE = -1e18
+
 
 def evaluate(program_path: str, *, repo_root: Path | None = None):
     start = time.time()
@@ -24,7 +26,7 @@ def evaluate(program_path: str, *, repo_root: Path | None = None):
         benchmark_dir = (repo_root / "Robotics" / "UAVInspectionCoverageWithWind").resolve()
 
     metrics: dict[str, float] = {
-        "combined_score": 0.0,
+        "combined_score": INVALID_COMBINED_SCORE,
         "valid": 0.0,
         "timeout": 0.0,
         "runtime_s": 0.0,
