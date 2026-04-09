@@ -17,3 +17,6 @@
 * **[调强质子治疗剂量权重优化 (IMPT Dose Weight Optimization)](./ProtonTherapyPlanning/README_zh-CN.md)**
   * **背景**：利用质子束布拉格峰效应优化肿瘤放疗中的照射计划。
   * **目标**：在满足 CTV 处方剂量覆盖、OAR 剂量限制与束流成本约束下，优化质子束斑位置与权重。
+* **[PET 探测器几何与经济帕累托优化](./PETScannerOptimization/README_zh-CN.md)**
+  * **背景**：利用反物质（正负电子）湮灭产生的 511 keV 伽马射线进行高分辨率分子影像探测。
+  * **目标**：在极其昂贵的人造 LYSO 闪烁晶体总体积预算限制下，优化探测环的 3D 几何尺寸，最大化系统绝对灵敏度并最小化空间视差误差（DOI 效应）。
