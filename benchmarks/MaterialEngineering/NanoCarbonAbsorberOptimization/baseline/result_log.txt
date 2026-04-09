@@ -1,0 +1,28 @@
+Baseline Execution Log
+======================
+Command: python verification/evaluator.py baseline/solution.py
+Date: 2026-03-18
+Method: Random search (3000 samples, seed=42) across all 3 carbon types
+Material system: Nd0.15-BaM + CNTs/GO/OLC composites
+
+Evaluation Result:
+{
+  "valid": 1,
+  "feasible": 1,
+  "combined_score": 0.1691,
+  "carbon_type": "CNTs",
+  "carbon_content": 0.0382,
+  "rl_min_db": -46.57,
+  "eab10_ghz": 3.65,
+  "thickness_mm": 1.537,
+  "density": 4.970,
+  "cost_proxy": 1.557,
+  "runtime_sec": 3.268
+}
+
+Notes:
+- Baseline selected CNTs as optimal carbon type (consistent with paper findings).
+- EAB = 3.65 GHz (meets >= 3.0 GHz hard constraint).
+- RL_min = -46.57 dB (deep absorption).
+- Mixed-variable optimization: discrete carbon type + continuous content/thickness.
+- Parameters based on Feng et al., J Mater Sci Mater Eng 2024, 19:49.
