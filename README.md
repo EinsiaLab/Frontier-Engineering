@@ -4,6 +4,10 @@ English | [简体中文](README_zh-CN.md)
 
 [![Homepage](https://img.shields.io/badge/Homepage-lab.einsia.ai-0969DA?style=flat-square&logo=homepage&logoColor=white)](https://lab.einsia.ai/frontier-eng/) [![arXiv](https://img.shields.io/badge/arXiv-coming_soon-b31b1b?style=flat-square&logo=arxiv&logoColor=white)](https://arxiv.org) [![Feishu](https://img.shields.io/badge/Feishu-Join-3370FF?style=flat-square)](https://applink.feishu.cn/client/chat/chatter/add_by_link?link_token=21ak5858-60ba-44fd-9085-01f165c8771c) [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?style=flat-square&logo=discord&logoColor=white)](https://discord.gg/hxeVhZNN)
 
+## News
+
+- 🎉🚀 **2026-04-10**: **Frontier-Eng v1.0.0** (**47 tasks**) is out! [Detailed leaderboard](https://lab.einsia.ai/frontier-eng/leaderboard.html)
+
 ## Motivation
 
 Existing agent benchmarks focus on binary pass/fail tasks (code generation, question answering). Engineering is different: the goal is rarely to produce a single correct artifact from scratch. An initial feasible solution already exists and the challenge is to **iteratively optimize it** under domain-specific constraints with no known theoretical ceiling.
@@ -18,8 +22,6 @@ Frontier-Eng evaluates agents on problems where genuine improvement requires int
 
 ## Getting Started
 
-You need **[conda](https://docs.conda.io/en/latest/miniconda.html)** and a **Bash** shell (`bash init.sh` works from Git Bash on Windows, WSL, Linux, or macOS — not from plain `cmd.exe` / PowerShell unless `bash` is on your `PATH`).
-
 ```bash
 bash init.sh && conda activate frontier-eval-2
 ```
@@ -28,7 +30,7 @@ Per-task runs, batch matrices, and runtime overrides are in **[frontier_eval/REA
 
 ## Leaderboard
 
-Interactive charts: **[lab.einsia.ai/frontier-eng/leaderboard.html](https://lab.einsia.ai/frontier-eng/leaderboard.html)**. **Frontier Models** — normalized overall score (47 tasks). *2026-04-09 · [source](https://lab.einsia.ai/frontier-eng/data/overall-model.yaml)*
+Detailed leaderboard: **[lab.einsia.ai/frontier-eng/leaderboard.html](https://lab.einsia.ai/frontier-eng/leaderboard.html)**. **Frontier Models** — normalized overall score (47 tasks). *2026-04-09 · [source](https://lab.einsia.ai/frontier-eng/data/overall-model.yaml)*
 
 | Rank | Model | Score |
 | :--: | :--- | --: |
@@ -43,7 +45,7 @@ Interactive charts: **[lab.einsia.ai/frontier-eng/leaderboard.html](https://lab.
 
 ## Agent skills
 
-**Copy the block below verbatim** and send it to your agent (Composer, chat, etc.):
+**Copy the block below verbatim** and send it to your agent:
 
 ```text
 Please install the two skills under this repo’s skill/source/ as project-level skills for this repository (follow my editor’s / client’s convention for where project skills live, e.g. .cursor/skills/ for Cursor, .claude/skills/ for Claude Code, .codex/skills/ for Codex, etc.). The two packages are:
@@ -55,11 +57,6 @@ Install each folder as one loadable skill package: include SKILL.md plus any rel
 ```
 
 There is no bundled CLI installer; your agent wires these up per client. The authoritative instructions remain in each folder’s `SKILL.md`.
-
-## News
-
-- **Releases**: Version-tagged updates and notes are on **[GitHub Releases](https://github.com/EinsiaLab/Frontier-Engineering/releases)**.
-- Watch this repository on GitHub for notifications.
 
 ## Task Details
 
