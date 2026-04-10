@@ -5,7 +5,6 @@ Evaluation framework for `Frontier-Engineering`.
 ## Layout
 
 - `frontier_eval/cli.py`: main evaluation entrypoint (`python -m frontier_eval`)
-- `frontier_eval/skill_cli.py`: bundled skill installer (`python -m frontier_eval skill`)
 - `frontier_eval/tasks/`: all evaluation tasks
 - `frontier_eval/algorithms/`: all algorithms (currently supports `abmcts`, `openevolve`, `shinkaevolve`)
 - `frontier_eval/conf/`: Hydra configs (`task` / `algorithm` / `llm`)
@@ -18,14 +17,14 @@ The simplest way is to run from the repo root:
 
 ```bash
 bash init.sh
-conda activate frontier-eval
+conda activate frontier-eval-2
 ```
 
 Manual setup:
 
 ```bash
-conda create -n frontier-eval python=3.12 -y
-conda activate frontier-eval
+conda create -n frontier-eval-2 python=3.12 -y
+conda activate frontier-eval-2
 
 # Octave + signal/control
 conda install -c conda-forge octave octave-signal octave-control -y
@@ -55,7 +54,7 @@ Common examples in this repository:
 - `JobShop` uses an explicit `task.runtime.python_path`.
 - `EngDesign` uses Docker-first execution or local fallback.
 
-To install a project-local agent skill, run `python -m frontier_eval skill` for interactive selection, or use `python -m frontier_eval skill evaluator codex` for a direct install. The packaged sources live under `skill/`.
+Agent skill sources live under **`skill/source/`** — use the copy-paste prompt in the root **`README.md`** (*Agent skills*) to have your agent install them for your client.
 
 Note on `third_party/`:
 
@@ -333,4 +332,31 @@ Unified baseline sweep example:
 - New custom task (only when unified is insufficient and the exception has been discussed with maintainers): implement a `frontier_eval/tasks/base.py` `Task` subclass (`initial_program_path()` + `evaluate_program()`), and register it in `frontier_eval/registry_tasks.py` (or keep using `frontier_eval/registry.py`'s `get_task`).
 - New algorithm: implement a `frontier_eval/algorithms/base.py` `Algorithm` subclass, and register it in `frontier_eval/registry_algorithms.py`.
 
-<!-- AI_GENERATED -->
+## v1 Task Environments
+
+To reduce the number of runtime environments used by the effective `v1` task pool without breaking existing setups, the repository uses the following convention:
+
+- `frontier-eval-2` remains the evaluation-framework / driver environment and is left unchanged.
+- Existing task environments such as `bio`, `mqt`, `optics`, `stock`, `pyportfolioopt`, `motion`, `jobshop`, `summit`, `sustaindc`, and `kernel` are preserved and not overwritten.
+- New merged task environments are created under whichever environment prefix the current `conda` installation manages, with default names `frontier-v1-main`, `frontier-v1-summit`, `frontier-v1-sustaindc`, and `frontier-v1-kernel`.
+- For `v1` tasks that need a direct interpreter instead of `conda run` (currently `ReactionOptimisation/*` and `JobShop/*`), the batch matrices use the portable marker `conda-env:<env-name>`. The unified evaluator resolves that marker to the target env's Python executable at runtime, so repository files stay machine-independent.
+
+Current `v1` runtime consolidation:
+
+- `frontier-v1-main`: `SingleCellAnalysis/predict_modality`, `QuantumComputing/*`, `Optics/*`, `InventoryOptimization/*`, `PyPortfolioOpt/*`, `JobShop/*`, `Robotics/DynamicObstacleAvoidanceNavigation`, `Robotics/PIDTuning`, `Robotics/UAVInspectionCoverageWithWind`, `Robotics/QuadrupedGaitOptimization`, `Robotics/RobotArmCycleTimeOptimization`, `Aerodynamics/CarAerodynamicsSensing`, `KernelEngineering/FlashAttention`
+- `frontier-v1-summit`: `ReactionOptimisation/*`
+- `frontier-v1-sustaindc`: `SustainableDataCenterControl/*`
+- `frontier-v1-kernel`: `KernelEngineering/MLA`, `KernelEngineering/TriMul`
+
+If an older benchmark README still mentions legacy env names such as `mqt`, `stock`, `pyportfolioopt`, or `jobshop`, prefer the batch matrix files under `frontier_eval/conf/batch/` as the source of truth for current `v1` runs.
+
+Setup and validation scripts:
+
+- Initialize merged envs: `bash scripts/setup_v1_merged_task_envs.sh`
+- Validate merged envs with `iter=0`: `DRIVER_ENV=frontier-eval-2 GPU_DEVICES=<gpu_id> bash scripts/validate_v1_merged_task_envs.sh`
+
+Notes:
+
+- The validation script uses `conda run -n frontier-eval-2 python` as the default driver, and can also be overridden with `DRIVER_PY=/path/to/python`. It checks CPU `v1`, GPU `v1`, `FlashAttention`, `MLA`, and `TriMul`.
+- `MuonTomography` is listed in [TASK_DETAILS.md](../TASK_DETAILS.md) but is not included in the current `v1` batch matrices pending evaluator redesign.
+- Known caveat: the official `KernelEngineering/TriMul` full benchmark (`verification/tri_bench.txt`) may still be VRAM-limited on 24GB-class GPUs; this is typically a task-level memory-bound issue rather than a missing dependency in `frontier-v1-kernel`.

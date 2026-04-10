@@ -1,5 +1,0 @@
-interface:
-  display_name: "Frontier Contributor"
-  short_description: "Contribute or update Frontier benchmarks cleanly"
-  default_prompt: "Help contribute a benchmark or benchmark update to Frontier-Engineering. Prefer unified onboarding, keep the evolved file self-contained, and validate the required local checks before finishing."
-

@@ -24,11 +24,11 @@ The framework environment and the benchmark runtime are not the same thing. Alwa
 - Read `frontier_eval/README.md`.
 - Read `benchmarks/<Domain>/README*.md`.
 - Read `benchmarks/<Domain>/<Task>/README*.md` when the task has its own README.
-- Use the bundled helper when you need to locate environment-related instructions quickly:
+- Use the bundled helper when you need to locate environment-related instructions quickly (from repo root):
 ```bash
-python scripts/discover_env_docs.py <Domain>
-python scripts/discover_env_docs.py <Domain>/<Task>
-python scripts/discover_env_docs.py --matrix frontier_eval/conf/batch/example_matrix.yaml
+python skill/source/frontier-evaluator/scripts/discover_env_docs.py <Domain>
+python skill/source/frontier-evaluator/scripts/discover_env_docs.py <Domain>/<Task>
+python skill/source/frontier-evaluator/scripts/discover_env_docs.py --matrix frontier_eval/conf/batch/example_matrix.yaml
 ```
 
 3. Separate driver and runtime environments.
