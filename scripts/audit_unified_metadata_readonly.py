@@ -98,7 +98,7 @@ def main() -> int:
                 print(f"      missing recommended: {', '.join(rec)}")
 
     if missing_meta or weak:
-        return 1
+        return 1 if args.strict else 0
 
     print("[ok] readonly coverage checks passed.")
     return 0

@@ -575,13 +575,16 @@ def evaluate(program_path: str, *, spec: UnifiedTaskSpec) -> Any:
             container_eval_cwd = (container_benchmark / eval_cwd_rel).resolve()
 
             benchmark_source_rel: Path | None = None
+            mount_external_benchmark_source = False
             if _is_within(spec.benchmark_dir, spec.repo_root):
                 benchmark_source_rel = spec.benchmark_dir.resolve().relative_to(spec.repo_root.resolve())
             container_benchmark_source = (
                 (container_repo_root / benchmark_source_rel).resolve()
                 if benchmark_source_rel is not None
-                else container_benchmark
+                else Path("/workspace/source_benchmark")
             )
+            if benchmark_source_rel is None:
+                mount_external_benchmark_source = True
 
             rendered_cmd = _render_eval_command(
                 command_template=spec.eval_command,
@@ -611,6 +614,11 @@ def evaluate(program_path: str, *, spec: UnifiedTaskSpec) -> Any:
                 "--pids-limit",
                 "512",
             ]
+            if mount_external_benchmark_source:
+                run_cmd += [
+                    "-v",
+                    f"{spec.benchmark_dir}:{_as_container_path(container_benchmark_source)}:ro",
+                ]
             if spec.runtime_docker_network_disabled:
                 run_cmd += ["--network", "none"]
             if spec.runtime_docker_readonly_rootfs:
@@ -630,8 +638,8 @@ def evaluate(program_path: str, *, spec: UnifiedTaskSpec) -> Any:
             artifacts["runtime_python_path"] = docker_python
             artifacts["runtime_docker_image"] = spec.runtime_docker_image
             artifacts["runtime_docker_executable"] = docker_executable
-            artifacts["runtime_docker_network_disabled"] = float(spec.runtime_docker_network_disabled)
-            artifacts["runtime_docker_readonly_rootfs"] = float(spec.runtime_docker_readonly_rootfs)
+            artifacts["runtime_docker_network_disabled"] = bool(spec.runtime_docker_network_disabled)
+            artifacts["runtime_docker_readonly_rootfs"] = bool(spec.runtime_docker_readonly_rootfs)
             if spec.runtime_docker_user:
                 artifacts["runtime_docker_user"] = spec.runtime_docker_user
             if spec.runtime_docker_tmpfs:

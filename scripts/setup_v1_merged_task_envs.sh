@@ -27,9 +27,12 @@ fi
 render_spec() {
   local template_file="$1"
   local output_file="$2"
+  local escaped_root escaped_python
+  escaped_root="$(printf '%s' "$ROOT" | sed -e 's/[&\\]/\\&/g')"
+  escaped_python="$(printf '%s' "$PYTHON_VERSION" | sed -e 's/[&\\]/\\&/g')"
   sed \
-    -e "s#__ROOT__#${ROOT//\#/\\#}#g" \
-    -e "s#__PYTHON_VERSION__#${PYTHON_VERSION//\#/\\#}#g" \
+    -e "s#__ROOT__#${escaped_root}#g" \
+    -e "s#__PYTHON_VERSION__#${escaped_python}#g" \
     "$template_file" >"$output_file"
 }
 
