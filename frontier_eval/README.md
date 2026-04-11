@@ -334,11 +334,10 @@ Unified baseline sweep example:
 
 ## v1 Task Environments
 
-To reduce the number of runtime environments used by the effective `v1` task pool without breaking existing setups, the repository uses the following convention:
+To reduce the number of runtime environments used by the effective `v1` task pool, the repository now provides declarative env specs under `scripts/env_specs/` and one-shot setup scripts:
 
-- `frontier-eval-2` remains the evaluation-framework / driver environment and is left unchanged.
-- Existing task environments such as `bio`, `mqt`, `optics`, `stock`, `pyportfolioopt`, `motion`, `jobshop`, `summit`, `sustaindc`, and `kernel` are preserved and not overwritten.
-- New merged task environments are created under whichever environment prefix the current `conda` installation manages, with default names `frontier-v1-main`, `frontier-v1-summit`, `frontier-v1-sustaindc`, and `frontier-v1-kernel`.
+- `frontier-eval-2` is managed from `scripts/env_specs/frontier-eval-2.yml` as the default driver env.
+- Merged task environments are managed from repo-owned manifests (`frontier-v1-main`, `frontier-v1-summit`, `frontier-v1-sustaindc`, `frontier-v1-kernel`) instead of cloning local ad-hoc envs.
 - For `v1` tasks that need a direct interpreter instead of `conda run` (currently `ReactionOptimisation/*` and `JobShop/*`), the batch matrices use the portable marker `conda-env:<env-name>`. The unified evaluator resolves that marker to the target env's Python executable at runtime, so repository files stay machine-independent.
 
 Current `v1` runtime consolidation:
@@ -352,8 +351,9 @@ If an older benchmark README still mentions legacy env names such as `mqt`, `sto
 
 Setup and validation scripts:
 
-- Initialize merged envs: `bash scripts/setup_v1_merged_task_envs.sh`
+- Initialize/update merged envs from declarative specs (and run post-build `iter=0` validation by default): `bash scripts/setup_v1_merged_task_envs.sh`
 - Validate merged envs with `iter=0`: `DRIVER_ENV=frontier-eval-2 GPU_DEVICES=<gpu_id> bash scripts/validate_v1_merged_task_envs.sh`
+- Audit benchmark readonly metadata coverage: `python scripts/audit_unified_metadata_readonly.py [--strict]`
 
 Notes:
 

@@ -181,6 +181,12 @@ class UnifiedTaskSpec:
     runtime_python_path: str | None
     runtime_conda_env: str
     runtime_use_conda_run: bool
+    runtime_isolation_mode: str
+    runtime_docker_image: str | None
+    runtime_docker_network_disabled: bool
+    runtime_docker_readonly_rootfs: bool
+    runtime_docker_user: str | None
+    runtime_docker_tmpfs: str | None
     runtime_shell: str
     runtime_env: dict[str, str]
 
@@ -372,6 +378,16 @@ def load_unified_task_spec(*, task_cfg: Any, repo_root: Path) -> UnifiedTaskSpec
         or "frontier-eval-2"
     )
     runtime_use_conda_run = _as_bool(runtime_cfg.get("use_conda_run"), default=True)
+    runtime_isolation_mode = str(runtime_cfg.get("isolation_mode") or "process").strip().lower() or "process"
+    if runtime_isolation_mode not in {"process", "docker"}:
+        raise ValueError(
+            f"`task.runtime.isolation_mode` must be 'process' or 'docker', got {runtime_isolation_mode!r}"
+        )
+    runtime_docker_image = str(runtime_cfg.get("docker_image") or "").strip() or None
+    runtime_docker_network_disabled = _as_bool(runtime_cfg.get("docker_network_disabled"), default=True)
+    runtime_docker_readonly_rootfs = _as_bool(runtime_cfg.get("docker_readonly_rootfs"), default=True)
+    runtime_docker_user = str(runtime_cfg.get("docker_user") or "").strip() or None
+    runtime_docker_tmpfs = str(runtime_cfg.get("docker_tmpfs") or "").strip() or None
     runtime_shell = str(runtime_cfg.get("shell") or "bash").strip() or "bash"
 
     runtime_env_raw = runtime_cfg.get("env") or {}
@@ -402,6 +418,12 @@ def load_unified_task_spec(*, task_cfg: Any, repo_root: Path) -> UnifiedTaskSpec
         runtime_python_path=runtime_python_path,
         runtime_conda_env=runtime_conda_env,
         runtime_use_conda_run=runtime_use_conda_run,
+        runtime_isolation_mode=runtime_isolation_mode,
+        runtime_docker_image=runtime_docker_image,
+        runtime_docker_network_disabled=runtime_docker_network_disabled,
+        runtime_docker_readonly_rootfs=runtime_docker_readonly_rootfs,
+        runtime_docker_user=runtime_docker_user,
+        runtime_docker_tmpfs=runtime_docker_tmpfs,
         runtime_shell=runtime_shell,
         runtime_env=runtime_env,
     )

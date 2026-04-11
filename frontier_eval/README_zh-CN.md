@@ -307,11 +307,10 @@ python -m frontier_eval.batch --matrix runs/batch/<batch_id>/matrix_resolved.yam
 
 ## `v1` 合并任务环境
 
-为减少有效 `v1` 任务池使用的 task runtime 环境数量，同时不破坏已有环境，仓库当前采用如下约定：
+为减少有效 `v1` 任务池使用的 task runtime 环境数量，仓库提供了 `scripts/env_specs/` 下的声明式环境清单与一键构建脚本：
 
-- `frontier-eval-2` 仍然只作为评测框架 / driver 环境使用，保持不变。
-- 原有 task 环境（如 `bio`、`mqt`、`optics`、`stock`、`pyportfolioopt`、`motion`、`jobshop`、`summit`、`sustaindc`、`kernel`）不会被删除或覆盖。
-- 新增的合并环境会创建在当前 `conda` 指向的环境目录下，默认环境名为 `frontier-v1-main`、`frontier-v1-summit`、`frontier-v1-sustaindc`、`frontier-v1-kernel`。
+- `frontier-eval-2` 由 `scripts/env_specs/frontier-eval-2.yml` 统一管理为默认 driver 环境。
+- 合并环境（`frontier-v1-main`、`frontier-v1-summit`、`frontier-v1-sustaindc`、`frontier-v1-kernel`）由仓库内 manifest 声明并构建，不再依赖克隆本地临时环境。
 - 对于需要「直连解释器」而不是 `conda run` 的 `v1` 任务（当前主要是 `ReactionOptimisation/*` 与 `JobShop/*`），batch matrix 里使用可移植标记 `conda-env:<env-name>`，由 unified evaluator 在运行时解析为对应环境中的 Python 路径，因此不需要把机器本地前缀写进仓库。
 
 当前 `v1` task runtime 合并结果为：
@@ -325,8 +324,9 @@ python -m frontier_eval.batch --matrix runs/batch/<batch_id>/matrix_resolved.yam
 
 环境准备与验证脚本：
 
-- 初始化合并环境：`bash scripts/setup_v1_merged_task_envs.sh`
+- 基于声明式清单初始化/更新合并环境（默认会在构建后执行 `iter=0` 验证）：`bash scripts/setup_v1_merged_task_envs.sh`
 - 按 `iter=0` 验证合并环境：`DRIVER_ENV=frontier-eval-2 GPU_DEVICES=<gpu_id> bash scripts/validate_v1_merged_task_envs.sh`
+- 审计 benchmark 的 readonly 元数据覆盖：`python scripts/audit_unified_metadata_readonly.py [--strict]`
 
 说明：
 

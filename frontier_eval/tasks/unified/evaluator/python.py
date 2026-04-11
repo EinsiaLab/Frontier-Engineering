@@ -421,22 +421,26 @@ def _render_eval_command(
     sandbox_root: Path,
     spec: UnifiedTaskSpec,
     runtime_python_path: str | None = None,
+    repo_root_path: Path | None = None,
+    benchmark_source_path: Path | None = None,
 ) -> str:
     python_cmd = runtime_python_path or "python"
+    repo_root = repo_root_path or spec.repo_root
+    benchmark_source = benchmark_source_path or spec.benchmark_dir
     quoted = {
         "python": shlex.quote(python_cmd),
         "candidate": shlex.quote(str(candidate_dst)),
         "benchmark": shlex.quote(str(sandbox_benchmark)),
         "sandbox": shlex.quote(str(sandbox_root)),
-        "repo_root": shlex.quote(str(spec.repo_root)),
-        "benchmark_source": shlex.quote(str(spec.benchmark_dir)),
+        "repo_root": shlex.quote(str(repo_root)),
+        "benchmark_source": shlex.quote(str(benchmark_source)),
         "benchmark_id": shlex.quote(spec.benchmark_id),
         "python_raw": python_cmd,
         "candidate_raw": str(candidate_dst),
         "benchmark_raw": str(sandbox_benchmark),
         "sandbox_raw": str(sandbox_root),
-        "repo_root_raw": str(spec.repo_root),
-        "benchmark_source_raw": str(spec.benchmark_dir),
+        "repo_root_raw": str(repo_root),
+        "benchmark_source_raw": str(benchmark_source),
         "benchmark_id_raw": spec.benchmark_id,
     }
     try:
@@ -444,6 +448,10 @@ def _render_eval_command(
     except KeyError as e:
         missing = str(e).strip("'")
         raise ValueError(f"Unknown placeholder in eval command: {{{missing}}}") from e
+
+
+def _as_container_path(path: Path) -> str:
+    return path.as_posix()
 
 
 def evaluate(program_path: str, *, spec: UnifiedTaskSpec) -> Any:
@@ -531,42 +539,6 @@ def evaluate(program_path: str, *, spec: UnifiedTaskSpec) -> Any:
             metrics["runtime_s"] = float(time.time() - start)
             return _wrap(metrics, artifacts)
 
-        rendered_cmd = _render_eval_command(
-            command_template=spec.eval_command,
-            candidate_dst=candidate_dst,
-            sandbox_benchmark=sandbox_benchmark,
-            sandbox_root=work_dir,
-            spec=spec,
-            runtime_python_path=runtime_python_path,
-        )
-        artifacts["benchmark_cmd"] = rendered_cmd
-
-        run_with_conda = bool(
-            spec.runtime_use_conda_run and spec.runtime_conda_env and not spec.runtime_python_path
-        )
-        if run_with_conda:
-            conda_executable = _find_conda_executable()
-            run_cmd = [
-                conda_executable,
-                "run",
-                "-n",
-                spec.runtime_conda_env,
-                spec.runtime_shell,
-                "-lc",
-                rendered_cmd,
-            ]
-            artifacts["runtime_mode"] = "conda_run"
-            artifacts["runtime_conda_env"] = spec.runtime_conda_env
-            artifacts["runtime_conda_executable"] = conda_executable
-        else:
-            run_cmd = [spec.runtime_shell, "-lc", rendered_cmd]
-            artifacts["runtime_mode"] = "shell"
-        if spec.runtime_python_path:
-            artifacts["runtime_python_path"] = runtime_python_path
-            if spec.runtime_python_path.startswith(_CONDA_ENV_PYTHON_PREFIX):
-                artifacts["runtime_python_path_source"] = spec.runtime_python_path
-        artifacts["runtime_command"] = " ".join(shlex.quote(x) for x in run_cmd)
-
         env = os.environ.copy()
         env.update(spec.runtime_env)
         env.setdefault("FRONTIER_ENGINEERING_ROOT", str(spec.repo_root))
@@ -574,10 +546,143 @@ def evaluate(program_path: str, *, spec: UnifiedTaskSpec) -> Any:
         env["FRONTIER_EVAL_UNIFIED_BENCHMARK_DIR"] = str(sandbox_benchmark)
         env["FRONTIER_EVAL_UNIFIED_CANDIDATE_PATH"] = str(candidate_dst)
 
+        run_cwd = eval_cwd
+        if spec.runtime_isolation_mode == "docker":
+            docker_executable = shutil.which("docker")
+            if not docker_executable:
+                artifacts["error_message"] = (
+                    "task.runtime.isolation_mode=docker but docker executable is not available"
+                )
+                metrics["runtime_s"] = float(time.time() - start)
+                return _wrap(metrics, artifacts)
+            if not spec.runtime_docker_image:
+                artifacts["error_message"] = (
+                    "task.runtime.isolation_mode=docker requires task.runtime.docker_image"
+                )
+                metrics["runtime_s"] = float(time.time() - start)
+                return _wrap(metrics, artifacts)
+
+            docker_python = "python"
+            if spec.runtime_python_path and not spec.runtime_python_path.startswith(_CONDA_ENV_PYTHON_PREFIX):
+                docker_python = spec.runtime_python_path
+
+            container_workdir = Path("/workspace")
+            container_repo_root = container_workdir / "repo"
+            container_benchmark = container_workdir / "benchmark"
+            candidate_rel = candidate_dst.relative_to(sandbox_benchmark)
+            container_candidate = (container_benchmark / candidate_rel).resolve()
+            eval_cwd_rel = eval_cwd.relative_to(sandbox_benchmark)
+            container_eval_cwd = (container_benchmark / eval_cwd_rel).resolve()
+
+            benchmark_source_rel: Path | None = None
+            if _is_within(spec.benchmark_dir, spec.repo_root):
+                benchmark_source_rel = spec.benchmark_dir.resolve().relative_to(spec.repo_root.resolve())
+            container_benchmark_source = (
+                (container_repo_root / benchmark_source_rel).resolve()
+                if benchmark_source_rel is not None
+                else container_benchmark
+            )
+
+            rendered_cmd = _render_eval_command(
+                command_template=spec.eval_command,
+                candidate_dst=Path(_as_container_path(container_candidate)),
+                sandbox_benchmark=Path(_as_container_path(container_benchmark)),
+                sandbox_root=Path(_as_container_path(container_workdir)),
+                spec=spec,
+                runtime_python_path=docker_python,
+                repo_root_path=Path(_as_container_path(container_repo_root)),
+                benchmark_source_path=Path(_as_container_path(container_benchmark_source)),
+            )
+
+            run_cmd = [
+                docker_executable,
+                "run",
+                "--rm",
+                "--workdir",
+                _as_container_path(container_eval_cwd),
+                "-v",
+                f"{sandbox_benchmark}:{_as_container_path(container_benchmark)}:rw",
+                "-v",
+                f"{spec.repo_root}:{_as_container_path(container_repo_root)}:ro",
+                "--cap-drop",
+                "ALL",
+                "--security-opt",
+                "no-new-privileges",
+                "--pids-limit",
+                "512",
+            ]
+            if spec.runtime_docker_network_disabled:
+                run_cmd += ["--network", "none"]
+            if spec.runtime_docker_readonly_rootfs:
+                run_cmd += ["--read-only"]
+            if spec.runtime_docker_user:
+                run_cmd += ["--user", spec.runtime_docker_user]
+            if spec.runtime_docker_tmpfs:
+                run_cmd += ["--tmpfs", spec.runtime_docker_tmpfs]
+            run_cmd += [
+                "--entrypoint",
+                spec.runtime_shell,
+                spec.runtime_docker_image,
+                "-lc",
+                rendered_cmd,
+            ]
+            artifacts["runtime_mode"] = "docker"
+            artifacts["runtime_python_path"] = docker_python
+            artifacts["runtime_docker_image"] = spec.runtime_docker_image
+            artifacts["runtime_docker_executable"] = docker_executable
+            artifacts["runtime_docker_network_disabled"] = float(spec.runtime_docker_network_disabled)
+            artifacts["runtime_docker_readonly_rootfs"] = float(spec.runtime_docker_readonly_rootfs)
+            if spec.runtime_docker_user:
+                artifacts["runtime_docker_user"] = spec.runtime_docker_user
+            if spec.runtime_docker_tmpfs:
+                artifacts["runtime_docker_tmpfs"] = spec.runtime_docker_tmpfs
+            env.pop("FRONTIER_ENGINEERING_ROOT", None)
+            env["FRONTIER_ENGINEERING_ROOT"] = _as_container_path(container_repo_root)
+            env["FRONTIER_EVAL_UNIFIED_SOURCE_BENCHMARK_DIR"] = _as_container_path(container_benchmark_source)
+            env["FRONTIER_EVAL_UNIFIED_BENCHMARK_DIR"] = _as_container_path(container_benchmark)
+            env["FRONTIER_EVAL_UNIFIED_CANDIDATE_PATH"] = _as_container_path(container_candidate)
+            run_cwd = None
+        else:
+            rendered_cmd = _render_eval_command(
+                command_template=spec.eval_command,
+                candidate_dst=candidate_dst,
+                sandbox_benchmark=sandbox_benchmark,
+                sandbox_root=work_dir,
+                spec=spec,
+                runtime_python_path=runtime_python_path,
+            )
+            run_with_conda = bool(
+                spec.runtime_use_conda_run and spec.runtime_conda_env and not spec.runtime_python_path
+            )
+            if run_with_conda:
+                conda_executable = _find_conda_executable()
+                run_cmd = [
+                    conda_executable,
+                    "run",
+                    "-n",
+                    spec.runtime_conda_env,
+                    spec.runtime_shell,
+                    "-lc",
+                    rendered_cmd,
+                ]
+                artifacts["runtime_mode"] = "conda_run"
+                artifacts["runtime_conda_env"] = spec.runtime_conda_env
+                artifacts["runtime_conda_executable"] = conda_executable
+            else:
+                run_cmd = [spec.runtime_shell, "-lc", rendered_cmd]
+                artifacts["runtime_mode"] = "shell"
+
+        artifacts["benchmark_cmd"] = rendered_cmd
+        if spec.runtime_isolation_mode != "docker" and spec.runtime_python_path:
+            artifacts["runtime_python_path"] = runtime_python_path
+            if spec.runtime_python_path.startswith(_CONDA_ENV_PYTHON_PREFIX):
+                artifacts["runtime_python_path_source"] = spec.runtime_python_path
+        artifacts["runtime_command"] = " ".join(shlex.quote(x) for x in run_cmd)
+
         try:
             proc = subprocess.run(
                 run_cmd,
-                cwd=str(eval_cwd),
+                cwd=str(run_cwd) if run_cwd is not None else None,
                 capture_output=True,
                 text=True,
                 timeout=_remaining_timeout(deadline_s),
