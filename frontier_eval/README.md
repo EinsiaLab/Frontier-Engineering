@@ -20,7 +20,7 @@ bash init.sh
 conda activate frontier-eval-2
 ```
 
-Manual setup:
+Manual setup (only if you cannot use `init.sh`):
 
 ```bash
 conda create -n frontier-eval-2 python=3.12 -y

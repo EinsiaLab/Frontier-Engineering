@@ -20,11 +20,11 @@ bash init.sh
 conda activate frontier-eval-2
 ```
 
-手动安装方式：
+手动安装方式（仅在无法使用 `init.sh` 时）：
 
 ```bash
-conda create -n frontier-eval python=3.12 -y
-conda activate frontier-eval
+conda create -n frontier-eval-2 python=3.12 -y
+conda activate frontier-eval-2
 
 # Octave + signal/control
 conda install -c conda-forge octave octave-signal octave-control -y
