@@ -1,7 +1,5 @@
 # Optional Assistant Setup
 
-This page contains optional assistant/agent integration details so the root `README.md` can stay lightweight.
-
 ## Skill sources
 
 Project skill packages are under:

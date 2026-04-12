@@ -1,7 +1,5 @@
 # 可选 Assistant/Agent 配置
 
-本页用于承载可选的 Assistant/Agent 集成说明，避免根目录 `README_zh-CN.md` 过长。
-
 ## Skill 来源
 
 项目 skill 包位于：
