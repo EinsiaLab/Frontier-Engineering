@@ -54,7 +54,7 @@ pip install -r frontier_eval/requirements.txt
 - `JobShop` 使用显式 `task.runtime.python_path`。
 - `EngDesign` 优先走 Docker，也支持本地回退。
 
-面向 Agent 的 skill 源码在 **`skill/source/`**；请用仓库根目录 **`README_zh-CN.md`**（「Agent skill」一节）里可复制粘贴的那段话交给你的 Agent 安装。
+可选 Assistant/Agent 配置见 **[docs/agent_setup_zh-CN.md](../docs/agent_setup_zh-CN.md)**；skill 源码位于 **`skill/source/`**。
 
 关于 `third_party/`：
 

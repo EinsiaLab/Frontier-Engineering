@@ -54,7 +54,7 @@ Common examples in this repository:
 - `JobShop` uses an explicit `task.runtime.python_path`.
 - `EngDesign` uses Docker-first execution or local fallback.
 
-Agent skill sources live under **`skill/source/`** — use the copy-paste prompt in the root **`README.md`** (*Agent skills*) to have your agent install them for your client.
+Optional assistant setup is documented in **[docs/agent_setup.md](../docs/agent_setup.md)**. Skill sources live under **`skill/source/`**.
 
 Note on `third_party/`:
 

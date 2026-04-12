@@ -43,20 +43,10 @@ Detailed leaderboard: **[lab.einsia.ai/frontier-eng/leaderboard.html](https://la
 | 7 | GPT-5.4 | 0.433 |
 | 8 | Qwen3 Coder Next | 0.272 |
 
-## Agent skills
+## Optional Assistant Setup
 
-**Copy the block below verbatim** and send it to your agent:
-
-```text
-Please install the two skills under this repo’s skill/source/ as project-level skills for this repository (follow my editor’s / client’s convention for where project skills live, e.g. .cursor/skills/ for Cursor, .claude/skills/ for Claude Code, .codex/skills/ for Codex, etc.). The two packages are:
-
-1. skill/source/frontier-evaluator — help run and debug frontier_eval evaluations and prepare per-benchmark runtime from each benchmark’s README;
-2. skill/source/frontier-contributor — help add or update benchmarks following this repo’s contribution rules.
-
-Install each folder as one loadable skill package: include SKILL.md plus any relative assets it references (e.g. scripts/ under frontier-evaluator) so everything works from the repository root after installation.
-```
-
-There is no bundled CLI installer; your agent wires these up per client. The authoritative instructions remain in each folder’s `SKILL.md`.
+Optional assistant/agent setup is documented in **[docs/agent_setup.md](docs/agent_setup.md)**.
+Skill sources are in **`skill/source/`**, and each package’s source of truth is its `SKILL.md`.
 
 ## Task Details
 
