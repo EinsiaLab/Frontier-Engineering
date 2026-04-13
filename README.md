@@ -30,7 +30,7 @@ Per-task runs, batch matrices, and runtime overrides are in **[frontier_eval/REA
 
 ## Leaderboard
 
-Detailed leaderboard: **[lab.einsia.ai/frontier-eng/leaderboard.html](https://lab.einsia.ai/frontier-eng/leaderboard.html)**. **Frontier Models** — mean within-task rank (47 tasks, lower is better).
+Detailed leaderboard: **[lab.einsia.ai/frontier-eng/leaderboard.html](https://lab.einsia.ai/frontier-eng/leaderboard.html)**. **Frontier Models** — mean within-task rank (47 tasks), shown in descending average-rank order.
 
 | Order (high→low) | Model | Average Rank |
 | :--: | :--- | --: |

@@ -30,7 +30,7 @@ bash init.sh && conda activate frontier-eval-2
 
 ## Leaderboard
 
-详细榜单：**[lab.einsia.ai/frontier-eng/leaderboard.html](https://lab.einsia.ai/frontier-eng/leaderboard.html)**。**Frontier Models** — 平均任务内排名（47 tasks，越低越好）。
+详细榜单：**[lab.einsia.ai/frontier-eng/leaderboard.html](https://lab.einsia.ai/frontier-eng/leaderboard.html)**。**Frontier Models** — 平均任务内排名（47 tasks，下表按平均排名从高到低展示）。
 
 | 排序（高→低） | Model | Average Rank |
 | :--: | :--- | --: |
