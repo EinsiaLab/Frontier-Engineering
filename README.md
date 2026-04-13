@@ -30,18 +30,19 @@ Per-task runs, batch matrices, and runtime overrides are in **[frontier_eval/REA
 
 ## Leaderboard
 
-Detailed leaderboard: **[lab.einsia.ai/frontier-eng/leaderboard.html](https://lab.einsia.ai/frontier-eng/leaderboard.html)**. **Frontier Models** — normalized overall score (47 tasks). *2026-04-09 · [source](https://lab.einsia.ai/frontier-eng/data/overall-model.yaml)*
+Detailed leaderboard: **[lab.einsia.ai/frontier-eng/leaderboard.html](https://lab.einsia.ai/frontier-eng/leaderboard.html)**. **Frontier Models** — mean within-task rank (47 tasks, lower is better).
 
-| Rank | Model | Score |
+| Order (high→low) | Model | Average Rank |
 | :--: | :--- | --: |
-| 1 | Claude Opus 4.6 | 0.751 |
-| 2 | GLM-5 | 0.630 |
-| 3 | DeepSeek V3.2 | 0.601 |
-| 4 | Gemini 3.1 Pro Preview | 0.442 |
-| 5 | SEED 2.0 Pro | 0.437 |
-| 6 | Grok 4.20 | 0.436 |
-| 7 | GPT-5.4 | 0.433 |
-| 8 | Qwen3 Coder Next | 0.272 |
+| 1 | Qwen3 Coder Next | 6.68 |
+| 2 | GPT-5.4 | 5.68 |
+| 3 | SEED 2.0 Pro | 5.63 |
+| 4 | Grok 4.20 | 5.60 |
+| 5 | Gemini 3.1 Pro Preview | 5.34 |
+| 6 | GPT-OSS-120B | 4.46 |
+| 7 | DeepSeek V3.2 | 4.41 |
+| 8 | GLM-5 | 4.02 |
+| 9 | Claude Opus 4.6 | 3.18 |
 
 ## Optional Assistant Setup
 

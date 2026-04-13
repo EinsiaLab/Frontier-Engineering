@@ -30,18 +30,19 @@ bash init.sh && conda activate frontier-eval-2
 
 ## Leaderboard
 
-详细榜单：**[lab.einsia.ai/frontier-eng/leaderboard.html](https://lab.einsia.ai/frontier-eng/leaderboard.html)**。**Frontier Models** — 归一化总分（47 tasks）。*2026-04-09 · [数据](https://lab.einsia.ai/frontier-eng/data/overall-model.yaml)*
+详细榜单：**[lab.einsia.ai/frontier-eng/leaderboard.html](https://lab.einsia.ai/frontier-eng/leaderboard.html)**。**Frontier Models** — 平均任务内排名（47 tasks，越低越好）。
 
-| 排名 | Model | Score |
+| 排序（高→低） | Model | Average Rank |
 | :--: | :--- | --: |
-| 1 | Claude Opus 4.6 | 0.751 |
-| 2 | GLM-5 | 0.630 |
-| 3 | DeepSeek V3.2 | 0.601 |
-| 4 | Gemini 3.1 Pro Preview | 0.442 |
-| 5 | SEED 2.0 Pro | 0.437 |
-| 6 | Grok 4.20 | 0.436 |
-| 7 | GPT-5.4 | 0.433 |
-| 8 | Qwen3 Coder Next | 0.272 |
+| 1 | Qwen3 Coder Next | 6.68 |
+| 2 | GPT-5.4 | 5.68 |
+| 3 | SEED 2.0 Pro | 5.63 |
+| 4 | Grok 4.20 | 5.60 |
+| 5 | Gemini 3.1 Pro Preview | 5.34 |
+| 6 | GPT-OSS-120B | 4.46 |
+| 7 | DeepSeek V3.2 | 4.41 |
+| 8 | GLM-5 | 4.02 |
+| 9 | Claude Opus 4.6 | 3.18 |
 
 ## 可选 Assistant/Agent 配置
 
