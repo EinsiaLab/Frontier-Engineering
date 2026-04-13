@@ -30,19 +30,19 @@ Per-task runs, batch matrices, and runtime overrides are in **[frontier_eval/REA
 
 ## Leaderboard
 
-Detailed leaderboard: **[lab.einsia.ai/frontier-eng/leaderboard.html](https://lab.einsia.ai/frontier-eng/leaderboard.html)**. **Frontier Models** — mean within-task rank (47 tasks), shown in descending average-rank order.
+Detailed leaderboard: **[lab.einsia.ai/frontier-eng/leaderboard.html](https://lab.einsia.ai/frontier-eng/leaderboard.html)**. **Frontier Models** — mean within-task rank (47 tasks), shown in ascending average-rank order.
 
 | Rank | Model | Average Rank |
 | :--: | :--- | --: |
-| 1 | Qwen3 Coder Next | 6.68 |
-| 2 | GPT-5.4 | 5.68 |
-| 3 | SEED 2.0 Pro | 5.63 |
-| 4 | Grok 4.20 | 5.60 |
+| 1 | Claude Opus 4.6 | 3.18 |
+| 2 | GLM-5 | 4.02 |
+| 3 | DeepSeek V3.2 | 4.41 |
+| 4 | GPT-OSS-120B | 4.46 |
 | 5 | Gemini 3.1 Pro Preview | 5.34 |
-| 6 | GPT-OSS-120B | 4.46 |
-| 7 | DeepSeek V3.2 | 4.41 |
-| 8 | GLM-5 | 4.02 |
-| 9 | Claude Opus 4.6 | 3.18 |
+| 6 | Grok 4.20 | 5.60 |
+| 7 | SEED 2.0 Pro | 5.63 |
+| 8 | GPT-5.4 | 5.68 |
+| 9 | Qwen3 Coder Next | 6.68 |
 
 ## Optional Assistant Setup
 

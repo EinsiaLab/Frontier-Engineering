@@ -30,19 +30,19 @@ bash init.sh && conda activate frontier-eval-2
 
 ## Leaderboard
 
-详细榜单：**[lab.einsia.ai/frontier-eng/leaderboard.html](https://lab.einsia.ai/frontier-eng/leaderboard.html)**。**Frontier Models** — 平均任务内排名（47 tasks，下表按平均排名从高到低展示）。
+详细榜单：**[lab.einsia.ai/frontier-eng/leaderboard.html](https://lab.einsia.ai/frontier-eng/leaderboard.html)**。**Frontier Models** — 平均任务内排名（47 tasks，下表按平均排名从低到高展示）。
 
 | 排名 | Model | Average Rank |
 | :--: | :--- | --: |
-| 1 | Qwen3 Coder Next | 6.68 |
-| 2 | GPT-5.4 | 5.68 |
-| 3 | SEED 2.0 Pro | 5.63 |
-| 4 | Grok 4.20 | 5.60 |
+| 1 | Claude Opus 4.6 | 3.18 |
+| 2 | GLM-5 | 4.02 |
+| 3 | DeepSeek V3.2 | 4.41 |
+| 4 | GPT-OSS-120B | 4.46 |
 | 5 | Gemini 3.1 Pro Preview | 5.34 |
-| 6 | GPT-OSS-120B | 4.46 |
-| 7 | DeepSeek V3.2 | 4.41 |
-| 8 | GLM-5 | 4.02 |
-| 9 | Claude Opus 4.6 | 3.18 |
+| 6 | Grok 4.20 | 5.60 |
+| 7 | SEED 2.0 Pro | 5.63 |
+| 8 | GPT-5.4 | 5.68 |
+| 9 | Qwen3 Coder Next | 6.68 |
 
 ## 可选 Assistant/Agent 配置
 
