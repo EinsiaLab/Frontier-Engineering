@@ -32,7 +32,7 @@ bash init.sh && conda activate frontier-eval-2
 
 详细榜单：**[lab.einsia.ai/frontier-eng/leaderboard.html](https://lab.einsia.ai/frontier-eng/leaderboard.html)**。**Frontier Models** — 平均任务内排名（47 tasks，下表按平均排名从高到低展示）。
 
-| 展示顺序（降序） | Model | Average Rank |
+| 排名 | Model | Average Rank |
 | :--: | :--- | --: |
 | 1 | Qwen3 Coder Next | 6.68 |
 | 2 | GPT-5.4 | 5.68 |

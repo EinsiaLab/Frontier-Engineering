@@ -32,7 +32,7 @@ Per-task runs, batch matrices, and runtime overrides are in **[frontier_eval/REA
 
 Detailed leaderboard: **[lab.einsia.ai/frontier-eng/leaderboard.html](https://lab.einsia.ai/frontier-eng/leaderboard.html)**. **Frontier Models** — mean within-task rank (47 tasks), shown in descending average-rank order.
 
-| Display Order (desc) | Model | Average Rank |
+| Rank | Model | Average Rank |
 | :--: | :--- | --: |
 | 1 | Qwen3 Coder Next | 6.68 |
 | 2 | GPT-5.4 | 5.68 |
