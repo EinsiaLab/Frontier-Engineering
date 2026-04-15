@@ -54,7 +54,7 @@ Common examples in this repository:
 - `JobShop` uses an explicit `task.runtime.python_path`.
 - `EngDesign` uses Docker-first execution or local fallback.
 
-Optional assistant setup is documented in **[docs/agent_setup.md](../docs/agent_setup.md)**. Skill sources live under **`skills/`**.
+Optional assistant setup is documented in **[docs/agent_setup.md](../docs/agent_setup.md)**. Skill sources live under **`.claude/skills/`**.
 
 Note on `third_party/`:
 

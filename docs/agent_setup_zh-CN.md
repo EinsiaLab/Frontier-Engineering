@@ -1,15 +1,9 @@
 # 可选 Assistant/Agent 配置
 
-标准 skill 包目录：
+verl 风格 skill 文件：
 
-- `skills/frontier-evaluator`
-- `skills/frontier-contributor`
+- `.claude/skills/frontier-evaluator.md`
+- `.claude/skills/frontier-contributor.md`
+- `.claude/skills/scripts/discover_env_docs.py`
 
-项目级 skill 目录约定：
-
-- Claude Code：`.claude/skills/`
-- Codex：`.codex/skills/`
-- Cursor：`.cursor/skills/`
-- Copilot：`.github/skills/`
-
-按目录直接接入即可（保留 `SKILL.md` 与相对资源）。
+按这些文件直接接入项目技能即可。

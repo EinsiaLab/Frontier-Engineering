@@ -28,16 +28,17 @@ runs_old_2
 third_party
 SKILL.md
 SKILL_zh-CN.md
-!/skill/**/SKILL.md
-!/skill/**/SKILL_zh-CN.md
-!/skills/**/SKILL.md
-!/skills/**/SKILL_zh-CN.md
 # Local personal agent configuration
 /AGENT.md
 /AGENT_zh-CN.md
 /.codex/
 /.claude/
 /.cursor/
+!/.claude/
+!/.claude/skills/
+!/.claude/skills/*.md
+!/.claude/skills/scripts/
+!/.claude/skills/scripts/*.py
 submission.json
 outputlog.txt
 frontier_eval/conf/batch/*

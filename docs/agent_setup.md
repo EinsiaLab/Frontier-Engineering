@@ -1,15 +1,9 @@
 # Optional Assistant Setup
 
-Canonical skill packages:
+verl-style skill files:
 
-- `skills/frontier-evaluator`
-- `skills/frontier-contributor`
+- `.claude/skills/frontier-evaluator.md`
+- `.claude/skills/frontier-contributor.md`
+- `.claude/skills/scripts/discover_env_docs.py`
 
-Project-level skill folder conventions:
-
-- Claude Code: `.claude/skills/`
-- Codex: `.codex/skills/`
-- Cursor: `.cursor/skills/`
-- Copilot: `.github/skills/`
-
-Use each skill folder as-is (`SKILL.md` + relative assets).
+Use these files directly as project skills.

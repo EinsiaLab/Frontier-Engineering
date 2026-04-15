@@ -70,7 +70,7 @@ fi
 echo ""
 echo "== Frontier-Eng init: conda driver + framework (env: $ENV_NAME) =="
 echo "    This env runs python -m frontier_eval. Per-benchmark runtimes are separate — see frontier_eval/README.md."
-echo "    Agent skill sources (no installer): skills/"
+echo "    Agent skill sources (no installer): .claude/skills/"
 echo ""
 
 # 1) Create (or update) the environment.
@@ -162,5 +162,5 @@ Quick smoke (no benchmark deps):
 Evolution (algorithm.iterations > 0) needs OPENAI_API_KEY (and optional OPENAI_API_BASE) in .env.
 
 Per-benchmark setup: frontier_eval/README.md
-Agent skill sources (point your agent or copy into your tool): skills/
+Agent skill sources (point your agent or copy into your tool): .claude/skills/
 EOF
