@@ -46,8 +46,7 @@ bash init.sh && conda activate frontier-eval-2
 
 ## 可选 Assistant/Agent 配置
 
-可选的 Assistant/Agent 配置说明见 **[docs/agent_setup_zh-CN.md](docs/agent_setup_zh-CN.md)**。
-Skill 源码位于 **`.claude/skills/`**（verl 风格 markdown skills）。
+Agent skill 文件分别位于 **`.claude/skills/`**（Claude Code）、**`.codex/skills/`**（Codex CLI）、**`.cursor/rules/`**（Cursor）和 **`.github/copilot-instructions.md`**（Copilot）。
 
 ## 任务详情
 

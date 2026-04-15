@@ -46,8 +46,7 @@ Detailed leaderboard: **[lab.einsia.ai/frontier-eng/leaderboard.html](https://la
 
 ## Optional Assistant Setup
 
-Optional assistant/agent setup is documented in **[docs/agent_setup.md](docs/agent_setup.md)**.
-Skill sources are in **`.claude/skills/`** (verl-style markdown skills).
+Agent skills are in **`.claude/skills/`** (Claude Code), **`.codex/skills/`** (Codex CLI), **`.cursor/rules/`** (Cursor), and **`.github/copilot-instructions.md`** (Copilot).
 
 ## Task Details
 
