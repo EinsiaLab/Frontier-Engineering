@@ -4,7 +4,7 @@
 
 We need the power of the community to expand the coverage of the Benchmark. We welcome the submission of new engineering problems via Pull Requests (PR). If you wish to contribute, please follow the standards and processes below.
 
-> **AI-Assisted Contributions**: We welcome contributions created with the assistance of AI tools. If you're using an agent, point it at `skill/source/frontier-contributor/` (see `SKILL.md` there). **However, please do not over-rely on AI tools or leave the process entirely to AI**. Human review and supervision are essential to ensure quality and correctness.
+> **AI-Assisted Contributions**: We welcome contributions created with the assistance of AI tools. If you're using an agent, point it at `skills/frontier-contributor/` (see `SKILL.md` there). **However, please do not over-rely on AI tools or leave the process entirely to AI**. Human review and supervision are essential to ensure quality and correctness.
 
 ## Sample Requirements
 

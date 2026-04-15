@@ -30,6 +30,8 @@ SKILL.md
 SKILL_zh-CN.md
 !/skill/**/SKILL.md
 !/skill/**/SKILL_zh-CN.md
+!/skills/**/SKILL.md
+!/skills/**/SKILL_zh-CN.md
 # Local personal agent configuration
 /AGENT.md
 /AGENT_zh-CN.md

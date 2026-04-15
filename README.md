@@ -47,7 +47,7 @@ Detailed leaderboard: **[lab.einsia.ai/frontier-eng/leaderboard.html](https://la
 ## Optional Assistant Setup
 
 Optional assistant/agent setup is documented in **[docs/agent_setup.md](docs/agent_setup.md)**.
-Skill sources are in **`skill/source/`**, and each package’s source of truth is its `SKILL.md`.
+Skill sources are in **`skills/`**, and each package’s source of truth is its `SKILL.md`.
 
 ## Task Details
 
