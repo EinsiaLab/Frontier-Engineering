@@ -46,7 +46,7 @@ Detailed leaderboard: **[lab.einsia.ai/frontier-eng/leaderboard.html](https://la
 
 ## Optional Assistant Setup
 
-Agent skills are in **`.claude/skills/`** (Claude Code), **`.codex/skills/`** (Codex CLI), **`.cursor/rules/`** (Cursor), and **`.github/copilot-instructions.md`** (Copilot).
+Agent skills are in **`.claude/skills/`** (Claude Code), **`.codex/skills/`** (Codex CLI), **`.cursor/skills/`** (Cursor), and **`.github/copilot-instructions.md`** (Copilot).
 
 ## Task Details
 

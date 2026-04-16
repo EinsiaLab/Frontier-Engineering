@@ -46,7 +46,7 @@ bash init.sh && conda activate frontier-eval-2
 
 ## 可选 Assistant/Agent 配置
 
-Agent skill 文件分别位于 **`.claude/skills/`**（Claude Code）、**`.codex/skills/`**（Codex CLI）、**`.cursor/rules/`**（Cursor）和 **`.github/copilot-instructions.md`**（Copilot）。
+Agent skill 文件分别位于 **`.claude/skills/`**（Claude Code）、**`.codex/skills/`**（Codex CLI）、**`.cursor/skills/`**（Cursor）和 **`.github/copilot-instructions.md`**（Copilot）。
 
 ## 任务详情
 
