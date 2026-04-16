@@ -2,7 +2,7 @@
 
 English | [简体中文](README_zh-CN.md)
 
-[![Homepage](https://img.shields.io/badge/Homepage-lab.einsia.ai-0969DA?style=flat-square&logo=homepage&logoColor=white)](https://lab.einsia.ai/frontier-eng/) [![arXiv](https://img.shields.io/badge/arXiv-coming_soon-b31b1b?style=flat-square&logo=arxiv&logoColor=white)](https://arxiv.org) [![Feishu](https://img.shields.io/badge/Feishu-Join-3370FF?style=flat-square)](https://applink.feishu.cn/client/chat/chatter/add_by_link?link_token=21ak5858-60ba-44fd-9085-01f165c8771c) [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?style=flat-square&logo=discord&logoColor=white)](https://discord.gg/hxeVhZNN)
+[![Homepage](https://img.shields.io/badge/Homepage-lab.einsia.ai-0969DA?style=flat-square&logo=homepage&logoColor=white)](https://lab.einsia.ai/frontier-eng/) [![arXiv](https://img.shields.io/badge/arXiv-2604.12290-b31b1b?style=flat-square&logo=arxiv&logoColor=white)](http://arxiv.org/abs/2604.12290) [![Feishu](https://img.shields.io/badge/Feishu-Join-3370FF?style=flat-square)](https://applink.feishu.cn/client/chat/chatter/add_by_link?link_token=21ak5858-60ba-44fd-9085-01f165c8771c) [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?style=flat-square&logo=discord&logoColor=white)](https://discord.gg/hxeVhZNN)
 
 ## News
 
@@ -44,10 +44,6 @@ Detailed leaderboard: **[lab.einsia.ai/frontier-eng/leaderboard.html](https://la
 | 8 | GPT-5.4 | 5.68 |
 | 9 | Qwen3 Coder Next | 6.68 |
 
-## Optional Assistant Setup
-
-Agent skills are in **`.claude/skills/`** (Claude Code), **`.codex/skills/`** (Codex CLI), **`.cursor/skills/`** (Cursor), and **`.github/copilot-instructions.md`** (Copilot).
-
 ## Task Details
 
 The full task list by domain is in **[TASK_DETAILS.md](TASK_DETAILS.md)**.
@@ -58,7 +54,7 @@ The best solutions produced by our agent runs (across experiments, algorithms, m
 
 ## Join the Community
 
-Welcome to our developer community! Whether you want to discuss new engineering problem concepts, find task collaborators, or encounter technical issues, reach us via the links at the top of this page.
+Welcome to our developer community! Whether you want to discuss new engineering problem concepts, find task collaborators, or encounter technical issues, reach us via [Feishu](https://applink.feishu.cn/client/chat/chatter/add_by_link?link_token=21ak5858-60ba-44fd-9085-01f165c8771c) or [Discord](https://discord.gg/hxeVhZNN).
 
 ## Contributing
 
