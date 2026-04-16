@@ -54,8 +54,6 @@ Common examples in this repository:
 - `JobShop` uses an explicit `task.runtime.python_path`.
 - `EngDesign` uses Docker-first execution or local fallback.
 
-Optional assistant setup is documented in **[docs/agent_setup.md](../docs/agent_setup.md)**. Skill sources live under **`.claude/skills/`**.
-
 Note on `third_party/`:
 
 Some optional algorithms/benchmarks depend on extra repos under `third_party/`. In this repo, `third_party/` is meant for local checkouts and is ignored by git (see `.gitignore`), so if you see commands like `pip install -e third_party/...`, clone the corresponding repo first, e.g.:
