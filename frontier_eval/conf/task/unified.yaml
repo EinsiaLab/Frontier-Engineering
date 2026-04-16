@@ -58,7 +58,8 @@ metrics_json: metrics.json
 artifacts_json: artifacts.json
 
 # When true and metrics_json is missing, parse last JSON object in stdout.
-parse_stdout_json: true
+# Keep disabled by default to prevent metric spoofing through crafted stdout.
+parse_stdout_json: false
 
 # Optional hard cap for unified evaluator itself; still bounded by
 # FRONTIER_EVAL_EVALUATOR_TIMEOUT_S from algorithm side.
@@ -72,5 +73,16 @@ runtime:
   # Used when python_path is empty and use_conda_run=true.
   conda_env: ${oc.env:FRONTIER_EVAL_UNIFIED_CONDA_ENV,frontier-eval-2}
   use_conda_run: true
+  # Runtime isolation mode:
+  # - process: run directly on host process (legacy behavior)
+  # - docker: run evaluation command in a docker container
+  isolation_mode: ${oc.env:FRONTIER_EVAL_UNIFIED_ISOLATION_MODE,process}
+  # Required when isolation_mode=docker.
+  docker_image: ${oc.env:FRONTIER_EVAL_UNIFIED_DOCKER_IMAGE,''}
+  # Security flags for docker isolation.
+  docker_network_disabled: true
+  docker_readonly_rootfs: true
+  docker_user: ${oc.env:FRONTIER_EVAL_UNIFIED_DOCKER_USER,65534:65534}
+  docker_tmpfs: /tmp:rw,noexec,nosuid,size=512m
   shell: bash
   env: {}

@@ -1,0 +1,10 @@
+channels:
+  - conda-forge
+dependencies:
+  - python=__PYTHON_VERSION__
+  - pip
+  - octave
+  - octave-signal
+  - octave-control
+  - pip:
+      - -r __ROOT__/frontier_eval/requirements.txt

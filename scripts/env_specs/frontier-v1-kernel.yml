@@ -1,0 +1,9 @@
+channels:
+  - conda-forge
+dependencies:
+  - python=__PYTHON_VERSION__
+  - pip
+  - pip:
+      - -r __ROOT__/benchmarks/KernelEngineering/FlashAttention/verification/requirements-gpumode.txt
+      - -r __ROOT__/benchmarks/KernelEngineering/MLA/verification/requirements-gpumode.txt
+      - -r __ROOT__/benchmarks/KernelEngineering/TriMul/verification/requirements-gpumode.txt

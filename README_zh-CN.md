@@ -30,33 +30,23 @@ bash init.sh && conda activate frontier-eval-2
 
 ## Leaderboard
 
-详细榜单：**[lab.einsia.ai/frontier-eng/leaderboard.html](https://lab.einsia.ai/frontier-eng/leaderboard.html)**。**Frontier Models** — 归一化总分（47 tasks）。*2026-04-09 · [数据](https://lab.einsia.ai/frontier-eng/data/overall-model.yaml)*
+详细榜单：**[lab.einsia.ai/frontier-eng/leaderboard.html](https://lab.einsia.ai/frontier-eng/leaderboard.html)**。**Frontier Models** — 平均任务内排名（47 tasks，下表按平均排名从低到高展示）。
 
-| 排名 | Model | Score |
+| 排名 | Model | Average Rank |
 | :--: | :--- | --: |
-| 1 | Claude Opus 4.6 | 0.751 |
-| 2 | GLM-5 | 0.630 |
-| 3 | DeepSeek V3.2 | 0.601 |
-| 4 | Gemini 3.1 Pro Preview | 0.442 |
-| 5 | SEED 2.0 Pro | 0.437 |
-| 6 | Grok 4.20 | 0.436 |
-| 7 | GPT-5.4 | 0.433 |
-| 8 | Qwen3 Coder Next | 0.272 |
+| 1 | Claude Opus 4.6 | 3.18 |
+| 2 | GLM-5 | 4.02 |
+| 3 | DeepSeek V3.2 | 4.41 |
+| 4 | GPT-OSS-120B | 4.46 |
+| 5 | Gemini 3.1 Pro Preview | 5.34 |
+| 6 | Grok 4.20 | 5.60 |
+| 7 | SEED 2.0 Pro | 5.63 |
+| 8 | GPT-5.4 | 5.68 |
+| 9 | Qwen3 Coder Next | 6.68 |
 
-## Agent skill
+## 可选 Assistant/Agent 配置
 
-请把下面这段话**整段复制**，发给你的 Agent：
-
-```text
-请你把本仓库 skill/source/ 下的两个 skill 安装为**本仓库的项目级 skill**（按我当前客户端对项目级 skill 的目录约定处理，例如 Cursor 的 .cursor/skills/、Claude Code 的 .claude/skills/、Codex 的 .codex/skills/ 等），分别是：
-
-1. skill/source/frontier-evaluator — 协助运行与调试 frontier_eval 评测、按各 benchmark README 准备运行环境与命令；
-2. skill/source/frontier-contributor — 协助按本仓库规范贡献或更新 benchmark。
-
-每个目录请以「一个可加载的 skill 包」接入：至少包含该目录下的 SKILL.md，以及其中引用的相对路径资源（例如 frontier-evaluator 下的 scripts/ 等），保证安装后在本仓库根目录下可正常使用。
-```
-
-仓库不提供统一的 skill CLI；以各目录内 `SKILL.md` 为准，由你的 Agent 按客户端接入。
+Agent skill 文件分别位于 **`.claude/skills/`**（Claude Code）、**`.codex/skills/`**（Codex CLI）、**`.cursor/skills/`**（Cursor）和 **`.github/copilot-instructions.md`**（Copilot）。
 
 ## 任务详情
 

@@ -30,33 +30,23 @@ Per-task runs, batch matrices, and runtime overrides are in **[frontier_eval/REA
 
 ## Leaderboard
 
-Detailed leaderboard: **[lab.einsia.ai/frontier-eng/leaderboard.html](https://lab.einsia.ai/frontier-eng/leaderboard.html)**. **Frontier Models** — normalized overall score (47 tasks). *2026-04-09 · [source](https://lab.einsia.ai/frontier-eng/data/overall-model.yaml)*
+Detailed leaderboard: **[lab.einsia.ai/frontier-eng/leaderboard.html](https://lab.einsia.ai/frontier-eng/leaderboard.html)**. **Frontier Models** — mean within-task rank (47 tasks), shown in ascending average-rank order.
 
-| Rank | Model | Score |
+| Rank | Model | Average Rank |
 | :--: | :--- | --: |
-| 1 | Claude Opus 4.6 | 0.751 |
-| 2 | GLM-5 | 0.630 |
-| 3 | DeepSeek V3.2 | 0.601 |
-| 4 | Gemini 3.1 Pro Preview | 0.442 |
-| 5 | SEED 2.0 Pro | 0.437 |
-| 6 | Grok 4.20 | 0.436 |
-| 7 | GPT-5.4 | 0.433 |
-| 8 | Qwen3 Coder Next | 0.272 |
+| 1 | Claude Opus 4.6 | 3.18 |
+| 2 | GLM-5 | 4.02 |
+| 3 | DeepSeek V3.2 | 4.41 |
+| 4 | GPT-OSS-120B | 4.46 |
+| 5 | Gemini 3.1 Pro Preview | 5.34 |
+| 6 | Grok 4.20 | 5.60 |
+| 7 | SEED 2.0 Pro | 5.63 |
+| 8 | GPT-5.4 | 5.68 |
+| 9 | Qwen3 Coder Next | 6.68 |
 
-## Agent skills
+## Optional Assistant Setup
 
-**Copy the block below verbatim** and send it to your agent:
-
-```text
-Please install the two skills under this repo’s skill/source/ as project-level skills for this repository (follow my editor’s / client’s convention for where project skills live, e.g. .cursor/skills/ for Cursor, .claude/skills/ for Claude Code, .codex/skills/ for Codex, etc.). The two packages are:
-
-1. skill/source/frontier-evaluator — help run and debug frontier_eval evaluations and prepare per-benchmark runtime from each benchmark’s README;
-2. skill/source/frontier-contributor — help add or update benchmarks following this repo’s contribution rules.
-
-Install each folder as one loadable skill package: include SKILL.md plus any relative assets it references (e.g. scripts/ under frontier-evaluator) so everything works from the repository root after installation.
-```
-
-There is no bundled CLI installer; your agent wires these up per client. The authoritative instructions remain in each folder’s `SKILL.md`.
+Agent skills are in **`.claude/skills/`** (Claude Code), **`.codex/skills/`** (Codex CLI), **`.cursor/skills/`** (Cursor), and **`.github/copilot-instructions.md`** (Copilot).
 
 ## Task Details
 
