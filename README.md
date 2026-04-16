@@ -37,12 +37,11 @@ Detailed leaderboard: **[lab.einsia.ai/frontier-eng/leaderboard.html](https://la
 | 1 | Claude Opus 4.6 | 3.18 |
 | 2 | GLM-5 | 4.02 |
 | 3 | DeepSeek V3.2 | 4.41 |
-| 4 | GPT-OSS-120B | 4.46 |
-| 5 | Gemini 3.1 Pro Preview | 5.34 |
-| 6 | Grok 4.20 | 5.60 |
-| 7 | SEED 2.0 Pro | 5.63 |
-| 8 | GPT-5.4 | 5.68 |
-| 9 | Qwen3 Coder Next | 6.68 |
+| 4 | Gemini 3.1 Pro Preview | 5.34 |
+| 5 | Grok 4.20 | 5.60 |
+| 6 | SEED 2.0 Pro | 5.63 |
+| 7 | GPT-5.4 | 5.68 |
+| 8 | Qwen3 Coder Next | 6.68 |
 
 ## Task Details
 
