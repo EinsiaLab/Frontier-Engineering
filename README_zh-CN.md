@@ -2,7 +2,7 @@
 
 [English](README.md) | 简体中文
 
-[![主页](https://img.shields.io/badge/主页-lab.einsia.ai-0969DA?style=flat-square&logo=homepage&logoColor=white)](https://lab.einsia.ai/frontier-eng/) [![arXiv](https://img.shields.io/badge/arXiv-即将发布-b31b1b?style=flat-square&logo=arxiv&logoColor=white)](https://arxiv.org) [![飞书](https://img.shields.io/badge/飞书-加入讨论群-3370FF?style=flat-square)](https://applink.feishu.cn/client/chat/chatter/add_by_link?link_token=21ak5858-60ba-44fd-9085-01f165c8771c) [![Discord](https://img.shields.io/badge/Discord-加入-5865F2?style=flat-square&logo=discord&logoColor=white)](https://discord.gg/hxeVhZNN)
+[![主页](https://img.shields.io/badge/主页-lab.einsia.ai-0969DA?style=flat-square&logo=homepage&logoColor=white)](https://lab.einsia.ai/frontier-eng/) [![arXiv](https://img.shields.io/badge/arXiv-2604.12290-b31b1b?style=flat-square&logo=arxiv&logoColor=white)](http://arxiv.org/abs/2604.12290) [![飞书](https://img.shields.io/badge/飞书-加入讨论群-3370FF?style=flat-square)](https://applink.feishu.cn/client/chat/chatter/add_by_link?link_token=21ak5858-60ba-44fd-9085-01f165c8771c) [![Discord](https://img.shields.io/badge/Discord-加入-5865F2?style=flat-square&logo=discord&logoColor=white)](https://discord.gg/hxeVhZNN)
 
 ## News
 
@@ -44,10 +44,6 @@ bash init.sh && conda activate frontier-eval-2
 | 8 | GPT-5.4 | 5.68 |
 | 9 | Qwen3 Coder Next | 6.68 |
 
-## 可选 Assistant/Agent 配置
-
-Agent skill 文件分别位于 **`.claude/skills/`**（Claude Code）、**`.codex/skills/`**（Codex CLI）、**`.cursor/skills/`**（Cursor）和 **`.github/copilot-instructions.md`**（Copilot）。
-
 ## 任务详情
 
 完整任务列表见 **[TASK_DETAILS_zh-CN.md](TASK_DETAILS_zh-CN.md)**。
@@ -58,7 +54,7 @@ Agent skill 文件分别位于 **`.claude/skills/`**（Claude Code）、**`.code
 
 ## 加入社区
 
-欢迎加入我们的开发者社区！无论是讨论新的工程问题构想、寻找 task 合作者，还是遇到技术问题，可通过页面顶部的链接联系我们。
+欢迎加入我们的开发者社区！无论是讨论新的工程问题构想、寻找 task 合作者，还是遇到技术问题，可通过[飞书](https://applink.feishu.cn/client/chat/chatter/add_by_link?link_token=21ak5858-60ba-44fd-9085-01f165c8771c)或[Discord](https://discord.gg/hxeVhZNN)直接联系我们。
 
 ## 贡献指南
 
