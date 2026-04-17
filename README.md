@@ -1,4 +1,4 @@
-# Frontier-Eng: Benchmarking Self-Evolving Agents on Real-World Engineering Tasks through Generative Optimization
+# Frontier-Eng: Benchmarking Self-Evolving Agents on Real-World Engineering Tasks with Generative Optimization
 
 English | [简体中文](README_zh-CN.md)
 
