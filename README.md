@@ -58,3 +58,14 @@ Welcome to our developer community! Whether you want to discuss new engineering 
 ## Contributing
 
 We welcome new engineering tasks via Pull Requests. Sample requirements, directory layout, test commands, EVOLVE-BLOCK rules, and the GitHub workflow are in **[CONTRIBUTING.md](CONTRIBUTING.md)**.
+
+## Citation
+
+```
+@article{chi2026frontier,
+  title={Frontier-Eng: Benchmarking Self-Evolving Agents on Real-World Engineering Tasks with Generative Optimization},
+  author={Chi, Yizhe and Hong, Deyao and Jiang, Dapeng and Luo, Tianwei and Yang, Kaisen and Zhang, Boshi and Cao, Zhe and Fan, Xiaoyan and He, Bingxiang and Hao, Han and others},
+  journal={arXiv preprint arXiv:2604.12290},
+  year={2026}
+}
+```
