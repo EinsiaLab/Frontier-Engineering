@@ -11,9 +11,37 @@
 
 ## 环境准备
 
-推荐使用 conda。
+推荐优先使用 `uv` 管理 Python 环境；需要 `octave` 的任务再单独安装系统依赖。
 
 最简单的方式是在仓库根目录执行：
+
+```bash
+uv sync
+uv run python -m frontier_eval task=smoke algorithm=openevolve algorithm.iterations=0
+```
+
+如果你需要额外 benchmark 依赖，可按 group 叠加，例如：
+
+```bash
+uv sync --group driver --group v1-main
+uv sync --group driver --group summit
+```
+
+完整说明见：
+
+```text
+docs/uv_setup_zh-CN.md
+```
+
+如果你要覆盖整个 `v1` 任务集，请直接看：
+
+```text
+docs/uv_v1_envs_zh-CN.md
+```
+
+如果你无法使用 `uv`，再退回到 `conda`。
+
+原有 `conda` 方式：
 
 ```bash
 bash init.sh
@@ -34,7 +62,7 @@ pip install -r frontier_eval/requirements.txt
 
 重要说明：
 
-上面的安装步骤只会把 `frontier_eval` 框架本身准备好。仓库里的很多 benchmark 还需要单独的 runtime 环境、benchmark 本地依赖、`third_party/` 仓库，或者 Docker。
+无论你使用 `uv` 还是 `conda`，上面的安装步骤都只会把 `frontier_eval` 框架本身准备好。仓库里的很多 benchmark 还需要单独的 runtime 环境、benchmark 本地依赖、`third_party/` 仓库，或者 Docker。
 
 在运行具体 benchmark 之前，请始终先看：
 
