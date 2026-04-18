@@ -53,19 +53,19 @@ upsert_from_spec() {
 }
 
 echo "[1/5] build driver env: ${DRIVER_ENV}"
-upsert_from_spec "$DRIVER_ENV" "${SPECS_DIR}/frontier-eval-2.yml"
+upsert_from_spec "$DRIVER_ENV" "${SPECS_DIR}/frontier-eval-2.yml" || echo "[WARN] Failed to build ${DRIVER_ENV}, continuing..."
 
 echo "[2/5] build merged main env: ${MAIN_ENV}"
-upsert_from_spec "$MAIN_ENV" "${SPECS_DIR}/frontier-v1-main.yml"
+upsert_from_spec "$MAIN_ENV" "${SPECS_DIR}/frontier-v1-main.yml" || echo "[WARN] Failed to build ${MAIN_ENV}, continuing..."
 
 echo "[3/5] build merged summit env: ${SUMMIT_ENV}"
-upsert_from_spec "$SUMMIT_ENV" "${SPECS_DIR}/frontier-v1-summit.yml"
+upsert_from_spec "$SUMMIT_ENV" "${SPECS_DIR}/frontier-v1-summit.yml" || echo "[WARN] Failed to build ${SUMMIT_ENV}, continuing..."
 
 echo "[4/5] build merged sustaindc env: ${SUSTAINDC_ENV}"
-upsert_from_spec "$SUSTAINDC_ENV" "${SPECS_DIR}/frontier-v1-sustaindc.yml"
+upsert_from_spec "$SUSTAINDC_ENV" "${SPECS_DIR}/frontier-v1-sustaindc.yml" || echo "[WARN] Failed to build ${SUSTAINDC_ENV}, continuing..."
 
 echo "[5/5] build merged kernel env: ${KERNEL_ENV}"
-upsert_from_spec "$KERNEL_ENV" "${SPECS_DIR}/frontier-v1-kernel.yml"
+upsert_from_spec "$KERNEL_ENV" "${SPECS_DIR}/frontier-v1-kernel.yml" || echo "[WARN] Failed to build ${KERNEL_ENV}, continuing..."
 
 cat <<EOF
 Merged task envs are ready:

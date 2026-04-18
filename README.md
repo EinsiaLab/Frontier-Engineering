@@ -40,9 +40,13 @@ Not every task runs purely off the main environment out of the box. Some require
 - **GPU Kernel Tasks** (e.g., FlashAttention, MLA): Explicitly require the `frontier-v1-kernel` suite to be active.
 
 ### 3. External Assets & Checklist
-Before kicking off a full batch evaluating external interfaces, ensure assets are downloaded:
-- `dc-rl` requires manual `clone + patch` into `third_party/`.
-- `PhySense`, `SustainDC`, and `CarAerodynamicsSensing` require downloading external models, data, or checkpoints. They will fail otherwise, which is a symptom of missing assets, not broken code.
+Sometimes failures are due to missing external assets rather than code issues:
+- **`dc-rl`**: Requires additional `clone + patch` execution (should be stored in `third_party/` and `benchmarks/SustainableDataCenterControl/.../sustaindc/`).
+- **`PhySense`**, **`SustainDC`**, and **`CarAerodynamicsSensing`**: Require downloading external models, data, or checkpoints. They will fail otherwise, which is a symptom of missing assets.
+
+> 🤖 **Recommended: One-Click Setup via AI Agents** 
+> If you are using Claude Code or other autonomous agent tools, you can simply run this prompt in the root directory to bootstrap the tedious setup process:
+> `Please read the repository instructions, run init.sh to configure the main environment, and download the required third_party dependencies (Make sure to pin ShinkaEvolve to commit 642664d, and clone the correct dc-rl repo in the SustainDC task directory).`
 
 ### 4. Known Instabilities & Permissions
 - **ReactionOptimisation**: Currently unstable (`frontier-v1-summit` pip resolution depth errors). Do not interpret its failure as a core framework issue.

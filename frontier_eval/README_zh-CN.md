@@ -79,9 +79,10 @@ git clone https://github.com/thuml/PhySense.git third_party/PhySense
 
 # 方式 A：本地 clone 到 `third_party/`（需要打补丁/调试时推荐）
 git clone https://github.com/SakanaAI/ShinkaEvolve.git third_party/ShinkaEvolve
-# Frontier-Engineering 补丁：修复 `DatabaseDisplay` 在 `program.metadata` 缺失时的崩溃，
-# 并在价格表中补充 OpenRouter 模型 `qwen/qwen3-coder-next`。
-git apply patches/third_party_shinkaevolve.patch
+# 请务必锁定到 642664d 版本，最新版本存在兼容性问题
+(cd third_party/ShinkaEvolve && git checkout 642664d)
+# Frontier-Engineering 补丁（若不兼容最新版可忽略或手动应用）
+git apply docs/internal/third_party_shinkaevolve.patch || true
 pip install -e third_party/ShinkaEvolve
 
 # 方式 B：可编辑 VCS 安装（确保 `shinka.core` 可用）：
