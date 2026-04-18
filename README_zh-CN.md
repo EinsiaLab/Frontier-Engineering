@@ -20,13 +20,35 @@ Frontier-Eng 将这种范式形式化为 **generative optimization**，并指出
 
 Frontier-Eng 要求 Agent 在只读、不可篡改的 verifier 下，将领域知识、受约束代码合成与迭代 refinement 紧密结合。
 
-## Getting Started
+## Getting Started & 飞行前检查单 (Pre-flight Checklist)
 
-```bash
-bash init.sh && conda activate frontier-eval-2
-```
+想要成功运行完整的 benchmark 集合，必须要了解环境架构并正确配置局部的任务依赖。**跑完 `init.sh` 并不代表配置成功；能在 unified 任务上成功跑通一次 0-iteration (smoke test) 才是环境已最小可运行验证的标准。**
 
-运行具体任务、batch、环境覆盖等见 **[frontier_eval/README_zh-CN.md](frontier_eval/README_zh-CN.md)**。
+### 1. 环境架构分层与隔离
+我们将**调度器所在环境**与**任务执行环境**剥离：
+- **Driver 环境** (`frontier-eval-2`)：通过 `init.sh` 创建，只负责调度和派发任务，不涉及具体运行。
+- **Runtime 环境** (`frontier-v1-main`, `frontier-v1-kernel` 等)：这些是实际运行代码的上下文。
+  - 通过 `bash scripts/setup_v1_merged_task_envs.sh` 来安装打包好的执行环境。
+  - **隔离注意**：在进行全量测试前，请务必设置 `export PYTHONNOUSERSITE=1` 来防止本地用户包穿透。
+  - **执行模式**：默认情况下，任务配置会使用 `task.runtime.use_conda_run=false` 并指定 `task.runtime.python_path=conda-env:<env_name>`，直接借助 conda prefix 来干净地启动进程。
+
+### 2. Task-Local 额外依赖
+有些 benchmark 不能光靠主环境直接跑通，还需对任务进行局部配置：
+- **DuckDB 与 EV2Gym**：不安装其特定的验证依赖会直接挂掉，属于 "少装一步就会报错" 的典型。
+- **Optics 任务族**：需要专属的依赖集（目前已并入主环境配置中）。
+- **MolecularMechanics**：需依赖 OpenFF 系列的底层包（如 `openff-toolkit`），安装方法见其子目录 README。
+- **GPU Kernel 类任务** (FlashAttention 等)：有单独的 GPU kernel 运行环境 (`frontier-v1-kernel`)，绝不能顺延使用主环境。
+
+### 3. 外部资产与数据 Checklist
+有些任务失败不是代码/依赖问题，而是缺少了对应的外部资产：
+- **`dc-rl`** 需要额外执行 `clone + patch`（存放于 `third_party/`）。
+- **`PhySense`、`SustainDC` 及 `CarAerodynamicsSensing`**：需手动把运行所需的数据、外部模型权重或参考文件补齐，否则将被系统误判为失效。
+
+### 4. 权限限制与已知阻塞项
+- **ReactionOptimisation**：当前环境依赖极其不稳定 (`frontier-v1-summit` 经常出现 pip resolution over depth 问题)，请把它当成已知阻塞项，并非你本地操作失误。
+- **EngDesign / Docker 权限**：有些任务极度依赖 Docker 套接字权限，如果当前机器/节点没有 Docker 权限，你需要切换到替代的本地运行模式（Local Mode）。
+
+完成上述准备后，即可查看详细说明进行单任务运行与大规模测试：**[frontier_eval/README_zh-CN.md](frontier_eval/README_zh-CN.md)**。
 
 ## Leaderboard
 

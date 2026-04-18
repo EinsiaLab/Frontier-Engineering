@@ -47,3 +47,5 @@ frontier_eval/conf/batch/*
 !frontier_eval/conf/batch/v1_engdesign_openevolve_qwen3codernext_100.yaml
 !frontier_eval/conf/batch/v1_flashattention_openevolve_qwen3codernext_100.yaml
 !frontier_eval/conf/batch/v1_gpu_openevolve_qwen3codernext_100.yaml
+metrics.json
+artifacts.json

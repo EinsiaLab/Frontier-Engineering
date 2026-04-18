@@ -278,7 +278,7 @@ algorithms:
 
 llms:
   - name: litellm__gemini-3.1-pro-preview
-    api_base: ${oc.env:OPENAI_API_BASE,https://litellm.nbdevenv.xiaoaojianghu.fun/v1}
+    api_base: ${oc.env:OPENAI_API_BASE,https://api.openai.com/v1}
     model: gemini-3.1-pro-preview
     api_key_env: OPENAI_API_KEY
 

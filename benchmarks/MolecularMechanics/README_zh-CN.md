@@ -97,7 +97,8 @@ conda create -n openff-dev -c conda-forge \
   scipy \
   rdkit \
   openmm \
-  ambertools -y
+  ambertools \
+  openff-toolkit -y
 
 conda activate openff-dev
 python -m pip install -r benchmarks/MolecularMechanics/requirements.txt
