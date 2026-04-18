@@ -7,8 +7,3 @@ numpy
 pandas
 anndata
 scipy
-anndata
-torch
-torchvision
-einops==0.8.1
-timm==1.0.21

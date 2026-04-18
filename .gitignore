@@ -49,3 +49,8 @@ frontier_eval/conf/batch/*
 !frontier_eval/conf/batch/v1_gpu_openevolve_qwen3codernext_100.yaml
 metrics.json
 artifacts.json
+
+# Task outputs and artifacts
+**/outputs/
+**/artifacts/
+**/last_eval.json

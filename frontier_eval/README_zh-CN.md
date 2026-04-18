@@ -29,7 +29,11 @@ conda activate frontier-eval-2
 # Octave + signal/control
 conda install -c conda-forge octave octave-signal octave-control -y
 
+# 核心 CPU 依赖（体积小，可快速跑通主线，推荐优先安装）
 pip install -r frontier_eval/requirements.txt
+
+# 若需运行 GPU/视觉类特定任务（包含 torch、einops、timm 等大包），再补充安装：
+# pip install -r frontier_eval/requirements-gpu.txt
 ```
 
 重要说明：
@@ -274,6 +278,24 @@ python -m frontier_eval task=unified \
   task.benchmark=MyDomain/MyTask \
   task.runtime.conda_env=frontier-eval-2
 ```
+
+### 专用目录 (Prefix Env) 或非命名 Conda Env 运行方式
+
+当你使用 `--prefix` 将环境安装在特定目录（比如项目文件夹中），而不是全局 named env 下时，直接使用默认配置可能会因为 Conda 解析不到环境名而报 `EnvironmentLocationNotFound` 等错误引发 Unified evaluator 秒崩。
+
+此时，**请不要使用** `task.runtime.conda_env`，而是显式指定你的 python 解释器绝对路径，并关闭 `use_conda_run`：
+
+```bash
+# 假设你的任务执行环境安装在 /path/to/my_env
+python -m frontier_eval \
+  task=unified \
+  task.benchmark=ParticlePhysics/MuonTomography \
+  task.runtime.python_path=/path/to/my_env/bin/python \
+  task.runtime.use_conda_run=false \
+  algorithm=openevolve \
+  algorithm.iterations=0
+```
+这是本评测框架原生支持的方法，不仅能解决前缀环境报错，还极其推荐有避免全局污染需求的用户使用。
 
 ## 批量评测
 

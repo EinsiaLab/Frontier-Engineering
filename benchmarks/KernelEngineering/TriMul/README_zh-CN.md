@@ -16,7 +16,7 @@ agent 可以基于 `baseline/submission.py` 进行修改，这是待优化的模
 cd benchmarks/KernelEngineering/TriMul/verification
 
 # 只检验正确性
-exec 3>tri_test.log POPCORN_FD=3 python eval.py test tri_test.txt
+exec 3>tri_test.log POPCORN_FD=3 python eval.py test tri_tests.txt
 
 # 每个case计时，只做一次初始正确性检查，后续主要测试速度
 exec 3>tri_bench.log POPCORN_FD=3 python eval.py benchmark tri_bench.txt
