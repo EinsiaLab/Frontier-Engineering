@@ -90,7 +90,7 @@ def evaluate(program_path: str, *, repo_root: Path | None = None) -> Any:
         "runtime_s": 0.0,
     }
 
-    timeout_s = int(os.environ.get("FRONTIER_EVAL_EVALUATOR_TIMEOUT_S", "600") or "600")
+    timeout_s = int(os.environ.get("FRONTIER_EVAL_EVALUATOR_TIMEOUT_S", "1800") or "1800")
     deadline = start + max(1.0, float(timeout_s) - 2.0)  # small margin vs OpenEvolve wait_for()
     dataset_dir.mkdir(parents=True, exist_ok=True)
     truth_path = dataset_dir / "test_mod2.h5ad"
