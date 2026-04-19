@@ -46,6 +46,7 @@ frontier_eval/conf/batch/*
 !frontier_eval/conf/batch/v1.yaml
 metrics.json
 artifacts.json
+debug-*.log
 
 # Task outputs and artifacts
 **/outputs/

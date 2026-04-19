@@ -37,6 +37,8 @@ python -m frontier_eval.batch --matrix frontier_eval/conf/batch/v1.yaml
 - **EngDesign** 需先按 [`benchmarks/EngDesign/README.md`](benchmarks/EngDesign/README.md) 设置 Docker 相关环境变量（例如 `ENGDESIGN_EVAL_MODE`、`ENGDESIGN_DOCKER_IMAGE`）。
 - 若只需跑子集，可使用 `frontier_eval.batch --tasks ...` 或 `--exclude-tasks ...`，或调小 YAML 里的 `run.max_parallel`。
 
+**矩阵自检（可选）**：在仓库根目录执行 `python scripts/debug_verify_v1_matrix.py`，会校验 `v1.yaml` 能否解析、`validate_v1_merged_task_envs.sh` 里用到的任务标签是否都存在，并将简要结果写入 `debug-e710d8.log`（可忽略或删除该文件）。
+
 批量输出目录：`runs/batch/<run.name>/`（含 `summary.jsonl`）。若仅需 **iter=0** 验证合并环境，见 [`scripts/validate_v1_merged_task_envs.sh`](scripts/validate_v1_merged_task_envs.sh)。
 
 ---
