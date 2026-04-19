@@ -306,6 +306,18 @@ python -m frontier_eval \
 python -m frontier_eval.batch --matrix frontier_eval/conf/batch/example_matrix.yaml
 ```
 
+### v1 统一批量矩阵
+
+当前维护的 **v1** 任务池集中在 **`frontier_eval/conf/batch/v1.yaml`**（由原 CPU / GPU / FlashAttention / EngDesign 多份矩阵合并）。其中 `llms` 条目名为 **`v1`**，`OPENAI_API_BASE` 与 `OPENAI_MODEL` 在加载矩阵时从环境变量读取（默认与 `frontier_eval/conf/llm/openai_compatible.yaml` 一致），API Key 通过 `api_key_env` 引用。
+
+主机侧准备（EngDesign 的 Docker 变量、`CUDA_VISIBLE_DEVICES`、合并 conda 环境等）见仓库根目录 **[`run.md`](../run.md)**。
+
+```bash
+python -m frontier_eval.batch --matrix frontier_eval/conf/batch/v1.yaml
+```
+
+可通过 `--tasks` / `--exclude-tasks` 或调低 YAML 中的 `run.max_parallel`，在 CPU/GPU 任务混跑时减轻资源争用。
+
 补测（只重跑部分 task）：
 
 ```bash
@@ -341,7 +353,7 @@ python -m frontier_eval.batch --matrix runs/batch/<batch_id>/matrix_resolved.yam
 - `frontier-v1-sustaindc`：`SustainableDataCenterControl/*`
 - `frontier-v1-kernel`：`KernelEngineering/MLA`、`KernelEngineering/TriMul`
 
-如果某个历史 README 仍然写着旧环境名（例如 `mqt`、`stock`、`pyportfolioopt`、`jobshop` 等），对于当前 `v1` 批量运行，请优先以 `frontier_eval/conf/batch/` 下的 matrix 配置为准。
+如果某个历史 README 仍然写着旧环境名（例如 `mqt`、`stock`、`pyportfolioopt`、`jobshop` 等），对于当前 `v1` 批量运行，请优先以 **`frontier_eval/conf/batch/v1.yaml`**（以及 [`run.md`](../run.md) 中的操作说明）为准。
 
 环境准备与验证脚本：
 

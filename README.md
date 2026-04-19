@@ -52,7 +52,7 @@ Sometimes failures are due to missing external assets rather than code issues:
 - **ReactionOptimisation**: Currently unstable (`frontier-v1-summit` pip resolution depth errors). Do not interpret its failure as a core framework issue.
 - **EngDesign / Docker Tasks**: Docker-based workflows require explicit docker socket permissions. Depending on your machine, you must switch to local mode if permissions are denied.
 
-Once these conditions are satisfied, per-task runs, batch matrices, and runtime overrides can be managed normally. See **[frontier_eval/README.md](frontier_eval/README.md)**.
+Once these conditions are satisfied, per-task runs, batch matrices, and runtime overrides can be managed normally. See **[frontier_eval/README.md](frontier_eval/README.md)**. For a consolidated **v1 batch** command and host setup notes, see **[run.md](run.md)**.
 
 ## Leaderboard
 

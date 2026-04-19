@@ -287,6 +287,18 @@ Use the batch runner (writes an isolated `run.output_dir` for each combination a
 python -m frontier_eval.batch --matrix frontier_eval/conf/batch/example_matrix.yaml
 ```
 
+### v1 unified batch matrix
+
+The maintained **v1** task pool is defined in **`frontier_eval/conf/batch/v1.yaml`** (a single matrix merging the former CPU / GPU / FlashAttention / EngDesign splits). The batch entry `llms[].name` is **`v1`**; `OPENAI_API_BASE` and `OPENAI_MODEL` are read from the environment at matrix load time (defaults align with `frontier_eval/conf/llm/openai_compatible.yaml`), and the API key is referenced via `api_key_env`.
+
+For host setup (Docker env vars for EngDesign, `CUDA_VISIBLE_DEVICES`, merged conda envs, etc.), see **[`run.md`](../run.md)** at the repository root.
+
+```bash
+python -m frontier_eval.batch --matrix frontier_eval/conf/batch/v1.yaml
+```
+
+Use `--tasks` / `--exclude-tasks`, or lower `run.max_parallel` in the YAML, to avoid contention when mixing CPU and GPU workloads.
+
 `matrix.tasks` supports either plain task names or labeled task entries with per-entry overrides:
 
 ```yaml
@@ -345,7 +357,7 @@ Current `v1` runtime consolidation:
 - `frontier-v1-sustaindc`: `SustainableDataCenterControl/*`
 - `frontier-v1-kernel`: `KernelEngineering/MLA`, `KernelEngineering/TriMul`
 
-If an older benchmark README still mentions legacy env names such as `mqt`, `stock`, `pyportfolioopt`, or `jobshop`, prefer the batch matrix files under `frontier_eval/conf/batch/` as the source of truth for current `v1` runs.
+If an older benchmark README still mentions legacy env names such as `mqt`, `stock`, `pyportfolioopt`, or `jobshop`, prefer **`frontier_eval/conf/batch/v1.yaml`** (and [`run.md`](../run.md) for operator setup) as the source of truth for current `v1` runs.
 
 Setup and validation scripts:
 
