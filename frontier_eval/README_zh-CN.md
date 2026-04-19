@@ -308,7 +308,7 @@ python -m frontier_eval.batch --matrix frontier_eval/conf/batch/example_matrix.y
 
 ### v1 统一批量矩阵
 
-当前维护的 **v1** 任务池集中在 **`frontier_eval/conf/batch/v1.yaml`**（由原 CPU / GPU / FlashAttention / EngDesign 多份矩阵合并）。其中 `llms` 条目名为 **`v1`**，`OPENAI_API_BASE` 与 `OPENAI_MODEL` 在加载矩阵时从环境变量读取（默认与 `frontier_eval/conf/llm/openai_compatible.yaml` 一致），API Key 通过 `api_key_env` 引用。
+**v1** 批量任务使用 **`frontier_eval/conf/batch/v1.yaml`**。`OPENAI_API_BASE`、`OPENAI_MODEL` 等在加载矩阵时从环境变量读取（与 `frontier_eval/conf/llm/openai_compatible.yaml` 的约定一致）。
 
 主机侧准备（EngDesign 的 Docker 变量、`CUDA_VISIBLE_DEVICES`、合并 conda 环境等）见仓库根目录 **[`run.md`](../run.md)**。
 
@@ -363,6 +363,6 @@ python -m frontier_eval.batch --matrix runs/batch/<batch_id>/matrix_resolved.yam
 
 说明：
 
-- 上述验证默认使用 `conda run -n frontier-eval-2 python` 作为 driver，也可以通过 `DRIVER_PY=/path/to/python` 显式覆盖；脚本会验证 CPU `v1`、GPU `v1`、`FlashAttention`、`MLA`、`TriMul`。
-- `MuonTomography` 已列在 [TASK_DETAILS_zh-CN.md](../TASK_DETAILS_zh-CN.md) 中，但在评测器重构完成前暂不纳入 `v1` 批量矩阵。
+- 上述验证默认使用 `conda run -n frontier-eval-2 python` 作为 driver，也可以通过 `DRIVER_PY=/path/to/python` 显式覆盖；脚本会验证 CPU `v1`、GPU `v1`，以及 `v1.yaml` 中的 kernel 批量段（`MLA` / `TriMul` / `FlashAttention`）。
+- `MuonTomography` 已列在 [TASK_DETAILS_zh-CN.md](../TASK_DETAILS_zh-CN.md) 中，但**未**列入 [`frontier_eval/conf/batch/v1.yaml`](../frontier_eval/conf/batch/v1.yaml)。
 - 已知限制：`KernelEngineering/TriMul` 的官方 full benchmark（`verification/tri_bench.txt`）在 24GB 级别 GPU 上可能受显存上限影响；这通常是 task 本身的显存边界问题，而不是 `frontier-v1-kernel` 环境缺依赖。

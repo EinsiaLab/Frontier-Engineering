@@ -289,7 +289,7 @@ python -m frontier_eval.batch --matrix frontier_eval/conf/batch/example_matrix.y
 
 ### v1 unified batch matrix
 
-The maintained **v1** task pool is defined in **`frontier_eval/conf/batch/v1.yaml`** (a single matrix merging the former CPU / GPU / FlashAttention / EngDesign splits). The batch entry `llms[].name` is **`v1`**; `OPENAI_API_BASE` and `OPENAI_MODEL` are read from the environment at matrix load time (defaults align with `frontier_eval/conf/llm/openai_compatible.yaml`), and the API key is referenced via `api_key_env`.
+**v1** batch runs use **`frontier_eval/conf/batch/v1.yaml`**. `OPENAI_API_BASE`, `OPENAI_MODEL`, and related settings are read from the environment when the matrix loads (same conventions as `frontier_eval/conf/llm/openai_compatible.yaml`).
 
 For host setup (Docker env vars for EngDesign, `CUDA_VISIBLE_DEVICES`, merged conda envs, etc.), see **[`run.md`](../run.md)** at the repository root.
 
@@ -367,6 +367,6 @@ Setup and validation scripts:
 
 Notes:
 
-- The validation script uses `conda run -n frontier-eval-2 python` as the default driver, and can also be overridden with `DRIVER_PY=/path/to/python`. It checks CPU `v1`, GPU `v1`, `FlashAttention`, `MLA`, and `TriMul`.
-- `MuonTomography` is listed in [TASK_DETAILS.md](../TASK_DETAILS.md) but is not included in the current `v1` batch matrices pending evaluator redesign.
+- The validation script uses `conda run -n frontier-eval-2 python` as the default driver, and can also be overridden with `DRIVER_PY=/path/to/python`. It checks CPU `v1`, GPU `v1`, and a kernel batch (`MLA`, `TriMul`, `FlashAttention`) from `v1.yaml`.
+- `MuonTomography` is listed in [TASK_DETAILS.md](../TASK_DETAILS.md) but is **not** included in [`frontier_eval/conf/batch/v1.yaml`](../frontier_eval/conf/batch/v1.yaml).
 - Known caveat: the official `KernelEngineering/TriMul` full benchmark (`verification/tri_bench.txt`) may still be VRAM-limited on 24GB-class GPUs; this is typically a task-level memory-bound issue rather than a missing dependency in `frontier-v1-kernel`.

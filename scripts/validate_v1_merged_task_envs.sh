@@ -27,10 +27,12 @@ run_driver() {
 run_cpu_batch() {
   run_driver -m frontier_eval.batch \
     --matrix "$V1_MATRIX" \
-    --exclude-tasks ParticlePhysics/MuonTomography \
+    --exclude-tasks \
       Robotics/QuadrupedGaitOptimization \
       Robotics/RobotArmCycleTimeOptimization \
       Aerodynamics/CarAerodynamicsSensing \
+      KernelEngineering/MLA \
+      KernelEngineering/TriMul \
       KernelEngineering/FlashAttention \
       engdesign \
     --base-dir "$RUN_BASE_DIR" \
@@ -48,28 +50,17 @@ run_gpu_batch() {
     --override algorithm.iterations=0
 }
 
-run_flash_batch() {
+run_kernel_batch() {
   CUDA_VISIBLE_DEVICES="$GPU_DEVICES" \
     run_driver -m frontier_eval.batch \
     --matrix "$V1_MATRIX" \
+    --tasks KernelEngineering/MLA \
+    --tasks KernelEngineering/TriMul \
     --tasks KernelEngineering/FlashAttention \
     --base-dir "$RUN_BASE_DIR" \
     --override algorithm.iterations=0
 }
 
-run_kernel_task() {
-  local benchmark="$1"
-  CUDA_VISIBLE_DEVICES="$GPU_DEVICES" \
-    run_driver -m frontier_eval \
-    task=unified \
-    task.benchmark="$benchmark" \
-    task.runtime.conda_env=frontier-v1-kernel \
-    algorithm=openevolve \
-    algorithm.iterations=0
-}
-
 run_cpu_batch
 run_gpu_batch
-run_flash_batch
-run_kernel_task KernelEngineering/MLA
-run_kernel_task KernelEngineering/TriMul
+run_kernel_batch

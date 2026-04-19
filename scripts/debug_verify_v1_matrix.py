@@ -57,12 +57,13 @@ def main() -> None:
         _log("H2", "_parse_tasks FAILED", {"error": str(e)})
         raise
 
-    # H3: validate.sh exclude list ⊆ matrix labels
+    # H3: validate.sh run_cpu_batch exclude list ⊆ matrix labels
     exclude_validate = [
-        "ParticlePhysics/MuonTomography",
         "Robotics/QuadrupedGaitOptimization",
         "Robotics/RobotArmCycleTimeOptimization",
         "Aerodynamics/CarAerodynamicsSensing",
+        "KernelEngineering/MLA",
+        "KernelEngineering/TriMul",
         "KernelEngineering/FlashAttention",
         "engdesign",
     ]

@@ -16,10 +16,6 @@ tasks:
   overrides:
   - task.benchmark=Astrodynamics/MannedLunarLanding
 - name: unified
-  label: ParticlePhysics/MuonTomography
-  overrides:
-  - task.benchmark=ParticlePhysics/MuonTomography
-- name: unified
   label: SingleCellAnalysis/predict_modality
   overrides:
   - task.benchmark=SingleCellAnalysis/predict_modality
@@ -242,6 +238,18 @@ tasks:
   - task.benchmark=Aerodynamics/CarAerodynamicsSensing
   - task.runtime.conda_env=frontier-v1-main
   - algorithm.oe.evaluator.timeout=600
+- name: unified
+  label: KernelEngineering/MLA
+  overrides:
+  - task.benchmark=KernelEngineering/MLA
+  - task.runtime.conda_env=frontier-v1-main
+  - algorithm.oe.evaluator.timeout=1200
+- name: unified
+  label: KernelEngineering/TriMul
+  overrides:
+  - task.benchmark=KernelEngineering/TriMul
+  - task.runtime.conda_env=frontier-v1-main
+  - algorithm.oe.evaluator.timeout=1200
 - name: unified
   label: KernelEngineering/FlashAttention
   overrides:
