@@ -1,4 +1,14 @@
 #!/usr/bin/env bash
+# ------------------------------------------------------------
+# Frontier-Eng init script
+# ------------------------------------------------------------
+# This script bootstraps the conda driver environment and installs
+# all required Python packages. It now includes:
+#   • Automatic detection of common conda installation paths.
+#   • Non-interactive acceptance of the Conda Terms-of-Service.
+#   • Export of PYTHONNOUSERSITE=1 to guarantee a clean, isolated
+#     Python environment (important for reproducibility).
+# ------------------------------------------------------------
 set -euo pipefail
 
 # One-shot bootstrap: conda driver env + frontier_eval deps.
@@ -10,6 +20,8 @@ cd "$ROOT"
 ENV_NAME="frontier-eval-2"
 PYTHON_VERSION="3.12"
 
+# Export isolation flag early
+export PYTHONNOUSERSITE=1
 prompt_yn() {
   local prompt="$1"
   local def="${2:-n}"

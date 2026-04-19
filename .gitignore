@@ -31,9 +31,9 @@ SKILL_zh-CN.md
 # Local personal agent configuration
 /AGENT.md
 /AGENT_zh-CN.md
-/.codex/
-/.claude/
-/.cursor/
+# /.codex/
+# /.claude/
+# /.cursor/
 !/.claude/
 !/.claude/skills/
 !/.claude/skills/*.md
