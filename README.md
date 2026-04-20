@@ -46,9 +46,9 @@ Setup is split between a small **driver** conda env and per-task **runtime** env
 - **ReactionOptimisation**: `frontier-v1-summit` pip resolution can fail; treat as env noise, not necessarily a bug in the harness.
 - **EngDesign**: Docker tasks need a working Docker setup; use local mode if you cannot access the socket.
 
-**LLM / API keys**: copy `.env.example` to `.env` and set at least **`OPENAI_API_KEY`** (and `OPENAI_API_BASE` / `OPENAI_MODEL` if you use a compatible gateway). Details: **[run.md](run.md)**.
+**LLM / API keys**: copy `.env.example` to `.env` and set at least **`OPENAI_API_KEY`** (and `OPENAI_API_BASE` / `OPENAI_MODEL` if you use a compatible gateway). Details: **[run_en.md](run_en.md)** · [中文 run.md](run.md).
 
-Per-task commands, batch matrices, and overrides: **[frontier_eval/README.md](frontier_eval/README.md)**. **v1 batch** wrapper and host notes: **[run.md](run.md)** (`bash scripts/run_v1_batch.sh`).
+Per-task commands, batch matrices, and overrides: **[frontier_eval/README.md](frontier_eval/README.md)**. **v1 batch** wrapper and host notes: **[run_en.md](run_en.md)** · [中文 run.md](run.md) (`bash scripts/run_v1_batch.sh`).
 
 ## Leaderboard
 

@@ -1,5 +1,7 @@
 # Frontier-Eng 运行说明
 
+英文：[run_en.md](run_en.md)
+
 Hydra 参数、算法与任务覆盖以 [`frontier_eval/README.md`](frontier_eval/README.md) 为准。
 
 ---
