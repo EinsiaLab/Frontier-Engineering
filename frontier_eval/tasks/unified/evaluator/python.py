@@ -48,7 +48,6 @@ def _find_conda_executable() -> str:
                     "/root/miniconda3/bin/conda",
                     "/opt/conda/bin/conda",
                     "/usr/local/miniconda3/bin/conda",
-                    "/mnt/shared-storage-user/p1-shared/luotianwei/miniconda3/bin/conda",
                 )
                 if os.path.exists(candidate)
             ),

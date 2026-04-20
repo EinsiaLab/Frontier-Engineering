@@ -1,4 +1,14 @@
 #!/usr/bin/env bash
+# ------------------------------------------------------------
+# Frontier-Eng init script
+# ------------------------------------------------------------
+# This script bootstraps the conda driver environment and installs
+# all required Python packages. It now includes:
+#   • Automatic detection of common conda installation paths.
+#   • Non-interactive acceptance of the Conda Terms-of-Service.
+#   • Export of PYTHONNOUSERSITE=1 to guarantee a clean, isolated
+#     Python environment (important for reproducibility).
+# ------------------------------------------------------------
 set -euo pipefail
 
 # One-shot bootstrap: conda driver env + frontier_eval deps.
@@ -10,6 +20,8 @@ cd "$ROOT"
 ENV_NAME="frontier-eval-2"
 PYTHON_VERSION="3.12"
 
+# Export isolation flag early
+export PYTHONNOUSERSITE=1
 prompt_yn() {
   local prompt="$1"
   local def="${2:-n}"
@@ -58,14 +70,26 @@ PY
 }
 
 if ! command -v conda >/dev/null 2>&1; then
-  cat >&2 <<'EOF'
+  # Try to auto-detect common conda paths
+  if [[ -f "$HOME/miniconda3/bin/conda" ]]; then
+    export PATH="$HOME/miniconda3/bin:$PATH"
+  elif [[ -f "$HOME/anaconda3/bin/conda" ]]; then
+    export PATH="$HOME/anaconda3/bin:$PATH"
+  elif [[ -f "/opt/conda/bin/conda" ]]; then
+    export PATH="/opt/conda/bin:$PATH"
+  else
+    cat >&2 <<'EOF'
 conda not found.
 
-Install Miniconda/Anaconda first, then rerun:
-  bash init.sh
+Install Miniconda/Anaconda first and ensure it is in your PATH.
 EOF
-  exit 127
+    exit 127
+  fi
 fi
+
+# Try to accept Conda ToS for Anaconda defaults if running matching conda versions
+conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main >/dev/null 2>&1 || true
+conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r >/dev/null 2>&1 || true
 
 echo ""
 echo "== Frontier-Eng init: conda driver + framework (env: $ENV_NAME) =="
@@ -88,11 +112,15 @@ else
   conda install -n "$ENV_NAME" "python=$PYTHON_VERSION" -y
 fi
 
-# 2) Install Octave packages used by validators (conda-forge).
 echo ""
 echo "[2/4] Octave (conda-forge: octave, octave-signal, octave-control — used by some validators, e.g. astrodynamics)"
-echo "+ conda install -n $ENV_NAME -c conda-forge octave octave-signal octave-control -y"
-conda install -n "$ENV_NAME" -c conda-forge octave octave-signal octave-control -y
+if [[ "$(uname -m)" == "aarch64" ]]; then
+  echo "+ conda install -n $ENV_NAME -c conda-forge octave -y (Skipping signal/control for aarch64 compatibility)"
+  conda install -n "$ENV_NAME" -c conda-forge octave -y
+else
+  echo "+ conda install -n $ENV_NAME -c conda-forge octave octave-signal octave-control -y"
+  conda install -n "$ENV_NAME" -c conda-forge octave octave-signal octave-control -y
+fi
 
 # 3) Install Python dependencies.
 echo ""

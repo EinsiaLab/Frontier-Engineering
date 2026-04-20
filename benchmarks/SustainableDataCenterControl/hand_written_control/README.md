@@ -2,6 +2,10 @@
 
 This subtask asks you to write a deterministic control policy for the three original SustainDC agents:
 
+> **[ATTENTION] Must clone the vendored directory before running**:
+> SustainDC relies on the `dc-rl` library. The `sustaindc/` directory is an empty placeholder. Run this before evaluation:
+> `git clone https://github.com/HewlettPackard/dc-rl.git benchmarks/SustainableDataCenterControl/hand_written_control/sustaindc`
+
 - `agent_ls`: load shifting
 - `agent_dc`: cooling control
 - `agent_bat`: battery dispatch

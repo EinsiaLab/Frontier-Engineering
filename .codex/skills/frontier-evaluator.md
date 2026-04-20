@@ -6,7 +6,7 @@ user_invocable: true
 
 When asked to run or debug evaluation:
 
-1. Read `frontier_eval/README.md` and benchmark README instructions first.
+1. Read `frontier_eval/README.md` and benchmark README first.
 2. Discover env docs with:
    - `python .claude/skills/scripts/discover_env_docs.py <Domain>`
    - `python .claude/skills/scripts/discover_env_docs.py <Domain>/<Task>`

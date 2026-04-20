@@ -12,4 +12,4 @@ When asked to contribute or update a benchmark:
 4. Run:
    - `python verification/evaluator.py scripts/init.py`
    - `python -m frontier_eval task=unified task.benchmark=<Domain>/<Task> algorithm=openevolve algorithm.iterations=0`
-5. Keep runtime overrides unchanged and avoid secrets or machine-local paths.
+5. Keep runtime overrides unchanged and avoid secrets or machine‑local paths.

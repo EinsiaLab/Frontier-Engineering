@@ -8,3 +8,5 @@ dependencies:
   - octave-control
   - pip:
       - -r __ROOT__/frontier_eval/requirements.txt
+      - -r __ROOT__/benchmarks/ComputerSystems/DuckDBWorkloadOptimization/verification/requirements.txt
+      - -r __ROOT__/benchmarks/PowerSystems/EV2GymSmartCharging/verification/requirements.txt

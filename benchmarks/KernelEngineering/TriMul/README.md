@@ -22,7 +22,7 @@ The evaluation entry point is located in `verification/eval.py`.
 cd benchmarks/KernelEngineering/TriMul/verification
 
 # Only check correctness
-exec 3>tri_test.log POPCORN_FD=3 python eval.py test tri_test.txt
+exec 3>tri_test.log POPCORN_FD=3 python eval.py test tri_tests.txt
 
 # Each test case is timed, with only one initial correctness check performed; subsequent tests primarily focus on speed.
 exec 3>tri_bench.log POPCORN_FD=3 python eval.py benchmark tri_bench.txt

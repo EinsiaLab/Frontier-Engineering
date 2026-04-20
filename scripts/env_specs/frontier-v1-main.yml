@@ -12,3 +12,5 @@ dependencies:
       - -r __ROOT__/benchmarks/PyPortfolioOpt/requirements.txt
       - -r __ROOT__/benchmarks/Robotics/QuadrupedGaitOptimization/verification/requirements.txt
       - -r __ROOT__/benchmarks/Robotics/RobotArmCycleTimeOptimization/verification/requirements.txt
+      - -r __ROOT__/benchmarks/Optics/requirements.txt
+- -r __ROOT__/benchmarks/MolecularMechanics/requirements.txt

@@ -22,11 +22,33 @@ Frontier-Eng evaluates agents on problems where genuine improvement requires int
 
 ## Getting Started
 
-```bash
-bash init.sh && conda activate frontier-eval-2
-```
+Setup is split between a small **driver** conda env and per-task **runtime** envs.
 
-Per-task runs, batch matrices, and runtime overrides are in **[frontier_eval/README.md](frontier_eval/README.md)**.
+- **Driver** (`frontier-eval-2`): from `init.sh`; schedules jobs only.
+- **Runtimes** (`frontier-v1-main`, `frontier-v1-kernel`, …): where benchmarks actually run. Install merged runtimes with `bash scripts/setup_v1_merged_task_envs.sh`.
+- Before long runs: `export PYTHONNOUSERSITE=1` so user-site packages do not leak into tasks.
+- Default task launch uses `task.runtime.use_conda_run=false` and `task.runtime.python_path=conda-env:<env_name>`.
+
+**Task-specific bits**
+
+- **DuckDB / EV2Gym**: need their local verifier deps (see each task dir).
+- **Optics**: extra requirements under `benchmarks/Optics/` (also reflected in merged configs).
+- **MolecularMechanics**: OpenFF stack (e.g. `openff-toolkit`); see task README.
+- **GPU kernel tasks** (FlashAttention, MLA, …): need `frontier-v1-kernel`.
+
+**External assets**
+
+- **`dc-rl`**: clone + patch; paths under `third_party/` and `benchmarks/SustainableDataCenterControl/.../sustaindc/`.
+- **PhySense**, **SustainDC**, **CarAerodynamicsSensing**: need downloaded models/data/checkpoints or they fail at runtime.
+
+**Known issues**
+
+- **ReactionOptimisation**: `frontier-v1-summit` pip resolution can fail; treat as env noise, not necessarily a bug in the harness.
+- **EngDesign**: Docker tasks need a working Docker setup; use local mode if you cannot access the socket.
+
+**LLM / API keys**: copy `.env.example` to `.env` and set at least **`OPENAI_API_KEY`** (and `OPENAI_API_BASE` / `OPENAI_MODEL` if you use a compatible gateway). Details: **[run.md](run.md)** · [中文 run_zh-CN.md](run_zh-CN.md).
+
+Per-task commands, batch matrices, and overrides: **[frontier_eval/README.md](frontier_eval/README.md)**. **v1 batch** wrapper and host notes: **[run.md](run.md)** · [中文 run_zh-CN.md](run_zh-CN.md) (`bash scripts/run_v1_batch.sh`).
 
 ## Leaderboard
 
@@ -51,9 +73,9 @@ The full task list by domain is in **[TASK_DETAILS.md](TASK_DETAILS.md)**.
 
 The best solutions produced by our agent runs (across experiments, algorithms, models, and tasks) are archived in **[baseline_archive/README.md](baseline_archive/README.md)**. These serve as reference baselines for the community.
 
-## Join the Community
+## Community
 
-Welcome to our developer community! Whether you want to discuss new engineering problem concepts, find task collaborators, or encounter technical issues, reach us via [Feishu](https://applink.feishu.cn/client/chat/chatter/add_by_link?link_token=21ak5858-60ba-44fd-9085-01f165c8771c) or [Discord](https://discord.gg/hxeVhZNN).
+[Feishu](https://applink.feishu.cn/client/chat/chatter/add_by_link?link_token=21ak5858-60ba-44fd-9085-01f165c8771c) · [Discord](https://discord.gg/hxeVhZNN)
 
 ## Contributing
 

@@ -1,0 +1,15 @@
+channels:
+  - conda-forge
+dependencies:
+  - python=__PYTHON_VERSION__
+  - pip
+  - rdkit
+  - openmm
+  - ambertools
+  - openff-toolkit
+  - openff-units
+  - openff-utilities
+  - pip:
+      - numpy
+      - pandas
+      - joblib

@@ -6,9 +6,7 @@ cd "$ROOT"
 
 DRIVER_PY="${DRIVER_PY:-}"
 DRIVER_ENV="${DRIVER_ENV:-frontier-eval-2}"
-CPU_MATRIX="${CPU_MATRIX:-frontier_eval/conf/batch/v1_cpu_openevolve_p8_i100_seed-2.0-pro.yaml}"
-GPU_MATRIX="${GPU_MATRIX:-frontier_eval/conf/batch/v1_gpu_openevolve_qwen3codernext_100.yaml}"
-FLASH_MATRIX="${FLASH_MATRIX:-frontier_eval/conf/batch/v1_flashattention_openevolve_qwen3codernext_100.yaml}"
+V1_MATRIX="${V1_MATRIX:-frontier_eval/conf/batch/v1.yaml}"
 GPU_DEVICES="${GPU_DEVICES:-0}"
 RUN_BASE_DIR="${RUN_BASE_DIR:-runs/batch_validation}"
 
@@ -28,8 +26,15 @@ run_driver() {
 
 run_cpu_batch() {
   run_driver -m frontier_eval.batch \
-    --matrix "$CPU_MATRIX" \
-    --exclude-tasks ParticlePhysics/MuonTomography \
+    --matrix "$V1_MATRIX" \
+    --exclude-tasks \
+      Robotics/QuadrupedGaitOptimization \
+      Robotics/RobotArmCycleTimeOptimization \
+      Aerodynamics/CarAerodynamicsSensing \
+      KernelEngineering/MLA \
+      KernelEngineering/TriMul \
+      KernelEngineering/FlashAttention \
+      engdesign \
     --base-dir "$RUN_BASE_DIR" \
     --override algorithm.iterations=0
 }
@@ -37,32 +42,25 @@ run_cpu_batch() {
 run_gpu_batch() {
   CUDA_VISIBLE_DEVICES="$GPU_DEVICES" \
     run_driver -m frontier_eval.batch \
-    --matrix "$GPU_MATRIX" \
+    --matrix "$V1_MATRIX" \
+    --tasks Robotics/QuadrupedGaitOptimization \
+    --tasks Robotics/RobotArmCycleTimeOptimization \
+    --tasks Aerodynamics/CarAerodynamicsSensing \
     --base-dir "$RUN_BASE_DIR" \
     --override algorithm.iterations=0
 }
 
-run_flash_batch() {
+run_kernel_batch() {
   CUDA_VISIBLE_DEVICES="$GPU_DEVICES" \
     run_driver -m frontier_eval.batch \
-    --matrix "$FLASH_MATRIX" \
+    --matrix "$V1_MATRIX" \
+    --tasks KernelEngineering/MLA \
+    --tasks KernelEngineering/TriMul \
+    --tasks KernelEngineering/FlashAttention \
     --base-dir "$RUN_BASE_DIR" \
     --override algorithm.iterations=0
-}
-
-run_kernel_task() {
-  local benchmark="$1"
-  CUDA_VISIBLE_DEVICES="$GPU_DEVICES" \
-    run_driver -m frontier_eval \
-    task=unified \
-    task.benchmark="$benchmark" \
-    task.runtime.conda_env=frontier-v1-kernel \
-    algorithm=openevolve \
-    algorithm.iterations=0
 }
 
 run_cpu_batch
 run_gpu_batch
-run_flash_batch
-run_kernel_task KernelEngineering/MLA
-run_kernel_task KernelEngineering/TriMul
+run_kernel_batch

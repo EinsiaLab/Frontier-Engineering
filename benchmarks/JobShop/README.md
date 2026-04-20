@@ -81,15 +81,15 @@ Each family-local `frontier_eval/` metadata points to the shared evaluator:
 Recommended setup:
 
 - `frontier_eval` driver process: `frontier-eval-2`
-- JobShop evaluator Python: `/data_storage/chihh2311/.conda/envs/jobshop/bin/python`
+- JobShop evaluator Python: `conda-env:frontier-v1-main` (or specify absolute path)
 
 Single-family example (`abz`):
 
 ```bash
-/data_storage/chihh2311/.conda/envs/frontier-eval-2/bin/python -m frontier_eval \
+python -m frontier_eval \
   task=unified \
   task.benchmark=JobShop/abz \
-  task.runtime.python_path=/data_storage/chihh2311/.conda/envs/jobshop/bin/python \
+  task.runtime.python_path=conda-env:frontier-v1-main \
   task.runtime.use_conda_run=false \
   algorithm.iterations=0
 ```
@@ -98,10 +98,10 @@ Quick compatibility check (all families, 1 instance each, 1s reference limit):
 
 ```bash
 for fam in abz ft la orb swv ta yn; do
-  /data_storage/chihh2311/.conda/envs/frontier-eval-2/bin/python -m frontier_eval \
+  python -m frontier_eval \
     task=unified \
     task.benchmark=JobShop/${fam} \
-    task.runtime.python_path=/data_storage/chihh2311/.conda/envs/jobshop/bin/python \
+    task.runtime.python_path=conda-env:frontier-v1-main \
     task.runtime.use_conda_run=false \
     +task.runtime.env.JOBSHOP_EVAL_MAX_INSTANCES=1 \
     +task.runtime.env.JOBSHOP_REFERENCE_TIME_LIMIT=1 \

@@ -2,6 +2,10 @@
 
 这个子任务要求你为 SustainDC 的三个原始 agent 编写一个确定性控制策略：
 
+> **[注意] 必须完整克隆内部依赖目录才能运行本任务**：
+> SustainDC 依赖前置的 `dc-rl` 库。本仓库的 `sustaindc` 文件夹是放置依赖的占位符。请在运行前执行：
+> `git clone https://github.com/HewlettPackard/dc-rl.git benchmarks/SustainableDataCenterControl/hand_written_control/sustaindc`
+
 - `agent_ls`：负载迁移
 - `agent_dc`：冷却控制
 - `agent_bat`：电池调度

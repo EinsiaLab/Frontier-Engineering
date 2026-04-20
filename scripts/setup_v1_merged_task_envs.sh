@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euo pipefail
+# set -euo pipefail  # removed to allow each env creation to continue on failure
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
@@ -10,6 +10,7 @@ MAIN_ENV="${MAIN_ENV:-frontier-v1-main}"
 SUMMIT_ENV="${SUMMIT_ENV:-frontier-v1-summit}"
 SUSTAINDC_ENV="${SUSTAINDC_ENV:-frontier-v1-sustaindc}"
 KERNEL_ENV="${KERNEL_ENV:-frontier-v1-kernel}"
+OPENFF_ENV="${OPENFF_ENV:-openff-dev}"
 PYTHON_VERSION="${PYTHON_VERSION:-3.12}"
 RUN_VALIDATION="${RUN_VALIDATION:-1}"
 VALIDATE_GPU_DEVICES="${VALIDATE_GPU_DEVICES:-0}"
@@ -53,19 +54,22 @@ upsert_from_spec() {
 }
 
 echo "[1/5] build driver env: ${DRIVER_ENV}"
-upsert_from_spec "$DRIVER_ENV" "${SPECS_DIR}/frontier-eval-2.yml"
+upsert_from_spec "$DRIVER_ENV" "${SPECS_DIR}/frontier-eval-2.yml" || echo "[WARN] Failed to build ${DRIVER_ENV}, continuing..."
 
 echo "[2/5] build merged main env: ${MAIN_ENV}"
-upsert_from_spec "$MAIN_ENV" "${SPECS_DIR}/frontier-v1-main.yml"
+upsert_from_spec "$MAIN_ENV" "${SPECS_DIR}/frontier-v1-main.yml" || echo "[WARN] Failed to build ${MAIN_ENV}, continuing..."
 
 echo "[3/5] build merged summit env: ${SUMMIT_ENV}"
-upsert_from_spec "$SUMMIT_ENV" "${SPECS_DIR}/frontier-v1-summit.yml"
+upsert_from_spec "$SUMMIT_ENV" "${SPECS_DIR}/frontier-v1-summit.yml" || echo "[WARN] Failed to build ${SUMMIT_ENV}, continuing..."
 
 echo "[4/5] build merged sustaindc env: ${SUSTAINDC_ENV}"
-upsert_from_spec "$SUSTAINDC_ENV" "${SPECS_DIR}/frontier-v1-sustaindc.yml"
+upsert_from_spec "$SUSTAINDC_ENV" "${SPECS_DIR}/frontier-v1-sustaindc.yml" || echo "[WARN] Failed to build ${SUSTAINDC_ENV}, continuing..."
 
-echo "[5/5] build merged kernel env: ${KERNEL_ENV}"
-upsert_from_spec "$KERNEL_ENV" "${SPECS_DIR}/frontier-v1-kernel.yml"
+echo "[5/6] build merged kernel env: ${KERNEL_ENV}"
+upsert_from_spec "$KERNEL_ENV" "${SPECS_DIR}/frontier-v1-kernel.yml" || echo "[WARN] Failed to build ${KERNEL_ENV}, continuing..."
+
+echo "[6/6] build merged openff env: ${OPENFF_ENV}"
+upsert_from_spec "$OPENFF_ENV" "${SPECS_DIR}/openff-dev.yml" || echo "[WARN] Failed to build ${OPENFF_ENV}, continuing..."
 
 cat <<EOF
 Merged task envs are ready:
@@ -74,6 +78,7 @@ Merged task envs are ready:
   ${SUMMIT_ENV}
   ${SUSTAINDC_ENV}
   ${KERNEL_ENV}
+  ${OPENFF_ENV}
 EOF
 
 if [[ "${RUN_VALIDATION}" == "1" ]]; then

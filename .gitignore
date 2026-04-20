@@ -31,9 +31,9 @@ SKILL_zh-CN.md
 # Local personal agent configuration
 /AGENT.md
 /AGENT_zh-CN.md
-/.codex/
-/.claude/
-/.cursor/
+# /.codex/
+# /.claude/
+# /.cursor/
 !/.claude/
 !/.claude/skills/
 !/.claude/skills/*.md
@@ -43,7 +43,12 @@ submission.json
 outputlog.txt
 frontier_eval/conf/batch/*
 !frontier_eval/conf/batch/example_matrix.yaml
-!frontier_eval/conf/batch/v1_cpu_openevolve_p8_i100_gemini-3.1-pro-preview.yaml
-!frontier_eval/conf/batch/v1_engdesign_openevolve_qwen3codernext_100.yaml
-!frontier_eval/conf/batch/v1_flashattention_openevolve_qwen3codernext_100.yaml
-!frontier_eval/conf/batch/v1_gpu_openevolve_qwen3codernext_100.yaml
+!frontier_eval/conf/batch/v1.yaml
+metrics.json
+artifacts.json
+debug-*.log
+
+# Task outputs and artifacts
+**/outputs/
+**/artifacts/
+**/last_eval.json

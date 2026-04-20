@@ -287,6 +287,18 @@ Use the batch runner (writes an isolated `run.output_dir` for each combination a
 python -m frontier_eval.batch --matrix frontier_eval/conf/batch/example_matrix.yaml
 ```
 
+### v1 unified batch matrix
+
+**v1** batch runs use **`frontier_eval/conf/batch/v1.yaml`**. `OPENAI_API_BASE`, `OPENAI_MODEL`, and related settings are read from the environment when the matrix loads (same conventions as `frontier_eval/conf/llm/openai_compatible.yaml`).
+
+For host setup (Docker env vars for EngDesign, `CUDA_VISIBLE_DEVICES`, merged conda envs, etc.), see **[`run.md`](../run.md)** · [`run_zh-CN.md`](../run_zh-CN.md) at the repository root. Run the v1 batch matrix with **`bash scripts/run_v1_batch.sh`** (forwards extra args to `frontier_eval.batch`).
+
+```bash
+python -m frontier_eval.batch --matrix frontier_eval/conf/batch/v1.yaml
+```
+
+Use `--tasks` / `--exclude-tasks`, or lower `run.max_parallel` in the YAML, to avoid contention when mixing CPU and GPU workloads.
+
 `matrix.tasks` supports either plain task names or labeled task entries with per-entry overrides:
 
 ```yaml
@@ -345,7 +357,7 @@ Current `v1` runtime consolidation:
 - `frontier-v1-sustaindc`: `SustainableDataCenterControl/*`
 - `frontier-v1-kernel`: `KernelEngineering/MLA`, `KernelEngineering/TriMul`
 
-If an older benchmark README still mentions legacy env names such as `mqt`, `stock`, `pyportfolioopt`, or `jobshop`, prefer the batch matrix files under `frontier_eval/conf/batch/` as the source of truth for current `v1` runs.
+If an older benchmark README still mentions legacy env names such as `mqt`, `stock`, `pyportfolioopt`, or `jobshop`, prefer **`frontier_eval/conf/batch/v1.yaml`** (and [`run.md`](../run.md) / [`run_zh-CN.md`](../run_zh-CN.md) for operator setup) as the source of truth for current `v1` runs.
 
 Setup and validation scripts:
 
@@ -355,6 +367,6 @@ Setup and validation scripts:
 
 Notes:
 
-- The validation script uses `conda run -n frontier-eval-2 python` as the default driver, and can also be overridden with `DRIVER_PY=/path/to/python`. It checks CPU `v1`, GPU `v1`, `FlashAttention`, `MLA`, and `TriMul`.
-- `MuonTomography` is listed in [TASK_DETAILS.md](../TASK_DETAILS.md) but is not included in the current `v1` batch matrices pending evaluator redesign.
+- The validation script uses `conda run -n frontier-eval-2 python` as the default driver, and can also be overridden with `DRIVER_PY=/path/to/python`. It checks CPU `v1`, GPU `v1`, and a kernel batch (`MLA`, `TriMul`, `FlashAttention`) from `v1.yaml`.
+- `MuonTomography` is listed in [TASK_DETAILS.md](../TASK_DETAILS.md) but is **not** included in [`frontier_eval/conf/batch/v1.yaml`](../frontier_eval/conf/batch/v1.yaml).
 - Known caveat: the official `KernelEngineering/TriMul` full benchmark (`verification/tri_bench.txt`) may still be VRAM-limited on 24GB-class GPUs; this is typically a task-level memory-bound issue rather than a missing dependency in `frontier-v1-kernel`.
