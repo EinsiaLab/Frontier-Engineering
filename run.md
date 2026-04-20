@@ -11,23 +11,48 @@
 
 ## 零、环境已配好后：一键跑 v1 批量评测
 
-维护中的 **v1** 任务集合已合并为单个矩阵文件：
+维护中的 **v1** 任务集合在单个矩阵文件：**`frontier_eval/conf/batch/v1.yaml`**（当前 **47** 个任务）。模型与网关等从环境变量读取（约定同 `frontier_eval/conf/llm/openai_compatible.yaml`）：`OPENAI_API_BASE`、`OPENAI_MODEL`、`OPENAI_API_KEY` 等。
 
-**`frontier_eval/conf/batch/v1.yaml`**
+### 推荐：集成脚本（一键）
 
-其中 `llms` 条目名为 **`v1`**，模型与网关从环境变量读取（与 `frontier_eval/conf/llm/openai_compatible.yaml` 一致）：
+在仓库根目录，已装好 `conda` 且已执行过 `init.sh`、按需完成合并任务环境、配置好 `.env` 后：
 
-- `OPENAI_API_BASE`（可选）
-- `OPENAI_MODEL`（可选，默认 `gpt-4o-mini`）
-- `OPENAI_API_KEY`（通过 `api_key_env` 指定）
+```bash
+bash scripts/run_v1_batch.sh
+```
 
-**在仓库根目录**（已 `conda activate frontier-eval-2`，并已按需完成 `init.sh`、合并任务环境、`scripts/setup_v1_merged_task_envs.sh`、`.env` 等）：
+脚本会 `cd` 到仓库根、设置 `PYTHONNOUSERSITE=1`、默认用 **`conda run -n frontier-eval-2`** 调用 `python -m frontier_eval.batch --matrix frontier_eval/conf/batch/v1.yaml`。  
+额外参数会原样传给 `frontier_eval.batch`，例如：
+
+```bash
+bash scripts/run_v1_batch.sh --dry-run
+bash scripts/run_v1_batch.sh --override algorithm.iterations=0
+```
+
+可选环境变量（与手动运行相同）：
+
+- `CUDA_VISIBLE_DEVICES`：GPU 类任务
+- `ENGDESIGN_EVAL_MODE`、`ENGDESIGN_DOCKER_IMAGE` 等：见 [`benchmarks/EngDesign/README.md`](benchmarks/EngDesign/README.md)
+- `DRIVER_PY`：若不想用 `conda run`，可设为 `frontier-eval-2` 里 `python` 的绝对路径
+- `DRIVER_ENV`：默认 `frontier-eval-2`
+- `V1_MATRIX`：默认 `frontier_eval/conf/batch/v1.yaml`
+
+### 等价的手动命令
 
 ```bash
 export PYTHONNOUSERSITE=1
 conda activate frontier-eval-2
 
 python -m frontier_eval.batch --matrix frontier_eval/conf/batch/v1.yaml
+```
+
+Windows PowerShell（未用 Git Bash 时，将 `python.exe` 路径改成你本机 `frontier-eval-2` 路径）：
+
+```powershell
+cd "你的\Frontier-Engineering\根目录"
+$env:PYTHONNOUSERSITE = "1"
+$env:PYTHONUTF8 = "1"
+& "$env:USERPROFILE\.conda\envs\frontier-eval-2\python.exe" -m frontier_eval.batch --matrix frontier_eval/conf/batch/v1.yaml
 ```
 
 **注意：**
@@ -121,5 +146,5 @@ python -m frontier_eval task=smoke algorithm=openevolve algorithm.iterations=3
 | 目标 | 步骤概要 |
 |------|----------|
 | 冒烟 | `init.sh` → `activate` → `algorithm.iterations=0` 或 `task=smoke` |
-| v1 全量 batch | `activate` → 配 `.env` → `python -m frontier_eval.batch --matrix frontier_eval/conf/batch/v1.yaml` |
+| v1 全量 batch | `init`/合并环境/`.env` 就绪后 → **`bash scripts/run_v1_batch.sh`**（或同内容的 `python -m frontier_eval.batch --matrix ...`） |
 | 单任务完整跑 | `setup_v1_merged_task_envs`（按需）→ 读任务 README → `task=unified` + `task.benchmark=...` + `iterations>0` |

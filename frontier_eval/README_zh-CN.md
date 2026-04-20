@@ -310,7 +310,7 @@ python -m frontier_eval.batch --matrix frontier_eval/conf/batch/example_matrix.y
 
 **v1** 批量任务使用 **`frontier_eval/conf/batch/v1.yaml`**。`OPENAI_API_BASE`、`OPENAI_MODEL` 等在加载矩阵时从环境变量读取（与 `frontier_eval/conf/llm/openai_compatible.yaml` 的约定一致）。
 
-主机侧准备（EngDesign 的 Docker 变量、`CUDA_VISIBLE_DEVICES`、合并 conda 环境等）见仓库根目录 **[`run.md`](../run.md)**。
+主机侧准备（EngDesign 的 Docker 变量、`CUDA_VISIBLE_DEVICES`、合并 conda 环境等）见仓库根目录 **[`run.md`](../run.md)**。一键入口：**`bash scripts/run_v1_batch.sh`**（额外参数会传给 `frontier_eval.batch`）。
 
 ```bash
 python -m frontier_eval.batch --matrix frontier_eval/conf/batch/v1.yaml
