@@ -9,11 +9,11 @@
 
 ---
 
-## 一、环境已配好后：一键跑 v1 批量评测
+## 一、环境已配好后：跑 v1 批量评测
 
 维护中的 **v1** 任务集合在单个矩阵文件：**`frontier_eval/conf/batch/v1.yaml`**（当前 **47** 个任务）。模型与网关等从环境变量读取（约定同 `frontier_eval/conf/llm/openai_compatible.yaml`）：`OPENAI_API_BASE`、`OPENAI_MODEL`、`OPENAI_API_KEY` 等。
 
-### 集成脚本（一键）
+### 集成脚本
 
 在仓库根目录，已装好 `conda` 且已执行过 `init.sh`、按需完成合并任务环境、配置好 `.env` 后：
 

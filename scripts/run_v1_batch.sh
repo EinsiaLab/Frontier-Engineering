@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# One-shot launcher for the unified v1 batch matrix (47 tasks in frontier_eval/conf/batch/v1.yaml).
+# Launcher for the unified v1 batch matrix (47 tasks in frontier_eval/conf/batch/v1.yaml).
 #
 # Prerequisites: bash init.sh (or equivalent), conda env frontier-eval-2, .env with OPENAI_API_KEY
 # for evolution runs; merged task envs if needed (scripts/setup_v1_merged_task_envs.sh).
