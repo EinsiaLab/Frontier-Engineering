@@ -1,39 +1,39 @@
-# Frontier-Eng 运行说明
+# Frontier-Eng: how to run
 
-英文：[run_en.md](run_en.md)
+Chinese: [run_zh-CN.md](run_zh-CN.md)
 
-Hydra 参数、算法与任务覆盖以 [`frontier_eval/README.md`](frontier_eval/README.md) 为准。
+Hydra options, algorithms, and which tasks exist are documented in [`frontier_eval/README.md`](frontier_eval/README.md).
 
 ---
 
-## 一、v1 批量评测
+## 1. v1 batch evaluation
 
-v1 矩阵：**`frontier_eval/conf/batch/v1.yaml`**（**47** 个任务）。模型与网关从环境变量读取（约定同 `frontier_eval/conf/llm/openai_compatible.yaml`）：`OPENAI_API_BASE`、`OPENAI_MODEL`、`OPENAI_API_KEY` 等。
+Matrix: **`frontier_eval/conf/batch/v1.yaml`** (**47** tasks). Model and gateway settings come from the environment (same idea as `frontier_eval/conf/llm/openai_compatible.yaml`): `OPENAI_API_BASE`, `OPENAI_MODEL`, `OPENAI_API_KEY`, etc.
 
-### 脚本
+### Script
 
-在仓库根目录，已执行 `init.sh`、装好合并任务环境、配置好 `.env` 后：
+From the repo root, after `init.sh`, merged task envs, and a configured `.env`:
 
 ```bash
 bash scripts/run_v1_batch.sh
 ```
 
-脚本会 `cd` 到仓库根、设置 `PYTHONNOUSERSITE=1`，默认用 **`conda run -n frontier-eval-2`** 调用 `python -m frontier_eval.batch --matrix frontier_eval/conf/batch/v1.yaml`。  
-额外参数会传给 `frontier_eval.batch`，例如：
+The script `cd`s to the repo root, sets `PYTHONNOUSERSITE=1`, and by default runs **`conda run -n frontier-eval-2`** with `python -m frontier_eval.batch --matrix frontier_eval/conf/batch/v1.yaml`.  
+Extra args are passed through to `frontier_eval.batch`, e.g.:
 
 ```bash
 bash scripts/run_v1_batch.sh --dry-run
 ```
 
-环境变量（与手动运行相同）：
+Environment variables (same as running by hand):
 
-- `CUDA_VISIBLE_DEVICES`：GPU 类任务
-- `ENGDESIGN_EVAL_MODE`、`ENGDESIGN_DOCKER_IMAGE` 等：见 [`benchmarks/EngDesign/README.md`](benchmarks/EngDesign/README.md)
-- `DRIVER_PY`：不用 `conda run` 时，设为 `frontier-eval-2` 里 `python` 的绝对路径
-- `DRIVER_ENV`：默认 `frontier-eval-2`
-- `V1_MATRIX`：默认 `frontier_eval/conf/batch/v1.yaml`
+- `CUDA_VISIBLE_DEVICES`: GPU tasks
+- `ENGDESIGN_EVAL_MODE`, `ENGDESIGN_DOCKER_IMAGE`, etc.: see [`benchmarks/EngDesign/README.md`](benchmarks/EngDesign/README.md)
+- `DRIVER_PY`: absolute path to `python` in `frontier-eval-2` if you do not use `conda run`
+- `DRIVER_ENV`: defaults to `frontier-eval-2`
+- `V1_MATRIX`: defaults to `frontier_eval/conf/batch/v1.yaml`
 
-### 等价命令
+### Same thing without the script
 
 ```bash
 export PYTHONNOUSERSITE=1
@@ -42,45 +42,45 @@ conda activate frontier-eval-2
 python -m frontier_eval.batch --matrix frontier_eval/conf/batch/v1.yaml
 ```
 
-Windows PowerShell（把 `python.exe` 路径改成你本机 `frontier-eval-2`）：
+Windows PowerShell (adjust the path to your `frontier-eval-2`):
 
 ```powershell
-cd "你的\Frontier-Engineering\根目录"
+cd "D:\path\to\Frontier-Engineering"
 $env:PYTHONNOUSERSITE = "1"
 $env:PYTHONUTF8 = "1"
 & "$env:USERPROFILE\.conda\envs\frontier-eval-2\python.exe" -m frontier_eval.batch --matrix frontier_eval/conf/batch/v1.yaml
 ```
 
-**注意：**
+**Notes**
 
-- 默认 `algorithm.iterations=100`，耗时长、API 费用高。
-- 矩阵里同时有 CPU 与 GPU 任务；GPU 任务运行前请设置 **`CUDA_VISIBLE_DEVICES`**（按需）。
-- **EngDesign** 需按 [`benchmarks/EngDesign/README.md`](benchmarks/EngDesign/README.md) 配置 Docker 相关环境变量。
-- 只跑子集可用 `frontier_eval.batch --tasks ...` 或 `--exclude-tasks ...`，或调小 YAML 里的 `run.max_parallel`。
+- Default `algorithm.iterations=100` is slow and costs API calls.
+- The matrix mixes CPU and GPU tasks; set **`CUDA_VISIBLE_DEVICES`** for GPU tasks when needed.
+- **EngDesign** needs Docker-related env vars as in [`benchmarks/EngDesign/README.md`](benchmarks/EngDesign/README.md).
+- Subsets: `frontier_eval.batch --tasks ...` or `--exclude-tasks ...`, or lower `run.max_parallel` in the YAML.
 
-可选：在仓库根执行 `python scripts/debug_verify_v1_matrix.py`，检查 `v1.yaml` 能否解析、校验脚本里用到的任务标签是否存在；简要结果写入 `debug-e710d8.log`（可删）。  
-合并任务环境安装见 [`scripts/validate_v1_merged_task_envs.sh`](scripts/validate_v1_merged_task_envs.sh)。
+Optional: from the repo root, `python scripts/debug_verify_v1_matrix.py` checks that `v1.yaml` parses and that task tags used by the validation script exist; a short log goes to `debug-e710d8.log` (safe to delete).  
+Merged env install: [`scripts/validate_v1_merged_task_envs.sh`](scripts/validate_v1_merged_task_envs.sh).
 
-批量输出目录：`runs/batch/<run.name>/`（含 `summary.jsonl`）。
+Batch output: `runs/batch/<run.name>/` (including `summary.jsonl`).
 
 ---
 
-## 二、环境与隔离
+## 2. Environment and isolation
 
-1. 仓库根（Git Bash / WSL；需已安装 conda）：
+1. Repo root (Git Bash / WSL; conda installed):
 
    ```bash
    bash init.sh
    conda activate frontier-eval-2
    ```
 
-2. 全量跑前建议设置（与仓库根 `README.md` 一致）：
+2. Before long runs, same as root [`README.md`](README.md):
 
    ```bash
    export PYTHONNOUSERSITE=1
    ```
 
-   Windows PowerShell：
+   Windows PowerShell:
 
    ```powershell
    $env:PYTHONNOUSERSITE = "1"
@@ -88,23 +88,23 @@ $env:PYTHONUTF8 = "1"
    $env:PYTHONIOENCODING = "utf-8"
    ```
 
-3. **API 密钥（`.env`）**：演化需要可调用的 LLM。若还没有 `.env`，从示例复制后编辑：
+3. **API keys (`.env`)**: evolution needs a working LLM. If you do not have `.env` yet:
 
    ```bash
    cp .env.example .env
    ```
 
-   在 `.env` 中**至少**填写 **`OPENAI_API_KEY`**。使用兼容 OpenAI 的第三方网关时，按需同时设置 **`OPENAI_API_BASE`**、**`OPENAI_MODEL`**（含义与 `frontier_eval/conf/llm/openai_compatible.yaml` 一致）。  
-   不要将含真实密钥的 `.env` 提交到版本库。
+   Set at least **`OPENAI_API_KEY`** in `.env`. For OpenAI-compatible gateways, set **`OPENAI_API_BASE`** and **`OPENAI_MODEL`** as needed (same meaning as in `frontier_eval/conf/llm/openai_compatible.yaml`).  
+   Do not commit a `.env` that contains real secrets.
 
-   批量矩阵与单任务运行都会从环境/`.env` 读取上述变量；未正确配置时，`algorithm.iterations>0` 的演化通常会失败，例如：
+   Batch and single-task runs read these from the environment / `.env`. If they are wrong or missing, runs with `algorithm.iterations>0` usually fail, e.g.:
 
    - `Missing API key for OpenEvolve...`
-   - 或其它依赖 LLM 的算法在启动时提示缺少 key / 认证失败
+   - or other LLM-backed algorithms failing at startup with missing key / auth errors
 
 ---
 
-## 三、单任务与非批量
+## 3. Single tasks (not batch)
 
-单任务命令与说明见 [`frontier_eval/README.md`](frontier_eval/README.md)（Unified task 等）。  
-合并任务环境：`bash scripts/setup_v1_merged_task_envs.sh`。各任务见 `benchmarks/<Domain>/README*.md`。
+Commands and details: [`frontier_eval/README.md`](frontier_eval/README.md) (e.g. Unified task).  
+Merged task envs: `bash scripts/setup_v1_merged_task_envs.sh`. Per-task docs: `benchmarks/<Domain>/README*.md`.

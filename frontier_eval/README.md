@@ -291,7 +291,7 @@ python -m frontier_eval.batch --matrix frontier_eval/conf/batch/example_matrix.y
 
 **v1** batch runs use **`frontier_eval/conf/batch/v1.yaml`**. `OPENAI_API_BASE`, `OPENAI_MODEL`, and related settings are read from the environment when the matrix loads (same conventions as `frontier_eval/conf/llm/openai_compatible.yaml`).
 
-For host setup (Docker env vars for EngDesign, `CUDA_VISIBLE_DEVICES`, merged conda envs, etc.), see **[`run_en.md`](../run_en.md)** · [`run.md`](../run.md) at the repository root. Run the v1 batch matrix with **`bash scripts/run_v1_batch.sh`** (forwards extra args to `frontier_eval.batch`).
+For host setup (Docker env vars for EngDesign, `CUDA_VISIBLE_DEVICES`, merged conda envs, etc.), see **[`run.md`](../run.md)** · [`run_zh-CN.md`](../run_zh-CN.md) at the repository root. Run the v1 batch matrix with **`bash scripts/run_v1_batch.sh`** (forwards extra args to `frontier_eval.batch`).
 
 ```bash
 python -m frontier_eval.batch --matrix frontier_eval/conf/batch/v1.yaml
@@ -357,7 +357,7 @@ Current `v1` runtime consolidation:
 - `frontier-v1-sustaindc`: `SustainableDataCenterControl/*`
 - `frontier-v1-kernel`: `KernelEngineering/MLA`, `KernelEngineering/TriMul`
 
-If an older benchmark README still mentions legacy env names such as `mqt`, `stock`, `pyportfolioopt`, or `jobshop`, prefer **`frontier_eval/conf/batch/v1.yaml`** (and [`run_en.md`](../run_en.md) / [`run.md`](../run.md) for operator setup) as the source of truth for current `v1` runs.
+If an older benchmark README still mentions legacy env names such as `mqt`, `stock`, `pyportfolioopt`, or `jobshop`, prefer **`frontier_eval/conf/batch/v1.yaml`** (and [`run.md`](../run.md) / [`run_zh-CN.md`](../run_zh-CN.md) for operator setup) as the source of truth for current `v1` runs.
 
 Setup and validation scripts:
 
