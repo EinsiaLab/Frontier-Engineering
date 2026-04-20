@@ -86,12 +86,19 @@ $env:PYTHONUTF8 = "1"
    $env:PYTHONIOENCODING = "utf-8"
    ```
 
-3. 演化需要 LLM：复制并编辑 `.env`（`init.sh` 可能已生成）：
+3. **API 密钥（`.env`）**：演化需要可调用的 LLM。若还没有 `.env`，从示例复制后编辑：
 
    ```bash
    cp .env.example .env
-   # 至少配置 OPENAI_API_KEY；兼容网关可设 OPENAI_API_BASE、OPENAI_MODEL
    ```
+
+   在 `.env` 中**至少**填写 **`OPENAI_API_KEY`**。使用兼容 OpenAI 的第三方网关时，按需同时设置 **`OPENAI_API_BASE`**、**`OPENAI_MODEL`**（含义与 `frontier_eval/conf/llm/openai_compatible.yaml` 一致）。  
+   不要将含真实密钥的 `.env` 提交到版本库。
+
+   批量矩阵与单任务运行都会从环境/`.env` 读取上述变量；未正确配置时，`algorithm.iterations>0` 的演化通常会失败，例如：
+
+   - `Missing API key for OpenEvolve...`
+   - 或其它依赖 LLM 的算法在启动时提示缺少 key / 认证失败
 
 ---
 
@@ -99,5 +106,3 @@ $env:PYTHONUTF8 = "1"
 
 单任务命令与说明见 [`frontier_eval/README.md`](frontier_eval/README.md)（Unified task 等）。  
 合并任务环境：`bash scripts/setup_v1_merged_task_envs.sh`。各任务见 `benchmarks/<Domain>/README*.md`。
-
-未配置密钥且 `algorithm.iterations>0` 时，可能出现例如：`Missing API key for OpenEvolve...`
