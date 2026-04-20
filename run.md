@@ -9,7 +9,7 @@
 
 ---
 
-## 零、环境已配好后：一键跑 v1 批量评测
+## 一、环境已配好后：一键跑 v1 批量评测
 
 维护中的 **v1** 任务集合在单个矩阵文件：**`frontier_eval/conf/batch/v1.yaml`**（当前 **47** 个任务）。模型与网关等从环境变量读取（约定同 `frontier_eval/conf/llm/openai_compatible.yaml`）：`OPENAI_API_BASE`、`OPENAI_MODEL`、`OPENAI_API_KEY` 等。
 
@@ -68,7 +68,7 @@ $env:PYTHONUTF8 = "1"
 
 ---
 
-## 一、共用前置：驱动环境 + 隔离
+## 二、共用前置：驱动环境 + 隔离
 
 1. 仓库根目录（Git Bash / WSL；需已安装 conda）：
 
@@ -100,7 +100,7 @@ $env:PYTHONUTF8 = "1"
 
 ---
 
-## 二、冒烟（快速验证驱动）
+## 三、冒烟（快速验证驱动）
 
 ```bash
 python -m frontier_eval task=smoke algorithm=openevolve algorithm.iterations=0
@@ -114,7 +114,7 @@ python -m frontier_eval algorithm.iterations=0
 
 ---
 
-## 三、完整跑起来（非冒烟）
+## 四、完整跑起来（非冒烟）
 
 完整跑 = 驱动环境（`frontier-eval-2`）+ 该任务 runtime + 有效 `.env` + `iterations>0`。
 
@@ -134,14 +134,14 @@ python -m frontier_eval task=smoke algorithm=openevolve algorithm.iterations=3
 
 ---
 
-## 四、怎样算「完整跑通」
+## 五、怎样算「完整跑通」
 
 - 冒烟：退出码 0 只说明调度侧 OK；子任务校验仍可能失败。
 - 完整跑：`iterations>0` 下能持续评估，且基准 returncode/分数符合预期，并已按任务 README 处理 runtime 与资源。
 
 ---
 
-## 五、一句话对照
+## 六、一句话对照
 
 | 目标 | 步骤概要 |
 |------|----------|
