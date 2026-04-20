@@ -20,39 +20,33 @@ Frontier-Eng formalizes this as **generative optimization** and identifies three
 
 Frontier-Eng evaluates agents on problems where genuine improvement requires integrating domain knowledge, constrained code synthesis, and iterative refinement against frozen, read-only verifiers.
 
-## Getting Started & Pre-flight Checklist
+## Getting Started
 
-Executing a full sweep successfully requires understanding our split-environment architecture and properly initializing task-local dependencies. **Passing `init.sh` is not sufficient; a successful 0-iteration smoke test defines an active environment.**
+Setup is split between a small **driver** conda env and per-task **runtime** envs.
 
-### 1. Environment Architecture & Isolation
-We decouple the **driver** and **task runtime** environments:
-- **Driver Env** (`frontier-eval-2`): Created via `init.sh`, this *only* schedules and dispatches evaluations. It does not run benchmark code.
-- **Runtime Envs** (`frontier-v1-main`, `frontier-v1-kernel`, etc.): These represent the true execution contexts.
-  - To install merged task envs, use: `bash scripts/setup_v1_merged_task_envs.sh`. 
-  - *Note on Isolation:* Always set `export PYTHONNOUSERSITE=1` before full runs to prevent local user packages from breaking task isolation.
-  - *Python Path vs Conda Run:* By default, tasks use `task.runtime.use_conda_run=false` with a direct `task.runtime.python_path=conda-env:<env_name>` to cleanly launch isolated processes via conda prefixes.
+- **Driver** (`frontier-eval-2`): from `init.sh`; schedules jobs only.
+- **Runtimes** (`frontier-v1-main`, `frontier-v1-kernel`, …): where benchmarks actually run. Install merged runtimes with `bash scripts/setup_v1_merged_task_envs.sh`.
+- Before long runs: `export PYTHONNOUSERSITE=1` so user-site packages do not leak into tasks.
+- Default task launch uses `task.runtime.use_conda_run=false` and `task.runtime.python_path=conda-env:<env_name>`.
 
-### 2. Task-Local Extra Dependencies
-Not every task runs purely off the main environment out of the box. Some require explicit local configuration:
-- **DuckDB & EV2Gym**: These will **hard-crash** without installing their respective task-local verification dependencies. Check their task directories.
-- **Optics Tasks**: Requires its dedicated requirement spec (`benchmarks/Optics/requirements.txt`, which is now merged into standard configs).
-- **MolecularMechanics**: Requires OpenFF binary toolkits (e.g., `openff-toolkit`). See its README.
-- **GPU Kernel Tasks** (e.g., FlashAttention, MLA): Explicitly require the `frontier-v1-kernel` suite to be active.
+**Task-specific bits**
 
-### 3. External Assets & Checklist
-Sometimes failures are due to missing external assets rather than code issues:
-- **`dc-rl`**: Requires additional `clone + patch` execution (should be stored in `third_party/` and `benchmarks/SustainableDataCenterControl/.../sustaindc/`).
-- **`PhySense`**, **`SustainDC`**, and **`CarAerodynamicsSensing`**: Require downloading external models, data, or checkpoints. They will fail otherwise, which is a symptom of missing assets.
+- **DuckDB / EV2Gym**: need their local verifier deps (see each task dir).
+- **Optics**: extra requirements under `benchmarks/Optics/` (also reflected in merged configs).
+- **MolecularMechanics**: OpenFF stack (e.g. `openff-toolkit`); see task README.
+- **GPU kernel tasks** (FlashAttention, MLA, …): need `frontier-v1-kernel`.
 
-> 🤖 **Recommended: One-Click Setup via AI Agents** 
-> If you are using Claude Code or other autonomous agent tools, you can simply run this prompt in the root directory to bootstrap the tedious setup process:
-> `Please read the repository instructions, run init.sh to configure the main environment, and download the required third_party dependencies (Make sure to pin ShinkaEvolve to commit 642664d, and clone the correct dc-rl repo in the SustainDC task directory).`
+**External assets**
 
-### 4. Known Instabilities & Permissions
-- **ReactionOptimisation**: Currently unstable (`frontier-v1-summit` pip resolution depth errors). Do not interpret its failure as a core framework issue.
-- **EngDesign / Docker Tasks**: Docker-based workflows require explicit docker socket permissions. Depending on your machine, you must switch to local mode if permissions are denied.
+- **`dc-rl`**: clone + patch; paths under `third_party/` and `benchmarks/SustainableDataCenterControl/.../sustaindc/`.
+- **PhySense**, **SustainDC**, **CarAerodynamicsSensing**: need downloaded models/data/checkpoints or they fail at runtime.
 
-Once these conditions are satisfied, per-task runs, batch matrices, and runtime overrides can be managed normally. See **[frontier_eval/README.md](frontier_eval/README.md)**. For **v1 batch** runs (`bash scripts/run_v1_batch.sh`) and host setup notes, see **[run.md](run.md)**.
+**Known issues**
+
+- **ReactionOptimisation**: `frontier-v1-summit` pip resolution can fail; treat as env noise, not necessarily a bug in the harness.
+- **EngDesign**: Docker tasks need a working Docker setup; use local mode if you cannot access the socket.
+
+Per-task commands, batch matrices, and overrides: **[frontier_eval/README.md](frontier_eval/README.md)**. **v1 batch** wrapper and host notes: **[run.md](run.md)** (`bash scripts/run_v1_batch.sh`).
 
 ## Leaderboard
 
@@ -77,9 +71,9 @@ The full task list by domain is in **[TASK_DETAILS.md](TASK_DETAILS.md)**.
 
 The best solutions produced by our agent runs (across experiments, algorithms, models, and tasks) are archived in **[baseline_archive/README.md](baseline_archive/README.md)**. These serve as reference baselines for the community.
 
-## Join the Community
+## Community
 
-Welcome to our developer community! Whether you want to discuss new engineering problem concepts, find task collaborators, or encounter technical issues, reach us via [Feishu](https://applink.feishu.cn/client/chat/chatter/add_by_link?link_token=21ak5858-60ba-44fd-9085-01f165c8771c) or [Discord](https://discord.gg/hxeVhZNN).
+[Feishu](https://applink.feishu.cn/client/chat/chatter/add_by_link?link_token=21ak5858-60ba-44fd-9085-01f165c8771c) · [Discord](https://discord.gg/hxeVhZNN)
 
 ## Contributing
 
