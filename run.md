@@ -131,20 +131,3 @@ python -m frontier_eval task=smoke algorithm=openevolve algorithm.iterations=3
 ```
 
 未配置密钥时，`algorithm.iterations>0` 会报错：`Missing API key for OpenEvolve...`
-
----
-
-## 五、怎样算「完整跑通」
-
-- 冒烟：退出码 0 只说明调度侧 OK；子任务校验仍可能失败。
-- 完整跑：`iterations>0` 下能持续评估，且基准 returncode/分数符合预期，并已按任务 README 处理 runtime 与资源。
-
----
-
-## 六、一句话对照
-
-| 目标 | 步骤概要 |
-|------|----------|
-| 冒烟 | `init.sh` → `activate` → `algorithm.iterations=0` 或 `task=smoke` |
-| v1 全量 batch | `init`/合并环境/`.env` 就绪后 → **`bash scripts/run_v1_batch.sh`**（或同内容的 `python -m frontier_eval.batch --matrix ...`） |
-| 单任务完整跑 | `setup_v1_merged_task_envs`（按需）→ 读任务 README → `task=unified` + `task.benchmark=...` + `iterations>0` |
