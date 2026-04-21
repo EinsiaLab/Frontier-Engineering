@@ -59,11 +59,12 @@ exec 3>tri_leaderboard.log POPCORN_FD=3 python eval.py benchmark tri_bench.txt
 
 ```bash
 OPENAI_MODEL=qwen/qwen3-coder-next \
-python -m frontier_eval \
-task=unified task.benchmark=KernelEngineering/TriMul \
-task.runtime.conda_env=kernel \
-algorithm.iterations=20 \
-algorithm.oe.evaluator.timeout=1800
+.venvs/frontier-eval-driver/bin/python -m frontier_eval \
+  task=unified \
+  task.benchmark=KernelEngineering/TriMul \
+  task.runtime.env_name=frontier-v1-kernel \
+  algorithm.iterations=20 \
+  algorithm.oe.evaluator.timeout=1800
 ```
 
 兼容别名（通过配置路由到相同 unified benchmark）：`task=trimul`。

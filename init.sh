@@ -4,10 +4,10 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$ROOT"
 
-source "$ROOT/scripts/lib_uv_env.sh"
+source "$ROOT/scripts/env/lib_uv_env.sh"
 
-ENV_NAME="${ENV_NAME:-frontier-eval-2}"
-MANIFEST="${MANIFEST:-$ROOT/scripts/env_specs/frontier-eval-2.json}"
+ENV_NAME="${ENV_NAME:-frontier-eval-driver}"
+MANIFEST="${MANIFEST:-$ROOT/scripts/env/specs/frontier-eval-driver.json}"
 PYTHONNOUSERSITE=1
 export PYTHONNOUSERSITE
 
@@ -69,7 +69,7 @@ echo "    Task runtimes live under $(uv_envs_dir "$ROOT") — see frontier_eval/
 echo ""
 
 echo "[1/3] Create or update the driver environment"
-python3 "$ROOT/scripts/ensure_uv_env.py" \
+python3 "$ROOT/scripts/env/ensure_uv_env.py" \
   "$MANIFEST" \
   --root "$ROOT" \
   --envs-dir "$(uv_envs_dir "$ROOT")"
@@ -80,7 +80,7 @@ if command -v octave >/dev/null 2>&1; then
   echo "Octave: found ($(command -v octave))"
 else
   echo "Octave: not found"
-  echo "  Install it separately if you plan to run Octave-backed validators."
+  echo "  Install it with: bash scripts/bootstrap/install_host_deps.sh --octave"
 fi
 
 echo ""
@@ -140,4 +140,16 @@ Quick smoke (no benchmark-local deps):
 
 Per-benchmark setup:
   frontier_eval/README.md
+
+Host dependency bootstrap:
+  bash scripts/bootstrap/install_host_deps.sh --octave
+  bash scripts/bootstrap/install_host_deps.sh --docker --configure-docker-group
+
+Benchmark / algorithm asset bootstrap:
+  python scripts/bootstrap/fetch_task_assets.py --list
+  python scripts/bootstrap/fetch_task_assets.py --target v1-baseline-assets
+  python scripts/bootstrap/fetch_task_assets.py --target algorithms
+
+Special runtime bootstrap:
+  bash scripts/bootstrap/install_openff_dev.sh
 EOF

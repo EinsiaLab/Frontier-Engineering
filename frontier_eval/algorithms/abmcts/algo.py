@@ -447,6 +447,8 @@ class ABMCTSAlgorithm(Algorithm):
         except Exception as e:  # pragma: no cover
             raise RuntimeError(
                 "TreeQuest is not importable.\n"
+                "Bootstrap the local checkout with:\n"
+                "  python scripts/bootstrap/fetch_task_assets.py --target abmcts\n"
                 "Install it from the local repo (recommended):\n"
                 "  pip install -e third_party/treequest\n"
                 "Or install from PyPI:\n"

@@ -78,14 +78,18 @@ python JobShop/ta/verification/evaluate.py --max-instances 2 --reference-time-li
 
 ## Unified 运行方式（双环境）
 
+推荐配置：
+
+- `frontier_eval` driver 进程：`frontier-eval-driver`
+- JobShop evaluator Python：`uv-env:frontier-v1-main`（或者显式传绝对解释器路径）
+
 单个家族运行示例（以 `abz` 为例）：
 
 ```bash
-/path/to/envs/frontier-eval-2/bin/python -m frontier_eval \
+.venvs/frontier-eval-driver/bin/python -m frontier_eval \
   task=unified \
   task.benchmark=JobShop/abz \
-  task.runtime.python_path=/path/to/envs/jobshop/bin/python \
-  task.runtime.use_conda_run=false \
+  task.runtime.python_path=uv-env:frontier-v1-main \
   algorithm.iterations=0
 ```
 
@@ -93,11 +97,10 @@ python JobShop/ta/verification/evaluate.py --max-instances 2 --reference-time-li
 
 ```bash
 for fam in abz ft la orb swv ta yn; do
-  /path/to/envs/frontier-eval-2/bin/python -m frontier_eval \
+  .venvs/frontier-eval-driver/bin/python -m frontier_eval \
     task=unified \
     task.benchmark=JobShop/${fam} \
-    task.runtime.python_path=/path/to/envs/jobshop/bin/python \
-    task.runtime.use_conda_run=false \
+    task.runtime.python_path=uv-env:frontier-v1-main \
     +task.runtime.env.JOBSHOP_EVAL_MAX_INSTANCES=1 \
     +task.runtime.env.JOBSHOP_REFERENCE_TIME_LIMIT=1 \
     algorithm.iterations=0

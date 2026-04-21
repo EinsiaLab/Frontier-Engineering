@@ -1,4 +1,4 @@
 name: unified
 benchmark: Robotics/DynamicObstacleAvoidanceNavigation
 runtime:
-  env_name: frontier-eval-2
+  env_name: frontier-eval-driver

@@ -37,6 +37,12 @@
 
 ## 常见流程
 
+如果你的机器还没有安装 Octave，可以先执行：
+
+```bash
+bash scripts/bootstrap/install_host_deps.sh --octave
+```
+
 1. 编写/修改求解器生成 `results.txt`（可参考 `scripts/init.py`）。
 2. 在 `eval/` 目录运行 MATLAB 或 Octave 验证程序进行检查。
 3. 迭代优化直至所有检查通过，并尽量提升运载质量。

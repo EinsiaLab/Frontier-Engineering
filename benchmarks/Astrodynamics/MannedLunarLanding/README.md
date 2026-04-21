@@ -37,6 +37,12 @@ This folder contains the assignment specification, a baseline trajectory script 
 
 ## Typical Workflow
 
+If Octave is not installed yet, you can bootstrap it with:
+
+```bash
+bash scripts/bootstrap/install_host_deps.sh --octave
+```
+
 1. Implement or modify a solver to generate `results.txt` (see `scripts/init.py`).
 2. Run the MATLAB or Octave checker in `eval/` to validate the file.
 3. Iterate until all checks pass and the payload is maximized.

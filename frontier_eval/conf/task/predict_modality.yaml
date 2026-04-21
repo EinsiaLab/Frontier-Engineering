@@ -1,4 +1,4 @@
 name: unified
 benchmark: SingleCellAnalysis/predict_modality
 runtime:
-  env_name: frontier-eval-2
+  env_name: frontier-eval-driver

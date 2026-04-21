@@ -45,7 +45,7 @@ def main() -> int:
     )
     parser.add_argument(
         "--repo-root",
-        default=Path(__file__).resolve().parents[1],
+        default=Path(__file__).resolve().parents[2],
         type=Path,
         help="Repository root path.",
     )

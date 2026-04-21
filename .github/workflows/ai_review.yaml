@@ -36,4 +36,4 @@ jobs:
           
           PR_NUMBER: ${{ github.event.pull_request.number }}
         
-        run: python scripts/pr_review.py
+        run: python scripts/ops/pr_review.py

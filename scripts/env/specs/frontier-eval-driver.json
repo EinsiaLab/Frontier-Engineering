@@ -1,5 +1,5 @@
 {
-  "name": "frontier-eval-2",
+  "name": "frontier-eval-driver",
   "python": "3.12",
   "requirements": [
     "frontier_eval/requirements.txt",

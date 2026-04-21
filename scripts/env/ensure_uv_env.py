@@ -24,6 +24,7 @@ def main() -> int:
     manifest = json.loads(args.manifest.read_text(encoding="utf-8"))
     name = str(manifest["name"]).strip()
     python_version = str(manifest.get("python", "3.12")).strip() or "3.12"
+    uv_index_strategy = str(manifest.get("uv_index_strategy", "")).strip()
     env_dir = (args.envs_dir / name).resolve()
 
     if manifest.get("manual"):
@@ -44,6 +45,8 @@ def main() -> int:
     run(["uv", "pip", "install", "--python", str(python_bin), "-U", "pip", "setuptools", "wheel"])
 
     install_cmd = ["uv", "pip", "install", "--python", str(python_bin)]
+    if uv_index_strategy:
+        install_cmd.extend(["--index-strategy", uv_index_strategy])
     for requirement in manifest.get("requirements", []):
       install_cmd.extend(["-r", str((args.root / requirement).resolve())])
     install_cmd.extend(str(pkg) for pkg in manifest.get("packages", []))

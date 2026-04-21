@@ -1,4 +1,4 @@
 name: unified
 benchmark: StructuralOptimization/ISCSO2015
 runtime:
-  env_name: frontier-eval-2
+  env_name: frontier-eval-driver

@@ -31,39 +31,34 @@ Each task directory contains:
 
 Verified setup:
 
-- `summit` environment for direct verification and unified-task runtime
-- `frontier-eval-2` environment for `python -m frontier_eval`
+- `.venvs/frontier-v1-summit` for direct verification and benchmark runtime
+- `.venvs/frontier-eval-driver` for `python -m frontier_eval`
 
 Example setup from repository root:
 
 ```bash
-conda create -n summit python=3.9
-conda create -n frontier-eval-2 python=3.12
-
-conda activate summit
-python -m pip install -r benchmarks/ReactionOptimisation/requirements.txt
-
-conda activate frontier-eval-2
-python -m pip install -r frontier_eval/requirements.txt
+bash init.sh
+RUN_VALIDATION=0 bash scripts/env/setup_v1_task_envs.sh
+source .venvs/frontier-eval-driver/bin/activate
 ```
 
-If you prefer a single environment, install both requirements files into the same env.
+The released matrix uses `frontier-v1-summit` as a dedicated runtime because these tasks are slower and more fragile than the default driver env.
 
 ## Direct Verification
 
 Template:
 
 ```bash
-conda run -n summit python benchmarks/ReactionOptimisation/<task>/verification/evaluate.py
+.venvs/frontier-v1-summit/bin/python benchmarks/ReactionOptimisation/<task>/verification/evaluate.py
 ```
 
 Verified commands:
 
 ```bash
-conda run -n summit python benchmarks/ReactionOptimisation/snar_multiobjective/verification/evaluate.py
-conda run -n summit python benchmarks/ReactionOptimisation/mit_case1_mixed/verification/evaluate.py
-conda run -n summit python benchmarks/ReactionOptimisation/reizman_suzuki_pareto/verification/evaluate.py
-conda run -n summit python benchmarks/ReactionOptimisation/dtlz2_pareto/verification/evaluate.py
+.venvs/frontier-v1-summit/bin/python benchmarks/ReactionOptimisation/snar_multiobjective/verification/evaluate.py
+.venvs/frontier-v1-summit/bin/python benchmarks/ReactionOptimisation/mit_case1_mixed/verification/evaluate.py
+.venvs/frontier-v1-summit/bin/python benchmarks/ReactionOptimisation/reizman_suzuki_pareto/verification/evaluate.py
+.venvs/frontier-v1-summit/bin/python benchmarks/ReactionOptimisation/dtlz2_pareto/verification/evaluate.py
 ```
 
 Measured runtime on the verified setup:
@@ -84,10 +79,10 @@ All four tasks are integrated through `task=unified` metadata under `benchmarks/
 Template:
 
 ```bash
-conda run -n frontier-eval-2 python -m frontier_eval \
+python -m frontier_eval \
   task=unified \
   task.benchmark=ReactionOptimisation/<task> \
-  task.runtime.conda_env=summit \
+  task.runtime.python_path=uv-env:frontier-v1-summit \
   algorithm=openevolve \
   algorithm.iterations=0
 ```
@@ -95,7 +90,7 @@ conda run -n frontier-eval-2 python -m frontier_eval \
 Copy-paste example:
 
 ```bash
-conda run -n frontier-eval-2 python -m frontier_eval task=unified task.benchmark=ReactionOptimisation/snar_multiobjective task.runtime.conda_env=summit algorithm=openevolve algorithm.iterations=0
+python -m frontier_eval task=unified task.benchmark=ReactionOptimisation/snar_multiobjective task.runtime.python_path=uv-env:frontier-v1-summit algorithm=openevolve algorithm.iterations=0
 ```
 
 Verified benchmark IDs:
@@ -110,10 +105,9 @@ Verified benchmark IDs:
 Notes:
 
 - `algorithm.iterations=0` is a framework compatibility run, but it still executes one full benchmark evaluation of `baseline/solution.py`.
-- All four tasks completed successfully under the default `300s` evaluator timeout in the verified setup.
-- On slower CPUs, raising `algorithm.oe.evaluator.timeout=600` is a safe fallback for `snar_multiobjective` and `reizman_suzuki_pareto`.
-- If a failed run reports `runtime_conda_env=frontier-eval-2` instead of `summit`, then the override `task.runtime.conda_env=summit` was not parsed by the shell. The most common cause is a stray `>` after `task.benchmark=...` or a broken multi-line paste. Re-run with the one-line command above.
-- You can confirm the override landed correctly by checking `.hydra/overrides.yaml` in the run directory for `task.runtime.conda_env=summit`.
+- The released `v1` matrix uses `algorithm.oe.evaluator.timeout=600` for `snar_multiobjective`, `mit_case1_mixed`, and `reizman_suzuki_pareto`. On slower CPUs, use the same setting.
+- If you prefer not to use the shorthand, replace `task.runtime.python_path=uv-env:frontier-v1-summit` with the absolute interpreter path `.venvs/frontier-v1-summit/bin/python`.
+- You can confirm the override landed correctly by checking `.hydra/overrides.yaml` in the run directory for `task.runtime.python_path=uv-env:frontier-v1-summit`.
 
 ## Current Baselines and References
 

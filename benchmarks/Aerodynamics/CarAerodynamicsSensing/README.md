@@ -9,6 +9,12 @@ Select 30 sensor locations on a fixed 3D car surface to minimize the reconstruct
 - `baseline/`: random sampling baseline
 
 ## Quickstart
+If you want the repository to prepare the default code/data/checkpoint layout for you, start with:
+
+```bash
+python scripts/bootstrap/fetch_task_assets.py --target car-aero
+```
+
 0) Ensure the PhySense repo (model code) is available (required for evaluation):
 - Recommended:
   - `git clone https://github.com/thuml/PhySense.git third_party/PhySense`
@@ -63,7 +69,7 @@ docker build -f docker/Dockerfile -t car-aero-eval .
 Unified benchmark: `task=unified task.benchmark=Aerodynamics/CarAerodynamicsSensing`
 
 ```bash
-python -m frontier_eval task=unified task.benchmark=Aerodynamics/CarAerodynamicsSensing task.runtime.conda_env=kernel algorithm.iterations=0
+.venvs/frontier-eval-driver/bin/python -m frontier_eval task=unified task.benchmark=Aerodynamics/CarAerodynamicsSensing task.runtime.env_name=frontier-v1-kernel algorithm.iterations=0
 ```
 
 The same PhySense code, dataset, checkpoint, and reference point prerequisites above are still required before unified evaluation can run successfully.

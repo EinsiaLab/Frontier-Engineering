@@ -73,35 +73,34 @@ MolecularMechanics/
 
 推荐把框架运行环境和 benchmark 运行环境分开：
 
-- `frontier-eval-2`
+- `.venvs/frontier-eval-driver`
   - 用来运行 `python -m frontier_eval`
 - `openff-dev`
-  - 用来运行 MolecularMechanics 的真实评测
+  - 一个单独 bootstrap 的运行时，用来执行 MolecularMechanics 的真实评测
 
-如果你已经有这两个环境，直接在仓库根目录执行：
+推荐直接在仓库根目录执行：
 
 ```bash
-conda activate frontier-eval-2
-python -m pip install -r frontier_eval/requirements.txt
-
-conda activate openff-dev
-python -m pip install -r benchmarks/MolecularMechanics/requirements.txt
+bash init.sh
+bash scripts/bootstrap/install_openff_dev.sh
+source .venvs/frontier-eval-driver/bin/activate
 ```
 
-如果要从头创建一个可复现的 benchmark 环境，可执行：
+如果你已经有这两个运行时，直接在仓库根目录执行：
 
 ```bash
-conda create -n openff-dev -c conda-forge \
-  python=3.11 \
-  numpy \
-  scipy \
-  rdkit \
-  openmm \
-  ambertools \
-  openff-toolkit -y
+bash init.sh
+source .venvs/frontier-eval-driver/bin/activate
+.venvs/openff-dev/bin/python -m pip install -r benchmarks/MolecularMechanics/requirements.txt
+./.venvs/openff-dev/bin/python scripts/bootstrap/verify_openff_dev.py --repo-root .
+```
 
-conda activate openff-dev
-python -m pip install -r benchmarks/MolecularMechanics/requirements.txt
+`openff-dev` 之所以仍然单独作为特殊 runtime 处理，是因为截至 2026 年，OpenFF 这条依赖链还不能通过 `uv` 单独完整复现。
+
+仓库提供的 bootstrap 会用 `mamba`/`conda-forge` 把这个运行时装到 `.venvs/openff-dev`，并在安装后跑一次 smoke 验证：
+
+```bash
+bash scripts/bootstrap/install_openff_dev.sh
 ```
 
 说明：
@@ -109,11 +108,11 @@ python -m pip install -r benchmarks/MolecularMechanics/requirements.txt
 - `benchmarks/MolecularMechanics/requirements.txt`
   - 放的是 Python 层依赖
 - `rdkit`、`openmm`、`ambertools`
-  - 更推荐通过 conda 安装
+  - 仍然通过 `mamba`/`conda-forge` 这一侧安装更稳妥
 - 如果你只手工运行某个子任务
-  - `openff-dev` 就够了
+  - `.venvs/openff-dev` 就够了
 - 如果你通过 `frontier_eval` 运行
-  - 框架进程在 `frontier-eval-2`
+  - 框架进程在 `frontier-eval-driver`
   - benchmark 评测进程会自动切到 `openff-dev`
 
 ## Frontier Eval（Unified）
@@ -130,7 +129,7 @@ python -m pip install -r benchmarks/MolecularMechanics/requirements.txt
 
 上表耗时来自 `2026-03-16` 的实测，命令均为：
 
-- `conda run -n frontier-eval-2 python -m frontier_eval ...`
+- `.venvs/frontier-eval-driver/bin/python -m frontier_eval ...`
 - `algorithm=openevolve`
 - `algorithm.iterations=0`
 - benchmark runtime 环境为 `openff-dev`
@@ -138,17 +137,17 @@ python -m pip install -r benchmarks/MolecularMechanics/requirements.txt
 快速运行：
 
 ```bash
-conda run -n frontier-eval-2 python -m frontier_eval \
+.venvs/frontier-eval-driver/bin/python -m frontier_eval \
   task=molecular_mechanics_weighted_parameter_coverage \
   algorithm=openevolve \
   algorithm.iterations=0
 
-conda run -n frontier-eval-2 python -m frontier_eval \
+.venvs/frontier-eval-driver/bin/python -m frontier_eval \
   task=molecular_mechanics_diverse_conformer_portfolio \
   algorithm=openevolve \
   algorithm.iterations=0
 
-conda run -n frontier-eval-2 python -m frontier_eval \
+.venvs/frontier-eval-driver/bin/python -m frontier_eval \
   task=molecular_mechanics_torsion_profile_fitting \
   algorithm=openevolve \
   algorithm.iterations=0
@@ -157,10 +156,10 @@ conda run -n frontier-eval-2 python -m frontier_eval \
 等价的显式 unified 命令示例：
 
 ```bash
-conda run -n frontier-eval-2 python -m frontier_eval \
+.venvs/frontier-eval-driver/bin/python -m frontier_eval \
   task=unified \
   task.benchmark=MolecularMechanics/torsion_profile_fitting \
-  task.runtime.conda_env=openff-dev \
+  task.runtime.python_path=uv-env:openff-dev \
   algorithm=openevolve \
   algorithm.iterations=0
 ```

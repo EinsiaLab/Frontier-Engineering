@@ -1,5 +1,5 @@
 # 1. Local Baseline Evaluation
-$ conda activate frontier-eval-2
+$ conda activate frontier-eval-driver
 $ cd benchmarks/ParticlePhysics/ProtonTherapyPlanning
 $ python baseline/solution.py
 Baseline plan successfully generated: plan.json

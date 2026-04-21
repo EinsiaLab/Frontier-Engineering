@@ -84,7 +84,7 @@ docker run --rm -v $(pwd)/../submission.json:/workspace/submission.json arm-eval
 Unified benchmark: `task=unified task.benchmark=Robotics/RobotArmCycleTimeOptimization`
 
 ```bash
-python -m frontier_eval task=unified task.benchmark=Robotics/RobotArmCycleTimeOptimization task.runtime.conda_env=<your_env> algorithm.iterations=0
+.venvs/frontier-eval-driver/bin/python -m frontier_eval task=unified task.benchmark=Robotics/RobotArmCycleTimeOptimization task.runtime.env_name=frontier-v1-main algorithm.iterations=0
 ```
 
 Backwards-compatible alias (routes to the same unified benchmark via config): `task=robot_arm_cycle_time`.

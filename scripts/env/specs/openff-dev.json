@@ -4,6 +4,6 @@
   "manual": true,
   "notes": [
     "OpenFF Toolkit is not published on PyPI as of 2026, so this environment cannot be reproduced with uv alone.",
-    "For MolecularMechanics, create a dedicated Python environment manually after installing OpenFF Toolkit, RDKit, OpenMM, and the required AmberTools components."
+    "For MolecularMechanics, bootstrap a dedicated runtime with scripts/bootstrap/install_openff_dev.sh so Frontier Eval can resolve .venvs/openff-dev."
   ]
 }

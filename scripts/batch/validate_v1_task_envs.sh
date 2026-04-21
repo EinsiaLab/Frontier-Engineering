@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT"
 
-source "$ROOT/scripts/lib_uv_env.sh"
+source "$ROOT/scripts/env/lib_uv_env.sh"
 
 DRIVER_PY="${DRIVER_PY:-}"
-DRIVER_ENV="${DRIVER_ENV:-frontier-eval-2}"
+DRIVER_ENV="${DRIVER_ENV:-frontier-eval-driver}"
 V1_MATRIX="${V1_MATRIX:-frontier_eval/conf/batch/v1.yaml}"
 GPU_DEVICES="${GPU_DEVICES:-0}"
 RUN_BASE_DIR="${RUN_BASE_DIR:-runs/batch_validation}"
@@ -19,7 +19,7 @@ else
   DRIVER_PY="$(uv_env_python "$ROOT" "$DRIVER_ENV")"
   if [[ ! -x "$DRIVER_PY" ]]; then
     echo "driver python not found: $DRIVER_PY" >&2
-    echo "Run bash init.sh or bash scripts/setup_v1_merged_task_envs.sh first." >&2
+    echo "Run bash init.sh or bash scripts/env/setup_v1_task_envs.sh first." >&2
     exit 127
   fi
   DRIVER_CMD=("$DRIVER_PY")

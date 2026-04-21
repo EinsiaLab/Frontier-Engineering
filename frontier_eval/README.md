@@ -17,15 +17,15 @@ From the repo root:
 
 ```bash
 bash init.sh
-source .venvs/frontier-eval-2/bin/activate
+source .venvs/frontier-eval-driver/bin/activate
 ```
 
 That prepares the driver environment used to run `python -m frontier_eval`.
 
-If you want the merged runtime environments used by the released `v1` benchmark set:
+If you want the v1 task runtime environments used by the released `v1` benchmark set:
 
 ```bash
-bash scripts/setup_v1_merged_task_envs.sh
+bash scripts/env/setup_v1_task_envs.sh
 ```
 
 Important: this only prepares the framework and the repo-owned runtime environments. Many benchmarks still require task-local dependencies, external assets, Docker, or third-party repos.
@@ -50,7 +50,7 @@ You can also pass an absolute interpreter path with:
 task.runtime.python_path=/abs/path/to/python
 ```
 
-The default fallback runtime is `frontier-eval-2`, but many tasks should use a task-specific runtime instead.
+The default fallback runtime is `frontier-eval-driver`, but many tasks should use a task-specific runtime instead.
 
 ## Quick smoke
 
@@ -159,24 +159,37 @@ tasks:
 
 ## v1 runtime layout
 
-The current merged runtimes are:
+The current v1 task runtimes are:
 
 - `frontier-v1-main`
 - `frontier-v1-summit`
 - `frontier-v1-sustaindc`
 - `frontier-v1-kernel`
 
-`openff-dev` is documented as a manual runtime because the OpenFF toolchain is not fully reproducible with `uv` alone as of 2026.
+`openff-dev` remains a special runtime because the OpenFF toolchain is not fully reproducible with `uv` alone as of 2026.
+Bootstrap it separately with:
+
+```bash
+bash scripts/bootstrap/install_openff_dev.sh
+```
 
 Setup and validation helpers:
 
-- `bash scripts/setup_v1_merged_task_envs.sh`
-- `bash scripts/validate_v1_merged_task_envs.sh`
-- `python scripts/audit_unified_metadata_readonly.py [--strict]`
+- `bash scripts/env/setup_v1_task_envs.sh`
+- `bash scripts/batch/validate_v1_task_envs.sh`
+- `python scripts/ops/audit_unified_metadata_readonly.py [--strict]`
 
 ## Optional third-party repos
 
 Some algorithms and benchmarks still depend on local checkouts under `third_party/`.
+
+Use the bootstrap helper to provision them:
+
+```bash
+python scripts/bootstrap/fetch_task_assets.py --target algorithms
+python scripts/bootstrap/fetch_task_assets.py --target shinkaevolve
+python scripts/bootstrap/fetch_task_assets.py --target abmcts
+```
 
 Examples:
 

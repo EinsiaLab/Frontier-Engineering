@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Launcher for the unified v1 batch matrix (47 tasks in frontier_eval/conf/batch/v1.yaml).
 #
-# Prerequisites: bash init.sh (or equivalent), .venvs/frontier-eval-2, and a configured .env
-# for evolution runs. Merged task envs can be prepared with scripts/setup_v1_merged_task_envs.sh.
+# Prerequisites: bash init.sh (or equivalent), .venvs/frontier-eval-driver, and a configured .env
+# for evolution runs. Task envs can be prepared with scripts/env/setup_v1_task_envs.sh.
 #
 # Optional before launch:
 #   export CUDA_VISIBLE_DEVICES=0          # GPU-heavy tasks
@@ -11,19 +11,19 @@
 #
 # Extra CLI arguments are forwarded to: python -m frontier_eval.batch
 # Examples:
-#   bash scripts/run_v1_batch.sh --dry-run
-#   bash scripts/run_v1_batch.sh --override algorithm.iterations=0
-#   bash scripts/run_v1_batch.sh --max-parallel 2
+#   bash scripts/batch/run_v1_batch.sh --dry-run
+#   bash scripts/batch/run_v1_batch.sh --override algorithm.iterations=0
+#   bash scripts/batch/run_v1_batch.sh --max-parallel 2
 #
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT"
 
-source "$ROOT/scripts/lib_uv_env.sh"
+source "$ROOT/scripts/env/lib_uv_env.sh"
 
 DRIVER_PY="${DRIVER_PY:-}"
-DRIVER_ENV="${DRIVER_ENV:-frontier-eval-2}"
+DRIVER_ENV="${DRIVER_ENV:-frontier-eval-driver}"
 V1_MATRIX="${V1_MATRIX:-frontier_eval/conf/batch/v1.yaml}"
 
 export PYTHONNOUSERSITE="${PYTHONNOUSERSITE:-1}"
@@ -45,7 +45,7 @@ driver python not found: $DRIVER_PY
 
 Run one of:
   bash init.sh
-  bash scripts/setup_v1_merged_task_envs.sh
+  bash scripts/env/setup_v1_task_envs.sh
 EOF
     exit 127
   fi

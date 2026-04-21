@@ -372,9 +372,9 @@ def load_unified_task_spec(*, task_cfg: Any, repo_root: Path) -> UnifiedTaskSpec
     runtime_env_name = (
         str(
             runtime_cfg.get("env_name")
-            or os.environ.get("FRONTIER_EVAL_UNIFIED_RUNTIME_ENV", "frontier-eval-2")
+            or os.environ.get("FRONTIER_EVAL_UNIFIED_RUNTIME_ENV", "frontier-eval-driver")
         ).strip()
-        or "frontier-eval-2"
+        or "frontier-eval-driver"
     )
     runtime_isolation_mode = str(runtime_cfg.get("isolation_mode") or "process").strip().lower() or "process"
     if runtime_isolation_mode not in {"process", "docker"}:

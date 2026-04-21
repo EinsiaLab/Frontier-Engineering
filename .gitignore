@@ -5,6 +5,7 @@ benchmarks/ElectronicDesignAutomation/install
 third_party/*
 .env
 .venv/
+.venvs/
 __pycache__/
 .pytest_cache/
 runs/
@@ -28,6 +29,7 @@ runs_old_2
 third_party
 SKILL.md
 SKILL_zh-CN.md
+/benchmarks/SustainableDataCenterControl/hand_written_control/sustaindc/
 # Local personal agent configuration
 /AGENT.md
 /AGENT_zh-CN.md

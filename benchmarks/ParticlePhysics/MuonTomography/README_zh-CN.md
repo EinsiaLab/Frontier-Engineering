@@ -14,13 +14,12 @@
 
 ## 2. 本地运行方式
 
-准备好 `frontier-eval-2` 环境后，可以直接在任务目录下运行：
+准备好 `frontier-eval-driver` 环境后，可以直接在任务目录下运行：
 
 ```bash
-conda activate frontier-eval-2
 cd benchmarks/ParticlePhysics/MuonTomography
-python baseline/solution.py
-python verification/evaluator.py solution.json
+../../../.venvs/frontier-eval-driver/bin/python baseline/solution.py
+../../../.venvs/frontier-eval-driver/bin/python verification/evaluator.py solution.json
 ```
 
 当前 `verification/requirements.txt` 只要求 `numpy>=1.24.0`。
@@ -39,15 +38,13 @@ python verification/evaluator.py solution.json
 在仓库根目录下，可以先用下面的命令做标准兼容性验证：
 
 ```bash
-conda activate frontier-eval-2
-python -m frontier_eval task=unified task.benchmark=ParticlePhysics/MuonTomography algorithm=openevolve algorithm.iterations=0
+.venvs/frontier-eval-driver/bin/python -m frontier_eval task=unified task.benchmark=ParticlePhysics/MuonTomography algorithm=openevolve algorithm.iterations=0
 ```
 
 按 [frontier_eval/README_zh-CN.md](../../../frontier_eval/README_zh-CN.md) 完成框架级环境和 `.env` 配置后，就可以把 `algorithm.iterations` 调大，开始真正的搜索，例如：
 
 ```bash
-conda activate frontier-eval-2
-python -m frontier_eval task=unified task.benchmark=ParticlePhysics/MuonTomography algorithm=openevolve algorithm.iterations=10
+.venvs/frontier-eval-driver/bin/python -m frontier_eval task=unified task.benchmark=ParticlePhysics/MuonTomography algorithm=openevolve algorithm.iterations=10
 ```
 
 旧别名 `task=muon_tomography` 仍可使用，并会通过配置路由到相同的 unified benchmark。

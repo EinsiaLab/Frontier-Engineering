@@ -36,10 +36,10 @@ pip install PyPortfolioOpt
 - `robust_mvo_rebalance/`
   - unified run:
     ```bash
-    conda run -n frontier-eval-2 python -m frontier_eval \
+    .venvs/frontier-eval-driver/bin/python -m frontier_eval \
       task=unified \
       task.benchmark=PyPortfolioOpt/robust_mvo_rebalance \
-      task.runtime.conda_env=pyportfolioopt \
+      task.runtime.env_name=frontier-v1-main \
       algorithm.iterations=0
     ```
   - typical `iterations=0` runtime: around 8-15 seconds.
@@ -47,10 +47,10 @@ pip install PyPortfolioOpt
 - `cvar_stress_control/`
   - unified run:
     ```bash
-    conda run -n frontier-eval-2 python -m frontier_eval \
+    .venvs/frontier-eval-driver/bin/python -m frontier_eval \
       task=unified \
       task.benchmark=PyPortfolioOpt/cvar_stress_control \
-      task.runtime.conda_env=pyportfolioopt \
+      task.runtime.env_name=frontier-v1-main \
       algorithm.iterations=0
     ```
   - typical `iterations=0` runtime: around 9-18 seconds.
@@ -58,10 +58,10 @@ pip install PyPortfolioOpt
 - `discrete_rebalance_mip/`
   - unified run:
     ```bash
-    conda run -n frontier-eval-2 python -m frontier_eval \
+    .venvs/frontier-eval-driver/bin/python -m frontier_eval \
       task=unified \
       task.benchmark=PyPortfolioOpt/discrete_rebalance_mip \
-      task.runtime.conda_env=pyportfolioopt \
+      task.runtime.env_name=frontier-v1-main \
       algorithm.iterations=0
     ```
   - typical `iterations=0` runtime: around 8-20 seconds, sometimes longer on slower CPUs.

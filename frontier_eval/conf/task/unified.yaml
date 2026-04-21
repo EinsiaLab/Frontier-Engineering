@@ -72,7 +72,7 @@ runtime:
   # markers are still accepted for backward compatibility.
   python_path: ${oc.env:FRONTIER_EVAL_UNIFIED_PYTHON,''}
   # Used to prepend `<repo>/.venvs/<env_name>/bin` to PATH before evaluation.
-  env_name: ${oc.env:FRONTIER_EVAL_UNIFIED_RUNTIME_ENV,frontier-eval-2}
+  env_name: ${oc.env:FRONTIER_EVAL_UNIFIED_RUNTIME_ENV,frontier-eval-driver}
   # Runtime isolation mode:
   # - process: run directly on host process (legacy behavior)
   # - docker: run evaluation command in a docker container

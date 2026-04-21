@@ -14,17 +14,15 @@
 
 已验证的环境组合：
 
-- `sustaindc`：用于 direct verification，以及 unified task 的实际评测运行时
-- `frontier-eval-2`：用于执行 `python -m frontier_eval`
+- `.venvs/frontier-v1-sustaindc`：用于 direct verification 和实际 benchmark 运行时
+- `.venvs/frontier-eval-driver`：用于执行 `python -m frontier_eval`
 
 从仓库根目录执行：
 
 ```bash
-conda create -n sustaindc python=3.10 -y
-conda create -n frontier-eval-2 python=3.12 -y
-
-conda run -n sustaindc python -m pip install -r benchmarks/SustainableDataCenterControl/requirements.txt
-conda run -n frontier-eval-2 python -m pip install -r frontier_eval/requirements.txt
+bash init.sh
+RUN_VALIDATION=0 bash scripts/env/setup_v1_task_envs.sh
+source .venvs/frontier-eval-driver/bin/activate
 ```
 
 `benchmarks/SustainableDataCenterControl/requirements.txt` 当前会继续引用 `hand_written_control/sustaindc/requirements.txt` 里的上游依赖列表。
@@ -34,14 +32,14 @@ conda run -n frontier-eval-2 python -m pip install -r frontier_eval/requirements
 - `hand_written_control/`
   - direct verification：
     ```bash
-    conda run -n sustaindc python benchmarks/SustainableDataCenterControl/hand_written_control/verification/evaluate.py
+    .venvs/frontier-v1-sustaindc/bin/python benchmarks/SustainableDataCenterControl/hand_written_control/verification/evaluate.py
     ```
   - unified 运行：
     ```bash
-    conda run -n frontier-eval-2 python -m frontier_eval \
+    python -m frontier_eval \
       task=unified \
       task.benchmark=SustainableDataCenterControl/hand_written_control \
-      task.runtime.conda_env=sustaindc \
+      task.runtime.env_name=frontier-v1-sustaindc \
       algorithm=openevolve \
       algorithm.iterations=0
     ```

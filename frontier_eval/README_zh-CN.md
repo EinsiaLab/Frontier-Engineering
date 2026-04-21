@@ -17,7 +17,7 @@
 
 ```bash
 bash init.sh
-source .venvs/frontier-eval-2/bin/activate
+source .venvs/frontier-eval-driver/bin/activate
 ```
 
 这会准备好运行 `python -m frontier_eval` 的 driver 环境。
@@ -25,7 +25,7 @@ source .venvs/frontier-eval-2/bin/activate
 如果你还想把发布版 `v1` 所需的合并 runtime 一次性建好：
 
 ```bash
-bash scripts/setup_v1_merged_task_envs.sh
+bash scripts/env/setup_v1_task_envs.sh
 ```
 
 注意：这一步只准备框架和仓库内维护的 runtime。很多 benchmark 仍然需要 benchmark-local 依赖、外部数据、Docker 或 `third_party/` 仓库。
@@ -48,7 +48,7 @@ bash scripts/setup_v1_merged_task_envs.sh
 task.runtime.python_path=/绝对路径/python
 ```
 
-默认兜底 runtime 是 `frontier-eval-2`，但很多任务应该使用自己的专用 runtime。
+默认兜底 runtime 是 `frontier-eval-driver`，但很多任务应该使用自己的专用 runtime。
 
 ## 快速自检
 
@@ -164,17 +164,30 @@ tasks:
 - `frontier-v1-sustaindc`
 - `frontier-v1-kernel`
 
-`openff-dev` 仍然是手动环境，因为截至 2026 年，OpenFF 工具链还不能只靠 `uv` 完整复现。
+`openff-dev` 仍然是特殊 runtime，因为截至 2026 年，OpenFF 工具链还不能只靠 `uv` 完整复现。
+可以单独执行：
+
+```bash
+bash scripts/bootstrap/install_openff_dev.sh
+```
 
 常用辅助脚本：
 
-- `bash scripts/setup_v1_merged_task_envs.sh`
-- `bash scripts/validate_v1_merged_task_envs.sh`
-- `python scripts/audit_unified_metadata_readonly.py [--strict]`
+- `bash scripts/env/setup_v1_task_envs.sh`
+- `bash scripts/batch/validate_v1_task_envs.sh`
+- `python scripts/ops/audit_unified_metadata_readonly.py [--strict]`
 
 ## 可选 `third_party/` 仓库
 
 有些算法或 benchmark 仍然依赖本地 checkout：
+
+可以直接用统一的 bootstrap 入口准备：
+
+```bash
+python scripts/bootstrap/fetch_task_assets.py --target algorithms
+python scripts/bootstrap/fetch_task_assets.py --target shinkaevolve
+python scripts/bootstrap/fetch_task_assets.py --target abmcts
+```
 
 ```bash
 mkdir -p third_party

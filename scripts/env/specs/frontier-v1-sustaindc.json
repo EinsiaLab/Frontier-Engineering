@@ -1,6 +1,7 @@
 {
   "name": "frontier-v1-sustaindc",
-  "python": "3.12",
+  "python": "3.10",
+  "uv_index_strategy": "unsafe-best-match",
   "requirements": [
     "benchmarks/SustainableDataCenterControl/requirements.txt"
   ],

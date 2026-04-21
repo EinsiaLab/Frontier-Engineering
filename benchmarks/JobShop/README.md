@@ -80,8 +80,8 @@ Each family-local `frontier_eval/` metadata points to the shared evaluator:
 
 Recommended setup:
 
-- `frontier_eval` driver process: `frontier-eval-2`
-- JobShop evaluator Python: `conda-env:frontier-v1-main` (or specify absolute path)
+- `frontier_eval` driver process: `frontier-eval-driver`
+- JobShop evaluator Python: `uv-env:frontier-v1-main` (or specify absolute path)
 
 Single-family example (`abz`):
 
@@ -89,8 +89,7 @@ Single-family example (`abz`):
 python -m frontier_eval \
   task=unified \
   task.benchmark=JobShop/abz \
-  task.runtime.python_path=conda-env:frontier-v1-main \
-  task.runtime.use_conda_run=false \
+  task.runtime.python_path=uv-env:frontier-v1-main \
   algorithm.iterations=0
 ```
 
@@ -101,8 +100,7 @@ for fam in abz ft la orb swv ta yn; do
   python -m frontier_eval \
     task=unified \
     task.benchmark=JobShop/${fam} \
-    task.runtime.python_path=conda-env:frontier-v1-main \
-    task.runtime.use_conda_run=false \
+    task.runtime.python_path=uv-env:frontier-v1-main \
     +task.runtime.env.JOBSHOP_EVAL_MAX_INSTANCES=1 \
     +task.runtime.env.JOBSHOP_REFERENCE_TIME_LIMIT=1 \
     algorithm.iterations=0

@@ -14,7 +14,7 @@
     "job-shop-lib>=1.7,<2"
   ],
   "notes": [
-    "This merged runtime covers the default v1 CPU/GPU tasks.",
+    "This runtime covers the default v1 CPU/GPU tasks.",
     "Large model checkpoints or benchmark-local datasets still need to be prepared separately."
   ]
 }

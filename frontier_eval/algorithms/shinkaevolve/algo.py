@@ -187,6 +187,8 @@ class ShinkaEvolveAlgorithm(Algorithm):
         except Exception as e:  # pragma: no cover
             raise RuntimeError(
                 "ShinkaEvolve is not importable.\n"
+                "Bootstrap the local checkout and editable install with:\n"
+                "  python scripts/bootstrap/fetch_task_assets.py --target shinkaevolve\n"
                 "Install it from the official repo (the PyPI package `shinka` is NOT ShinkaEvolve).\n"
                 "Recommended (editable VCS install):\n"
                 "  pip install -e 'git+https://github.com/SakanaAI/ShinkaEvolve.git#egg=shinka'\n"
