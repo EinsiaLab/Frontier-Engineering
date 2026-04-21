@@ -1,7 +1,0 @@
-channels:
-  - conda-forge
-dependencies:
-  - python=3.9
-  - pip
-  - pip:
-      - -r __ROOT__/benchmarks/ReactionOptimisation/requirements.txt

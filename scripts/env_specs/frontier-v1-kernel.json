@@ -1,0 +1,13 @@
+{
+  "name": "frontier-v1-kernel",
+  "python": "3.12",
+  "requirements": [
+    "benchmarks/KernelEngineering/FlashAttention/verification/requirements-gpumode.txt",
+    "benchmarks/KernelEngineering/MLA/verification/requirements-gpumode.txt",
+    "benchmarks/KernelEngineering/TriMul/verification/requirements-gpumode.txt"
+  ],
+  "packages": [],
+  "notes": [
+    "Kernel tasks still require a working CUDA stack on the host."
+  ]
+}

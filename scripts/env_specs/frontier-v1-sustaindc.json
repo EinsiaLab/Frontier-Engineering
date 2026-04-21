@@ -1,0 +1,11 @@
+{
+  "name": "frontier-v1-sustaindc",
+  "python": "3.12",
+  "requirements": [
+    "benchmarks/SustainableDataCenterControl/requirements.txt"
+  ],
+  "packages": [],
+  "notes": [
+    "SustainableDataCenterControl also needs the vendored dc-rl checkout and task assets described in its benchmark README."
+  ]
+}

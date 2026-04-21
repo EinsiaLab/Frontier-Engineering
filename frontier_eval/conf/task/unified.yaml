@@ -66,13 +66,13 @@ parse_stdout_json: false
 timeout_s: null
 
 runtime:
-  # If set, {python} resolves to this path and conda-run is disabled.
-  # A portable shorthand `conda-env:<env-name>` is also supported and will
-  # be resolved to that env's interpreter at runtime.
+  # If set, {python} resolves to this path.
+  # A portable shorthand `uv-env:<env-name>` is supported and resolves to
+  # `<repo>/.venvs/<env-name>/bin/python` at runtime. Legacy `conda-env:...`
+  # markers are still accepted for backward compatibility.
   python_path: ${oc.env:FRONTIER_EVAL_UNIFIED_PYTHON,''}
-  # Used when python_path is empty and use_conda_run=true.
-  conda_env: ${oc.env:FRONTIER_EVAL_UNIFIED_CONDA_ENV,frontier-eval-2}
-  use_conda_run: true
+  # Used to prepend `<repo>/.venvs/<env_name>/bin` to PATH before evaluation.
+  env_name: ${oc.env:FRONTIER_EVAL_UNIFIED_RUNTIME_ENV,frontier-eval-2}
   # Runtime isolation mode:
   # - process: run directly on host process (legacy behavior)
   # - docker: run evaluation command in a docker container

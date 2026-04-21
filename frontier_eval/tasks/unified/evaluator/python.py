@@ -16,7 +16,8 @@ from typing import Any
 from ..spec import UnifiedTaskSpec
 
 INVALID_COMBINED_SCORE = -1e18
-_CONDA_ENV_PYTHON_PREFIX = "conda-env:"
+_UV_ENV_PYTHON_PREFIX = "uv-env:"
+_LEGACY_ENV_PYTHON_PREFIX = "conda-env:"
 
 
 def _tail(text: str, limit: int = 8000) -> str:
@@ -37,73 +38,42 @@ def _remaining_timeout(deadline_s: float) -> float:
     return max(1.0, float(deadline_s - time.time()))
 
 
-def _find_conda_executable() -> str:
-    return (
-        os.environ.get("CONDA_EXE")
-        or shutil.which("conda")
-        or next(
-            (
-                candidate
-                for candidate in (
-                    "/root/miniconda3/bin/conda",
-                    "/opt/conda/bin/conda",
-                    "/usr/local/miniconda3/bin/conda",
-                )
-                if os.path.exists(candidate)
-            ),
-            "conda",
-        )
-    )
+@lru_cache(maxsize=32)
+def _resolve_uv_env_dir(env_name: str, repo_root: str | None = None) -> str:
+    env_root = str(os.environ.get("FRONTIER_EVAL_UV_ENVS_DIR", "")).strip()
+    if env_root:
+        root = Path(env_root).expanduser()
+    elif repo_root:
+        root = Path(repo_root).expanduser() / ".venvs"
+    else:
+        root = Path(".venvs")
+    env_dir = (root / env_name).resolve()
+    return str(env_dir)
+
+
+def _extract_uv_env_name(python_path: str | None) -> str | None:
+    if not python_path:
+        return None
+    if python_path.startswith(_UV_ENV_PYTHON_PREFIX):
+        return python_path[len(_UV_ENV_PYTHON_PREFIX) :].strip() or None
+    if python_path.startswith(_LEGACY_ENV_PYTHON_PREFIX):
+        return python_path[len(_LEGACY_ENV_PYTHON_PREFIX) :].strip() or None
+    return None
 
 
 @lru_cache(maxsize=32)
-def _resolve_runtime_python_path(python_path: str | None) -> str | None:
+def _resolve_runtime_python_path(python_path: str | None, repo_root: str | None = None) -> str | None:
     if not python_path:
         return None
-    if not python_path.startswith(_CONDA_ENV_PYTHON_PREFIX):
+    env_name = _extract_uv_env_name(python_path)
+    if not env_name:
         return python_path
 
-    env_name = python_path[len(_CONDA_ENV_PYTHON_PREFIX) :].strip()
-    if not env_name:
-        raise RuntimeError("runtime python_path uses conda-env: but no env name was provided")
-
-    conda_executable = _find_conda_executable()
-    probe_cmd = [
-        conda_executable,
-        "run",
-        "-n",
-        env_name,
-        "python",
-        "-c",
-        "import sys; print(sys.executable)",
-    ]
-    try:
-        proc = subprocess.run(
-            probe_cmd,
-            capture_output=True,
-            text=True,
-            check=False,
-            env=os.environ.copy(),
-        )
-    except FileNotFoundError as e:
-        raise RuntimeError(f"conda executable not found while resolving runtime env {env_name}: {e}") from e
-
-    if proc.returncode != 0:
-        stderr = _tail((proc.stderr or "").strip(), limit=2000)
-        raise RuntimeError(
-            f"failed to resolve runtime python for conda env {env_name} via `{conda_executable}`"
-            + (f": {stderr}" if stderr else "")
-        )
-
-    resolved = ""
-    for raw in reversed((proc.stdout or "").splitlines()):
-        candidate = raw.strip()
-        if candidate:
-            resolved = candidate
-            break
-    if not resolved:
-        raise RuntimeError(f"conda env {env_name} did not report a python executable")
-    return resolved
+    env_dir = Path(_resolve_uv_env_dir(env_name, repo_root))
+    resolved = env_dir / "bin" / "python"
+    if not resolved.exists():
+        raise RuntimeError(f"runtime env {env_name} does not exist or has no python: {resolved}")
+    return str(resolved)
 
 
 def _safe_slug(value: str) -> str:
@@ -532,7 +502,10 @@ def evaluate(program_path: str, *, spec: UnifiedTaskSpec) -> Any:
             return _wrap(metrics, artifacts)
 
         try:
-            runtime_python_path = _resolve_runtime_python_path(spec.runtime_python_path)
+            runtime_python_path = _resolve_runtime_python_path(
+                spec.runtime_python_path,
+                str(spec.repo_root),
+            )
         except RuntimeError as e:
             artifacts["error_message"] = str(e)
             metrics["runtime_s"] = float(time.time() - start)
@@ -544,6 +517,16 @@ def evaluate(program_path: str, *, spec: UnifiedTaskSpec) -> Any:
         env["FRONTIER_EVAL_UNIFIED_SOURCE_BENCHMARK_DIR"] = str(spec.benchmark_dir)
         env["FRONTIER_EVAL_UNIFIED_BENCHMARK_DIR"] = str(sandbox_benchmark)
         env["FRONTIER_EVAL_UNIFIED_CANDIDATE_PATH"] = str(candidate_dst)
+        runtime_env_dir = Path(_resolve_uv_env_dir(spec.runtime_env_name, str(spec.repo_root)))
+        runtime_env_bin = runtime_env_dir / "bin"
+        if runtime_env_bin.is_dir():
+            env["PATH"] = f"{runtime_env_bin}{os.pathsep}{env.get('PATH', '')}"
+            env["VIRTUAL_ENV"] = str(runtime_env_dir)
+            artifacts["runtime_env_name"] = spec.runtime_env_name
+            artifacts["runtime_env_dir"] = str(runtime_env_dir)
+            default_runtime_python = runtime_env_bin / "python"
+            if runtime_python_path is None and default_runtime_python.exists():
+                runtime_python_path = str(default_runtime_python)
 
         run_cwd = eval_cwd
         if spec.runtime_isolation_mode == "docker":
@@ -562,7 +545,7 @@ def evaluate(program_path: str, *, spec: UnifiedTaskSpec) -> Any:
                 return _wrap(metrics, artifacts)
 
             docker_python = "python"
-            if spec.runtime_python_path and not spec.runtime_python_path.startswith(_CONDA_ENV_PYTHON_PREFIX):
+            if spec.runtime_python_path and not _extract_uv_env_name(spec.runtime_python_path):
                 docker_python = spec.runtime_python_path
 
             container_workdir = Path("/workspace")
@@ -658,31 +641,13 @@ def evaluate(program_path: str, *, spec: UnifiedTaskSpec) -> Any:
                 spec=spec,
                 runtime_python_path=runtime_python_path,
             )
-            run_with_conda = bool(
-                spec.runtime_use_conda_run and spec.runtime_conda_env and not spec.runtime_python_path
-            )
-            if run_with_conda:
-                conda_executable = _find_conda_executable()
-                run_cmd = [
-                    conda_executable,
-                    "run",
-                    "-n",
-                    spec.runtime_conda_env,
-                    spec.runtime_shell,
-                    "-lc",
-                    rendered_cmd,
-                ]
-                artifacts["runtime_mode"] = "conda_run"
-                artifacts["runtime_conda_env"] = spec.runtime_conda_env
-                artifacts["runtime_conda_executable"] = conda_executable
-            else:
-                run_cmd = [spec.runtime_shell, "-lc", rendered_cmd]
-                artifacts["runtime_mode"] = "shell"
+            run_cmd = [spec.runtime_shell, "-lc", rendered_cmd]
+            artifacts["runtime_mode"] = "shell"
 
         artifacts["benchmark_cmd"] = rendered_cmd
         if spec.runtime_isolation_mode != "docker" and spec.runtime_python_path:
             artifacts["runtime_python_path"] = runtime_python_path
-            if spec.runtime_python_path.startswith(_CONDA_ENV_PYTHON_PREFIX):
+            if _extract_uv_env_name(spec.runtime_python_path):
                 artifacts["runtime_python_path_source"] = spec.runtime_python_path
         artifacts["runtime_command"] = " ".join(shlex.quote(x) for x in run_cmd)
 

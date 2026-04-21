@@ -1,4 +1,4 @@
 name: unified
 benchmark: ParticlePhysics/MuonTomography
 runtime:
-  conda_env: frontier-eval-2
+  env_name: frontier-eval-2

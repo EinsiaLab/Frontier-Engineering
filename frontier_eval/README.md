@@ -4,136 +4,57 @@ Evaluation framework for `Frontier-Engineering`.
 
 ## Layout
 
-- `frontier_eval/cli.py`: main evaluation entrypoint (`python -m frontier_eval`)
-- `frontier_eval/tasks/`: all evaluation tasks
-- `frontier_eval/algorithms/`: all algorithms (currently supports `abmcts`, `openevolve`, `shinkaevolve`)
-- `frontier_eval/conf/`: Hydra configs (`task` / `algorithm` / `llm`)
+- `frontier_eval/cli.py`: main entrypoint (`python -m frontier_eval`)
+- `frontier_eval/tasks/`: benchmark task implementations
+- `frontier_eval/algorithms/`: search algorithms (`openevolve`, `abmcts`, `shinkaevolve`)
+- `frontier_eval/conf/`: Hydra configs for tasks, algorithms, and LLM backends
 
 ## Setup
 
-Conda is recommended.
+The intended setup path is now `uv`-based.
 
-The simplest way is to run from the repo root:
+From the repo root:
 
 ```bash
 bash init.sh
-conda activate frontier-eval-2
+source .venvs/frontier-eval-2/bin/activate
 ```
 
-Manual setup (only if you cannot use `init.sh`):
+That prepares the driver environment used to run `python -m frontier_eval`.
+
+If you want the merged runtime environments used by the released `v1` benchmark set:
 
 ```bash
-conda create -n frontier-eval-2 python=3.12 -y
-conda activate frontier-eval-2
-
-# Octave + signal/control
-conda install -c conda-forge octave octave-signal octave-control -y
-
-pip install -r frontier_eval/requirements.txt
+bash scripts/setup_v1_merged_task_envs.sh
 ```
 
-Important:
+Important: this only prepares the framework and the repo-owned runtime environments. Many benchmarks still require task-local dependencies, external assets, Docker, or third-party repos.
 
-The setup above only prepares the `frontier_eval` framework. Many benchmarks in this repository need a separate runtime environment, extra benchmark-local requirements, `third_party/` repos, or Docker.
-
-Before running a specific benchmark, always read:
+Before running a benchmark, always read:
 
 1. `benchmarks/<Domain>/README*.md`
-2. `benchmarks/<Domain>/<Task>/README*.md` when that task has its own README
+2. `benchmarks/<Domain>/<Task>/README*.md` when present
 
-Treat those benchmark README files as the source of truth for runtime setup and copy the documented overrides into your command, such as `task.runtime.conda_env=...`, `task.runtime.python_path=...`, or `task.runtime.use_conda_run=false`.
+Treat those task README files as the source of truth for benchmark-local prerequisites.
 
-Common examples in this repository:
+## Runtime selection
 
-- `ReactionOptimisation` uses `summit` for benchmark runtime.
-- `MolecularMechanics` uses `openff-dev`.
-- `SustainableDataCenterControl` uses `sustaindc`.
-- `PyPortfolioOpt` uses `pyportfolioopt`.
-- `QuantumComputing` uses `mqt`.
-- `InventoryOptimization` uses `stock`.
-- `JobShop` uses an explicit `task.runtime.python_path`.
-- `EngDesign` uses Docker-first execution or local fallback.
+Unified tasks support two runtime selectors:
 
-Note on `third_party/`:
+- `task.runtime.env_name=<name>`: prepend `.venvs/<name>/bin` to `PATH`
+- `task.runtime.python_path=uv-env:<name>`: resolve directly to `.venvs/<name>/bin/python`
 
-Some optional algorithms/benchmarks depend on extra repos under `third_party/`. In this repo, `third_party/` is meant for local checkouts and is ignored by git (see `.gitignore`), so if you see commands like `pip install -e third_party/...`, clone the corresponding repo first, e.g.:
+You can also pass an absolute interpreter path with:
 
 ```bash
-mkdir -p third_party
-
-# AB-MCTS / TreeQuest (required if you run `algorithm=abmcts`)
-git clone https://github.com/SakanaAI/treequest.git third_party/treequest
-
-# CarAerodynamicsSensing / PhySense (required to evaluate that benchmark)
-git clone https://github.com/thuml/PhySense.git third_party/PhySense
+task.runtime.python_path=/abs/path/to/python
 ```
 
-Optional (ShinkaEvolve):
+The default fallback runtime is `frontier-eval-2`, but many tasks should use a task-specific runtime instead.
 
-```bash
-# NOTE: the PyPI package `shinka` is NOT ShinkaEvolve.
+## Quick smoke
 
-# Option A: local checkout under `third_party/` (recommended if you need to apply local patches)
-git clone https://github.com/SakanaAI/ShinkaEvolve.git third_party/ShinkaEvolve
-# Frontier-Engineering patch: fixes `DatabaseDisplay` when `program.metadata` is missing,
-# and adds the OpenRouter model id `qwen/qwen3-coder-next` to the pricing table.
-git apply patches/third_party_shinkaevolve.patch
-pip install -e third_party/ShinkaEvolve
-
-# Option B: editable VCS install so `shinka.core` is available:
-pip install -e "git+https://github.com/SakanaAI/ShinkaEvolve.git#egg=shinka"
-```
-
-Using your own model with `algorithm=shinkaevolve`:
-
-- If you point `OPENAI_API_BASE` / `llm.api_base` at a self-hosted or OpenAI-compatible endpoint, ShinkaEvolve still resolves model routing and cost metadata from `third_party/ShinkaEvolve/shinka/llm/providers/pricing.csv`.
-- If `OPENAI_MODEL` / `llm.model` is missing from that table, ShinkaEvolve may fail with errors such as `Model ... not supported.` or `Model ... not found in pricing data`.
-- If you need to patch `pricing.csv`, `client.py`, or `query.py`, use Option A above (`third_party/ShinkaEvolve` checkout), not the VCS install.
-- For a custom model on an OpenAI-compatible endpoint, add a row to `third_party/ShinkaEvolve/shinka/llm/providers/pricing.csv` and usually set `provider` to `openai`, because the `openai` backend is the one that honors `OPENAI_API_BASE`.
-
-Example `pricing.csv` row for a self-hosted OpenAI-compatible model:
-
-```csv
-my-model,openai,N/A,N/A,,,," False"," 0"," 0"
-```
-
-Then set the same model name in your runtime config:
-
-```bash
-export OPENAI_API_BASE=http://<your-endpoint>/v1
-export OPENAI_API_KEY=<your-key>
-export OPENAI_MODEL=my-model
-```
-
-If your model needs a new provider or a non-standard API, editing `pricing.csv` is not enough. Follow `third_party/ShinkaEvolve/docs/support_local_llm.md` and update `shinka/llm/client.py` plus `shinka/llm/query.py`.
-
-Optional (AB-MCTS via TreeQuest):
-
-```bash
-# Requires the TreeQuest repo in `third_party/treequest` (see above).
-pip install -e third_party/treequest
-# Optional (ABMCTS-M / mixed model):
-pip install -e "third_party/treequest[abmcts-m]"
-# Optional (tree visualization):
-pip install -e "third_party/treequest[vis]"
-```
-
-Environment variables (recommended: `.env`):
-
-```bash
-cp .env.example .env
-# Edit .env and set OPENAI_API_KEY / OPENAI_API_BASE etc.
-```
-
-When running `python -m frontier_eval ...`, it will automatically search upwards from the current directory and load the nearest `.env`.
-
-## Run
-
-```bash
-python -m frontier_eval algorithm.iterations=10
-```
-
-Quick smoke (fast, no external benchmark deps):
+These commands are fast and do not require extra benchmark assets:
 
 ```bash
 python -m frontier_eval task=smoke algorithm=openevolve algorithm.iterations=0
@@ -141,11 +62,9 @@ python -m frontier_eval task=smoke algorithm=shinkaevolve algorithm.max_generati
 python -m frontier_eval task=smoke algorithm=abmcts algorithm.iterations=0
 ```
 
-## Unified task
+## Running a unified benchmark
 
-Use `task=unified` to onboard a new benchmark by adding metadata files under the benchmark folder, instead of implementing a new `frontier_eval/tasks/<task>/...`.
-
-Run example:
+Example:
 
 ```bash
 python -m frontier_eval \
@@ -155,218 +74,128 @@ python -m frontier_eval \
   algorithm.iterations=10
 ```
 
-EngDesign example (preset config, still unified under the hood):
-
-```bash
-python -m frontier_eval \
-  task=engdesign \
-  algorithm=openevolve \
-  algorithm.iterations=10
-```
-
-Equivalent explicit unified command:
+Baseline-only evaluation without any LLM calls:
 
 ```bash
 python -m frontier_eval \
   task=unified \
-  task.benchmark=EngDesign \
-  task.runtime.use_conda_run=false \
+  task.benchmark=ComputerSystems/MallocLab \
   algorithm=openevolve \
-  algorithm.iterations=10
+  algorithm.iterations=0
 ```
 
-EngDesign runtime mode (from `benchmarks/EngDesign/README.md`):
-- `benchmarks/EngDesign/frontier_eval/run_eval.sh` uses `docker` first when available (`ENGDESIGN_EVAL_MODE=auto`).
-- Set `ENGDESIGN_EVAL_MODE=local` to force local Python evaluation.
+If a task needs a dedicated runtime:
 
-When `task=unified`, default run directory includes benchmark id:
-- `runs/unified__<Domain>__<Task>/<algorithm>/<model>/<timestamp>`
+```bash
+python -m frontier_eval \
+  task=unified \
+  task.benchmark=ReactionOptimisation/snar_multiobjective \
+  task.runtime.python_path=uv-env:frontier-v1-summit \
+  algorithm=openevolve \
+  algorithm.iterations=0
+```
 
-#### Benchmark metadata layout
+EngDesign still runs through the unified pathway, but its benchmark wrapper decides whether to use Docker or local execution.
+
+## Unified benchmark metadata
 
 Under `benchmarks/<Domain>/<Task>/frontier_eval/`:
 
 ```text
-initial_program.txt      # required: relative path to baseline candidate file
-candidate_destination.txt# optional: where candidate is copied in sandbox
-eval_command.txt         # required: benchmark eval command template
-eval_cwd.txt             # optional: working dir (relative to benchmark root)
-agent_files.txt          # optional: files exposed to agent as artifacts
-copy_files.txt           # optional: files/dirs copied into temp sandbox
-readonly_files.txt       # optional: files/dirs that must stay unchanged
-artifact_files.txt       # optional: files/dirs auto-collected by framework
-constraints.txt          # optional: prompt/constraints text for agent
+initial_program.txt       # required
+candidate_destination.txt # optional
+eval_command.txt          # required
+eval_cwd.txt              # optional
+agent_files.txt           # optional
+copy_files.txt            # optional
+readonly_files.txt        # optional
+artifact_files.txt        # optional
+constraints.txt           # optional
 ```
 
-Line-based `*.txt` files (`initial_program.txt`, `candidate_destination.txt`, `eval_cwd.txt`, `agent_files.txt`, `copy_files.txt`, `readonly_files.txt`, `artifact_files.txt`) support:
-- one path per line
-- empty lines ignored
-- lines starting with `#` ignored
+Useful placeholders in `eval_command.txt`:
 
-`eval_command.txt` is raw shell command text (can be multi-line).
+- `{python}`
+- `{candidate}`
+- `{benchmark}`
+- `{sandbox}`
+- `{repo_root}`
+- `{benchmark_source}`
+- `{benchmark_id}`
 
-#### What each metadata file means
+The evaluator expects:
 
-- `initial_program.txt`: initial source file used by evolution (relative to benchmark root).
-- `candidate_destination.txt`: path in sandbox benchmark where each candidate is written. If omitted, defaults to `initial_program.txt`.
-- `eval_command.txt`: evaluator command template.
-- `eval_cwd.txt`: command working directory in sandbox. `.` means benchmark root.
-- `agent_files.txt`: files/dirs loaded into artifacts for LLM context.
-- `copy_files.txt`: files/dirs copied into sandbox. If empty, unified copies the entire benchmark directory.
-- `readonly_files.txt`: files/dirs fingerprinted before/after eval. Any change marks run invalid.
-- `artifact_files.txt`: files/dirs collected by unified framework after eval (for example logs/output files). This avoids writing custom artifacts-export code.
-- `constraints.txt`: free-form instruction text attached to artifacts (agent prompt context).
+- `metrics.json`
+- optionally `artifacts.json`
 
-#### Placeholder reference
-
-Safe placeholders (shell-escaped, recommended):
-- `{python}`: runtime python command.
-- `{candidate}`: candidate file path in sandbox.
-- `{benchmark}`: sandbox benchmark root.
-- `{sandbox}`: sandbox temp root for this evaluation.
-- `{repo_root}`: Frontier-Engineering repo root.
-- `{benchmark_source}`: original benchmark directory on disk.
-- `{benchmark_id}`: normalized benchmark id (for example `ComputerSystems/MallocLab`).
-
-Raw placeholders (not shell-escaped):
-- `{python_raw}`, `{candidate_raw}`, `{benchmark_raw}`, `{sandbox_raw}`, `{repo_root_raw}`, `{benchmark_source_raw}`, `{benchmark_id_raw}`.
-- Use raw placeholders only when you explicitly handle quoting in your command.
-
-Example:
-
-```text
-bash frontier_eval/run_eval.sh {python} {benchmark} {candidate}
-```
-
-Default outputs expected from your eval command:
-- `metrics.json`: a JSON object. Unified reads all numeric-like fields (int/float/bool/numeric string), not only `combined_score` and `valid`.
-- `artifacts.json` (optional): a JSON object with extra structured artifacts.
-- For simple tasks, you can skip `artifacts.json` and use `artifact_files.txt` so unified collects logs automatically.
-- If `valid` is missing, unified falls back to command return code (`0 -> 1`, non-zero -> `0`).
-- If `combined_score` is missing, unified falls back to `1` when `valid > 0`, else `0`.
-- If eval command returns non-zero, unified forces `valid=0` and `combined_score=0`.
-
-If your output paths differ, override at runtime:
-
-```bash
-python -m frontier_eval task=unified \
-  task.benchmark=MyDomain/MyTask \
-  task.metrics_json=verification/out/metrics.json \
-  task.artifacts_json=verification/out/artifacts.json
-```
-
-
-For specific examples, please refer to `benchmarks/ComputerSystems/MallocLab/frontier_eval`
-
-### Environment selection
-
-`unified` supports passing benchmark runtime environment:
-- default conda env: `frontier-eval-2`
-- override env name: `task.runtime.conda_env=<env_name>`
-- pass explicit Python path: `task.runtime.python_path=/path/to/python`
-
-Important:
-
-- The default `frontier-eval-2` is only a fallback for unified runs.
-- Many benchmarks in this repository should not use that default as their actual runtime.
-- Always check the benchmark README first and prefer its documented env name / Python path / Docker mode over the generic default shown here.
-
-Example:
-
-```bash
-python -m frontier_eval task=unified \
-  task.benchmark=MyDomain/MyTask \
-  task.runtime.conda_env=frontier-eval-2
-```
+If `valid` or `combined_score` are missing, the unified evaluator applies sane fallbacks.
 
 ## Batch runs
 
-Use the batch runner (writes an isolated `run.output_dir` for each combination and aggregates into `summary.jsonl`):
+General form:
 
 ```bash
 python -m frontier_eval.batch --matrix frontier_eval/conf/batch/example_matrix.yaml
 ```
 
-### v1 unified batch matrix
-
-**v1** batch runs use **`frontier_eval/conf/batch/v1.yaml`**. `OPENAI_API_BASE`, `OPENAI_MODEL`, and related settings are read from the environment when the matrix loads (same conventions as `frontier_eval/conf/llm/openai_compatible.yaml`).
-
-For host setup (Docker env vars for EngDesign, `CUDA_VISIBLE_DEVICES`, merged conda envs, etc.), see **[`run.md`](../run.md)** · [`run_zh-CN.md`](../run_zh-CN.md) at the repository root. Run the v1 batch matrix with **`bash scripts/run_v1_batch.sh`** (forwards extra args to `frontier_eval.batch`).
+Released `v1` matrix:
 
 ```bash
 python -m frontier_eval.batch --matrix frontier_eval/conf/batch/v1.yaml
 ```
 
-Use `--tasks` / `--exclude-tasks`, or lower `run.max_parallel` in the YAML, to avoid contention when mixing CPU and GPU workloads.
+Operator workflow and host-side setup are documented in [`run.md`](../run.md) and [`run_zh-CN.md`](../run_zh-CN.md).
 
-`matrix.tasks` supports either plain task names or labeled task entries with per-entry overrides:
+Task entries in a batch matrix may carry per-task runtime overrides, for example:
 
 ```yaml
 tasks:
-  - manned_lunar_landing
   - name: unified
     label: ReactionOptimisation/dtlz2_pareto
     overrides:
       - task.benchmark=ReactionOptimisation/dtlz2_pareto
-      - task.runtime.conda_env=summit
+      - task.runtime.python_path=uv-env:frontier-v1-summit
 ```
 
-The `label` is used for filtering (`--tasks` / `--exclude-tasks`), run directory names,
-and `summary.jsonl` rows, while `name` remains the actual Hydra task config.
+## v1 runtime layout
 
-Rerun a subset of tasks:
+The current merged runtimes are:
+
+- `frontier-v1-main`
+- `frontier-v1-summit`
+- `frontier-v1-sustaindc`
+- `frontier-v1-kernel`
+
+`openff-dev` is documented as a manual runtime because the OpenFF toolchain is not fully reproducible with `uv` alone as of 2026.
+
+Setup and validation helpers:
+
+- `bash scripts/setup_v1_merged_task_envs.sh`
+- `bash scripts/validate_v1_merged_task_envs.sh`
+- `python scripts/audit_unified_metadata_readonly.py [--strict]`
+
+## Optional third-party repos
+
+Some algorithms and benchmarks still depend on local checkouts under `third_party/`.
+
+Examples:
 
 ```bash
-python -m frontier_eval.batch --matrix frontier_eval/conf/batch/example_matrix.yaml \
-  --tasks denoising --tasks trimul
+mkdir -p third_party
+git clone https://github.com/SakanaAI/treequest.git third_party/treequest
+git clone https://github.com/thuml/PhySense.git third_party/PhySense
 ```
 
-Rerun in-place inside an existing batch directory (deletes the selected task directories first):
+For `shinkaevolve`, use a local checkout if you need to patch provider metadata or debug the adapter.
+
+## Environment variables
+
+Use a local `.env`:
 
 ```bash
-python -m frontier_eval.batch --matrix runs/batch/<batch_id>/matrix_resolved.yaml \
-  --in-place --tasks denoising
+cp .env.example .env
 ```
 
-Unified baseline sweep example:
+`python -m frontier_eval ...` automatically searches upward and loads the nearest `.env`.
 
-```bash
-.venv/bin/python -m frontier_eval.batch \
-  --matrix frontier_eval/conf/batch/shinkaevolve_unified_baselines.yaml \
-  --python .venv/bin/python
-```
-
-## Extending (new task / algorithm)
-
-- Required default for new benchmark contributions: use `task=unified` + benchmark-local metadata files (section above). New benchmark PRs should onboard through the unified format instead of adding new Python task code under `frontier_eval/tasks/`.
-- New custom task (only when unified is insufficient and the exception has been discussed with maintainers): implement a `frontier_eval/tasks/base.py` `Task` subclass (`initial_program_path()` + `evaluate_program()`), and register it in `frontier_eval/registry_tasks.py` (or keep using `frontier_eval/registry.py`'s `get_task`).
-- New algorithm: implement a `frontier_eval/algorithms/base.py` `Algorithm` subclass, and register it in `frontier_eval/registry_algorithms.py`.
-
-## v1 Task Environments
-
-To reduce the number of runtime environments used by the effective `v1` task pool, the repository now provides declarative env specs under `scripts/env_specs/` and one-shot setup scripts:
-
-- `frontier-eval-2` is managed from `scripts/env_specs/frontier-eval-2.yml` as the default driver env.
-- Merged task environments are managed from repo-owned manifests (`frontier-v1-main`, `frontier-v1-summit`, `frontier-v1-sustaindc`, `frontier-v1-kernel`) instead of cloning local ad-hoc envs.
-- For `v1` tasks that need a direct interpreter instead of `conda run` (currently `ReactionOptimisation/*` and `JobShop/*`), the batch matrices use the portable marker `conda-env:<env-name>`. The unified evaluator resolves that marker to the target env's Python executable at runtime, so repository files stay machine-independent.
-
-Current `v1` runtime consolidation:
-
-- `frontier-v1-main`: `SingleCellAnalysis/predict_modality`, `QuantumComputing/*`, `Optics/*`, `InventoryOptimization/*`, `PyPortfolioOpt/*`, `JobShop/*`, `Robotics/DynamicObstacleAvoidanceNavigation`, `Robotics/PIDTuning`, `Robotics/UAVInspectionCoverageWithWind`, `Robotics/QuadrupedGaitOptimization`, `Robotics/RobotArmCycleTimeOptimization`, `Aerodynamics/CarAerodynamicsSensing`, `KernelEngineering/FlashAttention`
-- `frontier-v1-summit`: `ReactionOptimisation/*`
-- `frontier-v1-sustaindc`: `SustainableDataCenterControl/*`
-- `frontier-v1-kernel`: `KernelEngineering/MLA`, `KernelEngineering/TriMul`
-
-If an older benchmark README still mentions legacy env names such as `mqt`, `stock`, `pyportfolioopt`, or `jobshop`, prefer **`frontier_eval/conf/batch/v1.yaml`** (and [`run.md`](../run.md) / [`run_zh-CN.md`](../run_zh-CN.md) for operator setup) as the source of truth for current `v1` runs.
-
-Setup and validation scripts:
-
-- Initialize/update merged envs from declarative specs (and run post-build `iter=0` validation by default): `bash scripts/setup_v1_merged_task_envs.sh`
-- Validate merged envs with `iter=0`: `DRIVER_ENV=frontier-eval-2 GPU_DEVICES=<gpu_id> bash scripts/validate_v1_merged_task_envs.sh`
-- Audit benchmark readonly metadata coverage: `python scripts/audit_unified_metadata_readonly.py [--strict]`
-
-Notes:
-
-- The validation script uses `conda run -n frontier-eval-2 python` as the default driver, and can also be overridden with `DRIVER_PY=/path/to/python`. It checks CPU `v1`, GPU `v1`, and a kernel batch (`MLA`, `TriMul`, `FlashAttention`) from `v1.yaml`.
-- `MuonTomography` is listed in [TASK_DETAILS.md](../TASK_DETAILS.md) but is **not** included in [`frontier_eval/conf/batch/v1.yaml`](../frontier_eval/conf/batch/v1.yaml).
-- Known caveat: the official `KernelEngineering/TriMul` full benchmark (`verification/tri_bench.txt`) may still be VRAM-limited on 24GB-class GPUs; this is typically a task-level memory-bound issue rather than a missing dependency in `frontier-v1-kernel`.
+Optimization runs need `OPENAI_API_KEY`; baseline-only runs with `algorithm.iterations=0` do not.

@@ -2,4 +2,4 @@ name: unified
 benchmark: MolecularMechanics/weighted_parameter_coverage
 
 runtime:
-  conda_env: openff-dev
+  env_name: openff-dev

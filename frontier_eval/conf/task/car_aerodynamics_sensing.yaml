@@ -1,4 +1,4 @@
 name: unified
 benchmark: Aerodynamics/CarAerodynamicsSensing
 runtime:
-  conda_env: kernel
+  env_name: frontier-v1-main

@@ -1,0 +1,9 @@
+{
+  "name": "openff-dev",
+  "python": "3.12",
+  "manual": true,
+  "notes": [
+    "OpenFF Toolkit is not published on PyPI as of 2026, so this environment cannot be reproduced with uv alone.",
+    "For MolecularMechanics, create a dedicated Python environment manually after installing OpenFF Toolkit, RDKit, OpenMM, and the required AmberTools components."
+  ]
+}

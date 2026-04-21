@@ -2,4 +2,4 @@ name: unified
 benchmark: MolecularMechanics/diverse_conformer_portfolio
 
 runtime:
-  conda_env: openff-dev
+  env_name: openff-dev

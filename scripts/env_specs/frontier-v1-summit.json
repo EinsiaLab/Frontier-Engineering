@@ -1,0 +1,13 @@
+{
+  "name": "frontier-v1-summit",
+  "python": "3.9",
+  "requirements": [
+    "benchmarks/ReactionOptimisation/requirements.txt"
+  ],
+  "packages": [
+    "setuptools<81"
+  ],
+  "notes": [
+    "ReactionOptimisation runs directly on this interpreter via task.runtime.python_path=uv-env:frontier-v1-summit."
+  ]
+}

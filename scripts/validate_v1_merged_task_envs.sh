@@ -4,6 +4,8 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
+source "$ROOT/scripts/lib_uv_env.sh"
+
 DRIVER_PY="${DRIVER_PY:-}"
 DRIVER_ENV="${DRIVER_ENV:-frontier-eval-2}"
 V1_MATRIX="${V1_MATRIX:-frontier_eval/conf/batch/v1.yaml}"
@@ -13,11 +15,14 @@ RUN_BASE_DIR="${RUN_BASE_DIR:-runs/batch_validation}"
 if [[ -n "$DRIVER_PY" ]]; then
   DRIVER_CMD=("$DRIVER_PY")
 else
-  if ! command -v conda >/dev/null 2>&1; then
-    echo "conda not found; set DRIVER_PY explicitly or make conda available in PATH" >&2
+  ensure_uv_in_path
+  DRIVER_PY="$(uv_env_python "$ROOT" "$DRIVER_ENV")"
+  if [[ ! -x "$DRIVER_PY" ]]; then
+    echo "driver python not found: $DRIVER_PY" >&2
+    echo "Run bash init.sh or bash scripts/setup_v1_merged_task_envs.sh first." >&2
     exit 127
   fi
-  DRIVER_CMD=(conda run -n "$DRIVER_ENV" python)
+  DRIVER_CMD=("$DRIVER_PY")
 fi
 
 run_driver() {
@@ -27,14 +32,13 @@ run_driver() {
 run_cpu_batch() {
   run_driver -m frontier_eval.batch \
     --matrix "$V1_MATRIX" \
-    --exclude-tasks \
-      Robotics/QuadrupedGaitOptimization \
-      Robotics/RobotArmCycleTimeOptimization \
-      Aerodynamics/CarAerodynamicsSensing \
-      KernelEngineering/MLA \
-      KernelEngineering/TriMul \
-      KernelEngineering/FlashAttention \
-      engdesign \
+    --exclude-tasks Robotics/QuadrupedGaitOptimization \
+    --exclude-tasks Robotics/RobotArmCycleTimeOptimization \
+    --exclude-tasks Aerodynamics/CarAerodynamicsSensing \
+    --exclude-tasks KernelEngineering/MLA \
+    --exclude-tasks KernelEngineering/TriMul \
+    --exclude-tasks KernelEngineering/FlashAttention \
+    --exclude-tasks engdesign \
     --base-dir "$RUN_BASE_DIR" \
     --override algorithm.iterations=0
 }
