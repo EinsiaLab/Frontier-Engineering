@@ -93,6 +93,15 @@ bash scripts/env/setup_v1_task_envs.sh
 source .venvs/frontier-eval-driver/bin/activate
 ```
 
+`scripts/env/setup_v1_task_envs.sh` now bootstraps the released `v1` problem set more aggressively by default:
+
+- creates the repo-owned `uv` environments
+- installs common host tools with `scripts/bootstrap/install_host_deps.sh`
+- fetches the current `v1-baseline-assets` bundle
+- installs `.venvs/openff-dev`
+
+So this step may require `sudo`, large downloads, and more wall-clock time than a plain Python environment setup.
+
 That gives you:
 
 - `.venvs/frontier-eval-driver` for the driver
@@ -156,7 +165,7 @@ To verify the shipped baselines without any LLM calls:
 bash scripts/batch/validate_v1_task_envs.sh
 ```
 
-This runs the batch config for the released `v1` problem set with `algorithm.iterations=0` and splits validation into CPU, GPU, and kernel subsets.
+This runs the batch config for the released `v1` problem set with `algorithm.iterations=0` and splits validation into CPU, GPU, kernel, and `engdesign` subsets.
 
 Important: this command validates the tasks only after their host prerequisites and external assets are already in place. It is not a promise that a fresh machine with only `uv` installed will automatically pass every task.
 

@@ -11,6 +11,8 @@ DRIVER_ENV="${DRIVER_ENV:-frontier-eval-driver}"
 V1_MATRIX="${V1_MATRIX:-frontier_eval/conf/batch/v1.yaml}"
 GPU_DEVICES="${GPU_DEVICES:-0}"
 RUN_BASE_DIR="${RUN_BASE_DIR:-runs/batch_validation}"
+ENGDESIGN_EVAL_MODE="${ENGDESIGN_EVAL_MODE:-auto}"
+ENGDESIGN_DOCKER_IMAGE="${ENGDESIGN_DOCKER_IMAGE:-engdesign-sim:frontier-eval}"
 
 if [[ -n "$DRIVER_PY" ]]; then
   DRIVER_CMD=("$DRIVER_PY")
@@ -65,6 +67,17 @@ run_kernel_batch() {
     --override algorithm.iterations=0
 }
 
+run_engdesign_batch() {
+  ENGDESIGN_EVAL_MODE="$ENGDESIGN_EVAL_MODE" \
+  ENGDESIGN_DOCKER_IMAGE="$ENGDESIGN_DOCKER_IMAGE" \
+    run_driver -m frontier_eval.batch \
+    --matrix "$V1_MATRIX" \
+    --tasks engdesign \
+    --base-dir "$RUN_BASE_DIR" \
+    --override algorithm.iterations=0
+}
+
 run_cpu_batch
 run_gpu_batch
 run_kernel_batch
+run_engdesign_batch

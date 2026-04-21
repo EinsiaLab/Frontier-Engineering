@@ -93,6 +93,15 @@ bash scripts/env/setup_v1_task_envs.sh
 source .venvs/frontier-eval-driver/bin/activate
 ```
 
+现在 `scripts/env/setup_v1_task_envs.sh` 默认会更激进地把发布版 `v1` 题集需要的东西一并补齐：
+
+- 创建仓库内维护的 `uv` 环境
+- 调用 `scripts/bootstrap/install_host_deps.sh` 安装常见宿主机工具
+- 拉取当前的 `v1-baseline-assets` 资产 bundle
+- 安装 `.venvs/openff-dev`
+
+因此这一步可能需要 `sudo`、较大的下载量，以及明显更长的执行时间。
+
 这会准备出：
 
 - `.venvs/frontier-eval-driver`：driver 环境
@@ -154,7 +163,7 @@ bash scripts/batch/run_v1_batch.sh --exclude-tasks engdesign
 bash scripts/batch/validate_v1_task_envs.sh
 ```
 
-这个脚本会按发布版 `v1` 题集对应的 batch 配置，把 `algorithm.iterations=0` 带进任务，并分 CPU、GPU、kernel 三段去验证。
+这个脚本会按发布版 `v1` 题集对应的 batch 配置，把 `algorithm.iterations=0` 带进任务，并分 CPU、GPU、kernel 和 `engdesign` 四段去验证。
 
 要注意：它验证的是“在宿主机条件和外部资产都已经准备好的前提下，这些 baseline 能不能跑”。它并不意味着一台刚装完 `uv` 的全新机器就会自动 47/47 全绿。
 
