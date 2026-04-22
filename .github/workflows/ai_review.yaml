@@ -31,6 +31,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
           LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+
+          LLM_API_BASE: ${{ secrets.LLM_API_BASE }}
           
           GITHUB_REPOSITORY: ${{ github.repository }}
           
