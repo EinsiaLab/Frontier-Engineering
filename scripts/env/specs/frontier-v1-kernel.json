@@ -6,7 +6,10 @@
     "benchmarks/KernelEngineering/MLA/verification/requirements-gpumode.txt",
     "benchmarks/KernelEngineering/TriMul/verification/requirements-gpumode.txt"
   ],
-  "packages": [],
+  "packages": [
+    "timm==1.0.21",
+    "einops==0.8.1"
+  ],
   "notes": [
     "Kernel tasks still require a working CUDA stack on the host."
   ]

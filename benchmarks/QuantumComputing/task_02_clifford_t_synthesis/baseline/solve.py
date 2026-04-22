@@ -13,7 +13,8 @@ def optimize_circuit(input_circuit: QuantumCircuit, target: Target, case: dict) 
     _ = (target, case)
 
     optimized = optimize_by_local_rewrite(input_circuit, max_rounds=20)
-    basis_gates = ["cx", "h", "rz", "x", "y", "z", "s", "sdg", "t", "tdg"]
+    # Keep the synthesized circuit inside the evaluator's advertised Clifford+T basis.
+    basis_gates = ["cx", "h", "x", "y", "z", "s", "sdg", "t", "tdg"]
     transpiled = transpile(
         optimized,
         basis_gates=basis_gates,

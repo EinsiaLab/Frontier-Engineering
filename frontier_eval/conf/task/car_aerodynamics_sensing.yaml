@@ -1,4 +1,4 @@
 name: unified
 benchmark: Aerodynamics/CarAerodynamicsSensing
 runtime:
-  env_name: frontier-v1-main
+  env_name: frontier-v1-kernel

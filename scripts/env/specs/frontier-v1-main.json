@@ -10,6 +10,7 @@
   ],
   "packages": [
     "mqt.bench",
+    "qiskit==2.3.1",
     "stockpyl",
     "job-shop-lib>=1.7,<2"
   ],

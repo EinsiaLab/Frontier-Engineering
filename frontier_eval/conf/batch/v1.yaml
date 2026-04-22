@@ -230,7 +230,7 @@ tasks:
   label: Aerodynamics/CarAerodynamicsSensing
   overrides:
   - task.benchmark=Aerodynamics/CarAerodynamicsSensing
-  - task.runtime.env_name=frontier-v1-main
+  - task.runtime.env_name=frontier-v1-kernel
   - algorithm.oe.evaluator.timeout=600
 - name: unified
   label: KernelEngineering/MLA
