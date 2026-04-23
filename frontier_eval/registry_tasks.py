@@ -31,6 +31,7 @@ from frontier_eval.tasks.topology_optimization import TopologyOptimizationTask
 from frontier_eval.tasks.unified import UnifiedTask
 from frontier_eval.tasks.muon_tomography import MuonTomographyTask
 from frontier_eval.tasks.proton_therapy_planning import ProtonTherapyPlanningTask
+from frontier_eval.tasks.pet_scanner_optimization.task import PETScannerOptimizationTask
 
 _TASKS: dict[str, Type[Task]] = {
     SmokeTask.NAME: SmokeTask,
@@ -58,6 +59,7 @@ _TASKS: dict[str, Type[Task]] = {
     UnifiedTask.NAME: UnifiedTask,
     MuonTomographyTask.NAME: MuonTomographyTask,
     ProtonTherapyPlanningTask.NAME: ProtonTherapyPlanningTask,
+    PETScannerOptimizationTask.NAME: PETScannerOptimizationTask,
 }
 
 

@@ -1,0 +1,8 @@
+1. This paper investigates dual-ended readout techniques to extract depth of interaction (DOI) information, highlighting the critical trade-off between crystal thickness, sensitivity, and parallax errors in detector design.
+Ren, S., Yang, Y., & Cherry, S. R. (2014). Effects of reflector and crystal surface on the performance of a depth‐encoding PET detector with dual‐ended readout. Medical physics, 41(7), 072503.
+
+2. This article introduces the design philosophy of total-body PET scanners, demonstrating how expanding the geometric field-of-view maximizes sensitivity while introducing severe financial constraints regarding scintillation crystal volume.
+Cherry, S. R., Jones, T., Karp, J. S., Qi, J., Moses, W. W., & Badawi, R. D. (2018). Total-body PET: maximizing sensitivity to create new opportunities for clinical research and patient care. Journal of Nuclear Medicine, 59(1), 3-12.
+
+3. This comprehensive review summarizes advancements in time-of-flight (TOF) PET, detailing how scintillation crystal thickness complexly impacts system timing resolution, photon stopping power, and overall imaging performance.
+Vandenberghe, S., Mikhaylova, E., D’Hoe, E., Mollet, P., & Karp, J. S. (2016). Recent developments in time-of-flight PET. EJNMMI physics, 3(1), 3.

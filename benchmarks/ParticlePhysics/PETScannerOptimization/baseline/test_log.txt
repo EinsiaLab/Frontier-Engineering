@@ -1,0 +1,27 @@
+python verification/evaluator.py baseline/solution.json
+{"status": "success", "score": 73.80681701043795, "metrics": {"volume_mm3": 5089380.098815464, "sensitivity_factor": 0.1637684467863431, "resolution_gamma": 6.4031242374328485, "cost_penalty": 0.0}}
+
+# 1. Local Baseline Evaluation
+$ conda activate frontier-eval-2
+$ cd benchmarks/ParticlePhysics/PETScannerOptimization
+$ python baseline/solution.py
+Baseline design successfully generated: solution.json
+
+$ python verification/evaluator.py solution.json
+{"status": "success", "score": 73.80681701043795, "metrics": {"volume_mm3": 5089380.098815464, "sensitivity_factor": 0.1637684467863431, "resolution_gamma": 6.4031242374328485, "cost_penalty": 0.0}}
+
+# 2. Framework Compatibility Check
+$ cd ../../../
+$ python -m frontier_eval task=pet_scanner_optimization algorithm=openevolve algorithm.iterations=0
+[INFO] - Evaluated program in 1.06s: combined_score=73.8068, valid=1.0000, timeout=0.0000, runtime_s=0.0464, program_returncode=0.0000
+[INFO] - Evolution complete. Best program has metrics: combined_score=73.8068, valid=1.0000, timeout=0.0000, runtime_s=0.0464, program_returncode=0.0000
+Best score: 73.80681701043795
+
+
+
+
+###2026-03-23
+python baseline/solution.py
+Baseline algorithm successfully executed. Output saved to: solution.json
+python verification/evaluator.py solution.json
+{"status": "success", "score": 140.4765356460034, "metrics": {"volume_mm3": 5089380.098815466, "sensitivity_factor": 0.16710193271812138, "resolution_gamma": 6.4031242374328485, "cost_penalty": 0.0}}

@@ -17,3 +17,6 @@ Currently, this domain includes the following benchmark tasks:
 * **[IMPT Dose Weight Optimization](./ProtonTherapyPlanning/README.md)**
   * **Background**: Optimizing proton therapy treatment plans using the Bragg peak effect of proton beams.
   * **Objective**: Optimize proton spot positions and weights under CTV coverage, OAR dose limits, and beam cost constraints.
+* **[PET Scanner Geometry and Cost Pareto Optimization](./PETScannerOptimization/README.md)**
+  * **Background**: Utilizing antimatter annihilation (positron-electron) to produce 511 keV gamma rays for high-resolution molecular imaging.
+  * **Objective**: Optimize the 3D geometric dimensions of the detector ring to maximize system sensitivity and minimize spatial parallax error (DOI effect), strictly within an expensive LYSO scintillation crystal volume budget.
