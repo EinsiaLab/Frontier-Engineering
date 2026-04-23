@@ -1,0 +1,24 @@
+Baseline Execution Log
+======================
+Command: python verification/evaluator.py baseline/solution.py
+Date: 2026-03-22
+Method: Random search (3000 samples, seed=42)
+Material system: CNTs@Nd0.15-BaM/PE composites
+
+Evaluation Result:
+{
+  "valid": 1,
+  "feasible": 1,
+  "combined_score": 0.4422,
+  "rl_min_db": -46.72,
+  "eab10_ghz": 5.3,
+  "thickness_mm": 2.0008,
+  "density": 1.866,
+  "cost_proxy": 1.619,
+  "runtime_sec": 1.7
+}
+
+Notes:
+- EAB = 5.3 GHz (meets >= 4.0 GHz hard constraint).
+- Density = 1.87 g/cm3 (lightweight designs rewarded, density penalty weight = 0.5).
+- Based on Wang et al., Materials 2024, 17, 3433.

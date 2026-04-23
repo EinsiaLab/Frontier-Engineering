@@ -1,0 +1,48 @@
+{
+  "matrix": {
+    "name": "PE (polyethylene)",
+    "eps_real": 2.3,
+    "eps_imag": 0.02,
+    "mu_real": 1.0,
+    "mu_imag": 0.0,
+    "density": 0.95,
+    "cost_proxy": 1.0,
+    "description": "Polyethylene matrix. Low permittivity, non-magnetic, lightweight."
+  },
+  "magnetic_absorber": {
+    "name": "Nd0.15-BaM",
+    "eps_real": 14.0,
+    "eps_imag": 8.0,
+    "mu_real": 1.35,
+    "mu_imag": 0.25,
+    "density": 5.1,
+    "cost_proxy": 2.5,
+    "description": "Nd-doped barium ferrite (BaNd0.15Fe11.85O19). Provides both dielectric and magnetic loss via natural resonance and eddy current effects."
+  },
+  "conductive_filler": {
+    "name": "CNTs (8wt%)",
+    "eps_real": 18.0,
+    "eps_imag": 12.0,
+    "mu_real": 1.0,
+    "mu_imag": 0.0,
+    "density": 1.7,
+    "cost_proxy": 3.5,
+    "description": "Carbon nanotubes at 8wt% loading. High dielectric loss from conductive network formation. Based on Nd0.15-BaM/8%CNTs composite data."
+  },
+  "lightweight_magnetic": {
+    "name": "Hollow Nd-BaM microspheres",
+    "eps_real": 7.0,
+    "eps_imag": 2.5,
+    "mu_real": 1.15,
+    "mu_imag": 0.12,
+    "density": 2.8,
+    "cost_proxy": 4.0,
+    "description": "Hollow Nd-doped barium ferrite microspheres. Reduced density compared to solid Nd-BaM while retaining moderate magnetic loss."
+  },
+  "_notes": {
+    "data_source": "Electromagnetic parameters derived from VNA measurements in Wang et al., Materials 2024, 17, 3433 (CNTs@Nd0.15-BaM/PE composites, 8.2-18 GHz).",
+    "sign_convention": "eps_r = eps_real - j*eps_imag (negative imaginary part). Same for permeability.",
+    "mixing_rule": "Linear volume-fraction mixing. Simplified first-order approximation.",
+    "electromagnetic_parameters": "All values are frequency-independent constant approximations averaged over the 8.2-18 GHz range."
+  }
+}

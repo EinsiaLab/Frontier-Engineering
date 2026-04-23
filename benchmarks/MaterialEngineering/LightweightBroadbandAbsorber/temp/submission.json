@@ -1,0 +1,8 @@
+{
+  "benchmark_id": "lightweight_broadband_absorber_8_18ghz",
+  "d_mm": 2.0008,
+  "phi_magnetic_absorber": 0.1915,
+  "phi_conductive_filler": 0.1051,
+  "phi_lightweight_magnetic": 0.023,
+  "phi_matrix": 0.6804
+}
