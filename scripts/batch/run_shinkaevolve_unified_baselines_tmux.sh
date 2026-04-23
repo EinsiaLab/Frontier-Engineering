@@ -93,10 +93,10 @@ benchmark_runtime_overrides() {
 
     case "$benchmark" in
     ReactionOptimisation/*)
-        printf '%s\n' "task.runtime.conda_env=summit"
+        printf '%s\n' "task.runtime.python_path=uv-env:frontier-v1-summit"
         ;;
     SustainableDataCenterControl/*)
-        printf '%s\n' "task.runtime.conda_env=sustaindc"
+        printf '%s\n' "task.runtime.env_name=frontier-v1-sustaindc"
         ;;
     esac
 }

@@ -14,13 +14,12 @@ For detailed physical and mathematical models, objective functions, and I/O form
 
 ## 2. Local Run
 
-After preparing the `frontier-eval-2` environment, you can run the benchmark directly from the task directory:
+After preparing the `frontier-eval-driver` environment, you can run the benchmark directly from the task directory:
 
 ```bash
-conda activate frontier-eval-2
 cd benchmarks/ParticlePhysics/MuonTomography
-python baseline/solution.py
-python verification/evaluator.py solution.json
+../../../.venvs/frontier-eval-driver/bin/python baseline/solution.py
+../../../.venvs/frontier-eval-driver/bin/python verification/evaluator.py solution.json
 ```
 
 `verification/requirements.txt` currently only requires `numpy>=1.24.0`.
@@ -39,15 +38,13 @@ This task now runs through the unified benchmark entry:
 From the repository root, the standard compatibility check is:
 
 ```bash
-conda activate frontier-eval-2
-python -m frontier_eval task=unified task.benchmark=ParticlePhysics/MuonTomography algorithm=openevolve algorithm.iterations=0
+.venvs/frontier-eval-driver/bin/python -m frontier_eval task=unified task.benchmark=ParticlePhysics/MuonTomography algorithm=openevolve algorithm.iterations=0
 ```
 
 After completing the framework-level `.env` or model configuration described in [frontier_eval/README.md](../../../frontier_eval/README.md), you can start a real search by increasing `algorithm.iterations`, for example:
 
 ```bash
-conda activate frontier-eval-2
-python -m frontier_eval task=unified task.benchmark=ParticlePhysics/MuonTomography algorithm=openevolve algorithm.iterations=10
+.venvs/frontier-eval-driver/bin/python -m frontier_eval task=unified task.benchmark=ParticlePhysics/MuonTomography algorithm=openevolve algorithm.iterations=10
 ```
 
 The old alias `task=muon_tomography` is still supported and routes to the same unified benchmark via config.

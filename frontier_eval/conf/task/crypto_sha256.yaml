@@ -2,6 +2,6 @@ name: unified
 benchmark: Cryptographic/SHA-256
 include_pdf_reference: false
 runtime:
-  conda_env: frontier-eval-2
+  env_name: frontier-eval-driver
   env:
     FRONTIER_EVAL_UNIFIED_CRYPTO_INCLUDE_PDF_REFERENCE: ${task.include_pdf_reference}

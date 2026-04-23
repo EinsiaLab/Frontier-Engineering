@@ -70,6 +70,17 @@ def _ensure_inputs(dataset_dir: Path) -> tuple[Path, Path]:
     return test_mod1, train_mod2
 
 
+def _to_h5ad_compatible_frame(df):
+    """Convert string-like metadata to plain Python objects for h5ad."""
+    out = df.copy()
+    out.index = out.index.astype(str).astype(object)
+    for column in out.columns:
+        dtype_name = str(getattr(out[column].dtype, "name", out[column].dtype))
+        if ("string" in dtype_name) or (dtype_name == "category") or (dtype_name == "object"):
+            out[column] = out[column].astype(str).astype(object)
+    return out
+
+
 def run_mean_per_gene(*, dataset_dir: Path, output: Path) -> None:
     test_mod1_path, train_mod2_path = _ensure_inputs(dataset_dir)
     input_test_mod1 = ad.read_h5ad(str(test_mod1_path))
@@ -84,8 +95,8 @@ def run_mean_per_gene(*, dataset_dir: Path, output: Path) -> None:
     out = ad.AnnData(
         layers={"normalized": prediction},
         shape=prediction.shape,
-        obs=input_test_mod1.obs,
-        var=input_train_mod2.var,
+        obs=_to_h5ad_compatible_frame(input_test_mod1.obs),
+        var=_to_h5ad_compatible_frame(input_train_mod2.var),
         uns={"dataset_id": input_test_mod1.uns.get("dataset_id", DATASET_ID), "method_id": "mean_per_gene"},
     )
     out.write_h5ad(str(output), compression="gzip")

@@ -1,4 +1,4 @@
 name: unified
 benchmark: KernelEngineering/MLA
 runtime:
-  conda_env: kernel
+  env_name: frontier-v1-kernel

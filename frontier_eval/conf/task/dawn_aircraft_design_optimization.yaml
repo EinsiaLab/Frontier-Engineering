@@ -1,4 +1,2 @@
 name: unified
 benchmark: Aerodynamics/DawnAircraftDesignOptimization
-runtime:
-  use_conda_run: false

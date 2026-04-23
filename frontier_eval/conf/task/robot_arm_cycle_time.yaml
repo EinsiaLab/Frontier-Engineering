@@ -1,4 +1,4 @@
 name: unified
 benchmark: Robotics/RobotArmCycleTimeOptimization
 runtime:
-  conda_env: libero
+  env_name: frontier-v1-main

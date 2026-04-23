@@ -9,6 +9,12 @@
 - `baseline/`：随机采样基线
 
 ## 快速开始
+如果你希望仓库自动把默认的代码 / 数据 / 权重目录准备好，可以先执行：
+
+```bash
+python scripts/bootstrap/fetch_task_assets.py --target car-aero
+```
+
 0) 准备 PhySense 代码（评测必需）：
 - 推荐：
   - `git clone https://github.com/thuml/PhySense.git third_party/PhySense`
@@ -63,7 +69,7 @@ docker build -f docker/Dockerfile -t car-aero-eval .
 unified benchmark：`task=unified task.benchmark=Aerodynamics/CarAerodynamicsSensing`
 
 ```bash
-python -m frontier_eval task=unified task.benchmark=Aerodynamics/CarAerodynamicsSensing task.runtime.conda_env=<your_env> algorithm.iterations=0
+.venvs/frontier-eval-driver/bin/python -m frontier_eval task=unified task.benchmark=Aerodynamics/CarAerodynamicsSensing task.runtime.env_name=frontier-v1-kernel algorithm.iterations=0
 ```
 
 运行 unified 评测前，仍需先准备上面列出的 PhySense 代码、数据集、模型权重以及参考点文件。

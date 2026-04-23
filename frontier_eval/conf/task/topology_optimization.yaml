@@ -1,4 +1,4 @@
 name: unified
 benchmark: StructuralOptimization/TopologyOptimization
 runtime:
-  conda_env: frontier-eval-2
+  env_name: frontier-eval-driver

@@ -32,16 +32,16 @@ pip install -r ../requirements.txt
 在仓库根目录执行：
 
 ```bash
-conda run -n pyportfolioopt python benchmarks/PyPortfolioOpt/robust_mvo_rebalance/verification/evaluate.py
+.venvs/frontier-v1-main/bin/python benchmarks/PyPortfolioOpt/robust_mvo_rebalance/verification/evaluate.py
 ```
 
 使用 `frontier_eval` unified 任务运行：
 
 ```bash
-conda run -n frontier-eval-2 python -m frontier_eval \
+.venvs/frontier-eval-driver/bin/python -m frontier_eval \
   task=unified \
   task.benchmark=PyPortfolioOpt/robust_mvo_rebalance \
-  task.runtime.conda_env=pyportfolioopt \
+  task.runtime.env_name=frontier-v1-main \
   algorithm.iterations=0
 ```
 

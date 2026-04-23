@@ -73,35 +73,34 @@ MolecularMechanics/
 
 It is easiest to keep the framework environment and the benchmark runtime environment separate:
 
-- `frontier-eval-2`
+- `.venvs/frontier-eval-driver`
   - runs `python -m frontier_eval`
 - `openff-dev`
-  - runs the actual MolecularMechanics evaluation
+  - a separately bootstrapped runtime that runs the actual MolecularMechanics evaluation
 
-If you already have both environments, run from the repository root:
+Recommended setup from the repository root:
 
 ```bash
-conda activate frontier-eval-2
-python -m pip install -r frontier_eval/requirements.txt
-
-conda activate openff-dev
-python -m pip install -r benchmarks/MolecularMechanics/requirements.txt
+bash init.sh
+bash scripts/bootstrap/install_openff_dev.sh
+source .venvs/frontier-eval-driver/bin/activate
 ```
 
-To create a fresh benchmark runtime environment from scratch:
+If you already have both runtimes, run from the repository root:
 
 ```bash
-conda create -n openff-dev -c conda-forge \
-  python=3.11 \
-  numpy \
-  scipy \
-  rdkit \
-  openmm \
-  ambertools \
-  openff-toolkit -y
+bash init.sh
+source .venvs/frontier-eval-driver/bin/activate
+.venvs/openff-dev/bin/python -m pip install -r benchmarks/MolecularMechanics/requirements.txt
+./.venvs/openff-dev/bin/python scripts/bootstrap/verify_openff_dev.py --repo-root .
+```
 
-conda activate openff-dev
-python -m pip install -r benchmarks/MolecularMechanics/requirements.txt
+`openff-dev` is intentionally kept as a special runtime: the OpenFF stack is not fully reproducible with `uv` alone as of 2026.
+
+The repository bootstrap installs that runtime into `.venvs/openff-dev` with `mamba`/`conda`, then runs a smoke verification:
+
+```bash
+bash scripts/bootstrap/install_openff_dev.sh
 ```
 
 Notes:
@@ -109,11 +108,11 @@ Notes:
 - `benchmarks/MolecularMechanics/requirements.txt`
   - contains the Python-level dependencies
 - `rdkit`, `openmm`, and `ambertools`
-  - are better installed through conda
+  - still come from the `mamba`/`conda-forge` side of the bootstrap
 - For manual task execution
-  - `openff-dev` is enough
+  - `.venvs/openff-dev` is enough
 - For `frontier_eval`
-  - the framework process stays in `frontier-eval-2`
+  - the framework process stays in `frontier-eval-driver`
   - the benchmark evaluation process switches to `openff-dev`
 
 ## Frontier Eval (Unified)
@@ -130,7 +129,7 @@ Shortcut task names:
 
 These timings were measured on `2026-03-16` with:
 
-- `conda run -n frontier-eval-2 python -m frontier_eval ...`
+- `.venvs/frontier-eval-driver/bin/python -m frontier_eval ...`
 - `algorithm=openevolve`
 - `algorithm.iterations=0`
 - benchmark runtime environment `openff-dev`
@@ -138,17 +137,17 @@ These timings were measured on `2026-03-16` with:
 Quick runs:
 
 ```bash
-conda run -n frontier-eval-2 python -m frontier_eval \
+.venvs/frontier-eval-driver/bin/python -m frontier_eval \
   task=molecular_mechanics_weighted_parameter_coverage \
   algorithm=openevolve \
   algorithm.iterations=0
 
-conda run -n frontier-eval-2 python -m frontier_eval \
+.venvs/frontier-eval-driver/bin/python -m frontier_eval \
   task=molecular_mechanics_diverse_conformer_portfolio \
   algorithm=openevolve \
   algorithm.iterations=0
 
-conda run -n frontier-eval-2 python -m frontier_eval \
+.venvs/frontier-eval-driver/bin/python -m frontier_eval \
   task=molecular_mechanics_torsion_profile_fitting \
   algorithm=openevolve \
   algorithm.iterations=0
@@ -157,10 +156,10 @@ conda run -n frontier-eval-2 python -m frontier_eval \
 Equivalent explicit unified command:
 
 ```bash
-conda run -n frontier-eval-2 python -m frontier_eval \
+.venvs/frontier-eval-driver/bin/python -m frontier_eval \
   task=unified \
   task.benchmark=MolecularMechanics/torsion_profile_fitting \
-  task.runtime.conda_env=openff-dev \
+  task.runtime.python_path=uv-env:openff-dev \
   algorithm=openevolve \
   algorithm.iterations=0
 ```

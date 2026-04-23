@@ -1,7 +1,0 @@
-channels:
-  - conda-forge
-dependencies:
-  - python=__PYTHON_VERSION__
-  - pip
-  - pip:
-      - -r __ROOT__/benchmarks/SustainableDataCenterControl/requirements.txt

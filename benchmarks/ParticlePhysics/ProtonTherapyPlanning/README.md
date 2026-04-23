@@ -14,13 +14,12 @@ For detailed physical and mathematical models, objective functions, and I/O form
 
 ## 2. Local Run
 
-After preparing the `frontier-eval-2` environment, you can run the benchmark directly from the task directory:
+After preparing the `frontier-eval-driver` environment, you can run the benchmark directly from the task directory:
 
 ```bash
-conda activate frontier-eval-2
 cd benchmarks/ParticlePhysics/ProtonTherapyPlanning
-python baseline/solution.py
-python verification/evaluator.py plan.json
+../../../.venvs/frontier-eval-driver/bin/python baseline/solution.py
+../../../.venvs/frontier-eval-driver/bin/python verification/evaluator.py plan.json
 ```
 
 `verification/requirements.txt` currently only requires `numpy>=1.24.0`.
@@ -38,15 +37,13 @@ This task is registered in `frontier_eval` as `proton_therapy_planning`.
 From the repository root, the standard compatibility check is:
 
 ```bash
-conda activate frontier-eval-2
-python -m frontier_eval task=proton_therapy_planning algorithm=openevolve algorithm.iterations=0
+.venvs/frontier-eval-driver/bin/python -m frontier_eval task=proton_therapy_planning algorithm=openevolve algorithm.iterations=0
 ```
 
 After completing the framework-level `.env` or model configuration described in [frontier_eval/README.md](../../../frontier_eval/README.md), you can start a real search by increasing `algorithm.iterations`, for example:
 
 ```bash
-conda activate frontier-eval-2
-python -m frontier_eval task=proton_therapy_planning algorithm=openevolve algorithm.iterations=10
+.venvs/frontier-eval-driver/bin/python -m frontier_eval task=proton_therapy_planning algorithm=openevolve algorithm.iterations=10
 ```
 
 ## 4. Evaluation Metrics

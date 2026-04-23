@@ -1,27 +1,16 @@
 #!/usr/bin/env bash
-# ------------------------------------------------------------
-# Frontier-Eng init script
-# ------------------------------------------------------------
-# This script bootstraps the conda driver environment and installs
-# all required Python packages. It now includes:
-#   • Automatic detection of common conda installation paths.
-#   • Non-interactive acceptance of the Conda Terms-of-Service.
-#   • Export of PYTHONNOUSERSITE=1 to guarantee a clean, isolated
-#     Python environment (important for reproducibility).
-# ------------------------------------------------------------
 set -euo pipefail
-
-# One-shot bootstrap: conda driver env + frontier_eval deps.
-# Optional (TTY): prompts to fill .env API fields.
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$ROOT"
 
-ENV_NAME="frontier-eval-2"
-PYTHON_VERSION="3.12"
+source "$ROOT/scripts/env/lib_uv_env.sh"
 
-# Export isolation flag early
-export PYTHONNOUSERSITE=1
+ENV_NAME="${ENV_NAME:-frontier-eval-driver}"
+MANIFEST="${MANIFEST:-$ROOT/scripts/env/specs/frontier-eval-driver.json}"
+PYTHONNOUSERSITE=1
+export PYTHONNOUSERSITE
+
 prompt_yn() {
   local prompt="$1"
   local def="${2:-n}"
@@ -40,7 +29,9 @@ prompt_yn() {
 _fe_patch_env_var() {
   local key="$1"
   local val_file="$2"
-  conda run -n "$ENV_NAME" python - "$ROOT/.env" "$key" "$val_file" <<'PY'
+  local driver_python
+  driver_python="$(uv_env_python "$ROOT" "$ENV_NAME")"
+  "$driver_python" - "$ROOT/.env" "$key" "$val_file" <<'PY'
 import sys
 from pathlib import Path
 
@@ -69,81 +60,41 @@ else:
 PY
 }
 
-if ! command -v conda >/dev/null 2>&1; then
-  # Try to auto-detect common conda paths
-  if [[ -f "$HOME/miniconda3/bin/conda" ]]; then
-    export PATH="$HOME/miniconda3/bin:$PATH"
-  elif [[ -f "$HOME/anaconda3/bin/conda" ]]; then
-    export PATH="$HOME/anaconda3/bin:$PATH"
-  elif [[ -f "/opt/conda/bin/conda" ]]; then
-    export PATH="/opt/conda/bin:$PATH"
-  else
-    cat >&2 <<'EOF'
-conda not found.
-
-Install Miniconda/Anaconda first and ensure it is in your PATH.
-EOF
-    exit 127
-  fi
-fi
-
-# Try to accept Conda ToS for Anaconda defaults if running matching conda versions
-conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main >/dev/null 2>&1 || true
-conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r >/dev/null 2>&1 || true
+ensure_uv_in_path
 
 echo ""
-echo "== Frontier-Eng init: conda driver + framework (env: $ENV_NAME) =="
-echo "    This env runs python -m frontier_eval. Per-benchmark runtimes are separate — see frontier_eval/README.md."
-echo "    Agent skill sources (no installer): .claude/skills/"
+echo "== Frontier-Eng init: uv driver + framework (env: $ENV_NAME) =="
+echo "    This environment runs python -m frontier_eval."
+echo "    Task runtimes live under $(uv_envs_dir "$ROOT") — see frontier_eval/README.md."
 echo ""
 
-# 1) Create (or update) the environment.
-echo "[1/4] Conda environment (Python $PYTHON_VERSION)"
-ENV_EXISTS=0
-if conda env list | awk '!/^#/{print $1}' | grep -qx "$ENV_NAME"; then
-  ENV_EXISTS=1
-fi
+echo "[1/3] Create or update the driver environment"
+python3 "$ROOT/scripts/env/ensure_uv_env.py" \
+  "$MANIFEST" \
+  --root "$ROOT" \
+  --envs-dir "$(uv_envs_dir "$ROOT")"
 
-if [[ "$ENV_EXISTS" -eq 0 ]]; then
-  echo "+ conda create -n $ENV_NAME python=$PYTHON_VERSION -y"
-  conda create -n "$ENV_NAME" "python=$PYTHON_VERSION" -y
+echo ""
+echo "[2/3] Check optional system tools"
+if command -v octave >/dev/null 2>&1; then
+  echo "Octave: found ($(command -v octave))"
 else
-  echo "+ conda install -n $ENV_NAME python=$PYTHON_VERSION -y"
-  conda install -n "$ENV_NAME" "python=$PYTHON_VERSION" -y
+  echo "Octave: not found"
+  echo "  Install it with: bash scripts/bootstrap/install_host_deps.sh --octave"
 fi
 
 echo ""
-echo "[2/4] Octave (conda-forge: octave, octave-signal, octave-control — used by some validators, e.g. astrodynamics)"
-if [[ "$(uname -m)" == "aarch64" ]]; then
-  echo "+ conda install -n $ENV_NAME -c conda-forge octave -y (Skipping signal/control for aarch64 compatibility)"
-  conda install -n "$ENV_NAME" -c conda-forge octave -y
-else
-  echo "+ conda install -n $ENV_NAME -c conda-forge octave octave-signal octave-control -y"
-  conda install -n "$ENV_NAME" -c conda-forge octave octave-signal octave-control -y
-fi
-
-# 3) Install Python dependencies.
-echo ""
-echo "[3/4] Python packages (frontier_eval/requirements.txt — Hydra driver, openevolve, torch stack, etc.)"
-echo "+ conda run -n $ENV_NAME python -m pip install -U pip"
-conda run -n "$ENV_NAME" python -m pip install -U pip
-echo "+ conda run -n $ENV_NAME python -m pip install -r frontier_eval/requirements.txt"
-conda run -n "$ENV_NAME" python -m pip install -r frontier_eval/requirements.txt
-
-# 4) Create a local .env (ignored by git) for OpenAI-compatible API settings.
-echo ""
-echo "[4/4] Local .env (OpenAI-compatible API; not committed to git)"
+echo "[3/3] Local .env (OpenAI-compatible API; not committed to git)"
 if [[ ! -f "$ROOT/.env" && -f "$ROOT/.env.example" ]]; then
   echo "+ cp .env.example .env"
   cp "$ROOT/.env.example" "$ROOT/.env"
-  echo "    Created .env from .env.example — edit for evolution runs (API key / base URL)."
+  echo "    Created .env from .env.example."
 elif [[ -f "$ROOT/.env" ]]; then
   echo "    .env already present — left unchanged."
 else
   echo "    No .env.example; skip .env bootstrap."
 fi
 
-# 5) Optional .env prompts (skip with n / Enter).
 if [[ -t 0 ]] && [[ -t 1 ]]; then
   echo ""
   echo "== Optional: set API keys in .env =="
@@ -181,14 +132,24 @@ cat <<EOF
 
 == Done ==
 
-Driver env:
-  conda activate $ENV_NAME
+Activate the driver environment:
+  source .venvs/$ENV_NAME/bin/activate
 
-Quick smoke (no benchmark deps):
-  python -m frontier_eval algorithm.iterations=0
+Quick smoke (no benchmark-local deps):
+  python -m frontier_eval task=smoke algorithm=openevolve algorithm.iterations=0
 
-Evolution (algorithm.iterations > 0) needs OPENAI_API_KEY (and optional OPENAI_API_BASE) in .env.
+Per-benchmark setup:
+  frontier_eval/README.md
 
-Per-benchmark setup: frontier_eval/README.md
-Agent skill sources (point your agent or copy into your tool): .claude/skills/
+Host dependency bootstrap:
+  bash scripts/bootstrap/install_host_deps.sh --octave
+  bash scripts/bootstrap/install_host_deps.sh --docker --configure-docker-group
+
+Benchmark / algorithm asset bootstrap:
+  python scripts/bootstrap/fetch_task_assets.py --list
+  python scripts/bootstrap/fetch_task_assets.py --target v1-baseline-assets
+  python scripts/bootstrap/fetch_task_assets.py --target algorithms
+
+Special runtime bootstrap:
+  bash scripts/bootstrap/install_openff_dev.sh
 EOF

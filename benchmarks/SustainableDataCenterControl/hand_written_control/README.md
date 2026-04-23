@@ -6,6 +6,12 @@ This subtask asks you to write a deterministic control policy for the three orig
 > SustainDC relies on the `dc-rl` library. The `sustaindc/` directory is an empty placeholder. Run this before evaluation:
 > `git clone https://github.com/HewlettPackard/dc-rl.git benchmarks/SustainableDataCenterControl/hand_written_control/sustaindc`
 
+Or use the repository bootstrap helper:
+
+```bash
+python scripts/bootstrap/fetch_task_assets.py --target sustaindc
+```
+
 - `agent_ls`: load shifting
 - `agent_dc`: cooling control
 - `agent_bat`: battery dispatch
@@ -42,15 +48,14 @@ benchmarks/SustainableDataCenterControl/hand_written_control/
 From repository root:
 
 ```bash
-conda create -n sustaindc python=3.10 -y
-conda run -n sustaindc python -m pip install -r benchmarks/SustainableDataCenterControl/requirements.txt
+bash init.sh
+RUN_VALIDATION=0 bash scripts/env/setup_v1_task_envs.sh
 ```
 
 For unified runs, also prepare the evaluation framework environment:
 
 ```bash
-conda create -n frontier-eval-2 python=3.12 -y
-conda run -n frontier-eval-2 python -m pip install -r frontier_eval/requirements.txt
+source .venvs/frontier-eval-driver/bin/activate
 ```
 
 ## What To Edit
@@ -66,14 +71,14 @@ Keep `decide_actions(observations) -> dict` working. `reset_policy()` is optiona
 Run from repository root:
 
 ```bash
-conda run -n sustaindc python benchmarks/SustainableDataCenterControl/hand_written_control/verification/evaluate.py
+.venvs/frontier-v1-sustaindc/bin/python benchmarks/SustainableDataCenterControl/hand_written_control/verification/evaluate.py
 ```
 
 Or from this task directory:
 
 ```bash
 cd benchmarks/SustainableDataCenterControl/hand_written_control
-conda run -n sustaindc python verification/evaluate.py
+../../../.venvs/frontier-v1-sustaindc/bin/python verification/evaluate.py
 ```
 
 Validated runtime on the provided setup: about `19.8s`.
@@ -87,10 +92,10 @@ This task is integrated through the unified task metadata under `frontier_eval/`
 Run from repository root:
 
 ```bash
-conda run -n frontier-eval-2 python -m frontier_eval \
+python -m frontier_eval \
   task=unified \
   task.benchmark=SustainableDataCenterControl/hand_written_control \
-  task.runtime.conda_env=sustaindc \
+  task.runtime.env_name=frontier-v1-sustaindc \
   algorithm=openevolve \
   algorithm.iterations=0
 ```
@@ -109,10 +114,10 @@ cd benchmarks/SustainableDataCenterControl/hand_written_control
 git clone https://github.com/HewlettPackard/dc-rl.git sustaindc_fresh
 git -C sustaindc_fresh checkout a92b475
 
-conda run -n sustaindc python -m pip install -r sustaindc_fresh/requirements.txt
+.venvs/frontier-v1-sustaindc/bin/python -m pip install -r sustaindc_fresh/requirements.txt
 git -C sustaindc_fresh apply patches/sustaindc_optional_runtime.patch
 
-conda run -n sustaindc python verification/evaluate.py --sustaindc-root sustaindc_fresh
+.venvs/frontier-v1-sustaindc/bin/python verification/evaluate.py --sustaindc-root sustaindc_fresh
 ```
 
 ## Why The Patch Exists

@@ -2,4 +2,4 @@ name: unified
 benchmark: MolecularMechanics/torsion_profile_fitting
 
 runtime:
-  conda_env: openff-dev
+  env_name: openff-dev

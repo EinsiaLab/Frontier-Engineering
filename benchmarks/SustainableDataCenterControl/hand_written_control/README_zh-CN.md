@@ -6,6 +6,12 @@
 > SustainDC 依赖前置的 `dc-rl` 库。本仓库的 `sustaindc` 文件夹是放置依赖的占位符。请在运行前执行：
 > `git clone https://github.com/HewlettPackard/dc-rl.git benchmarks/SustainableDataCenterControl/hand_written_control/sustaindc`
 
+或者直接使用仓库里的 bootstrap 入口：
+
+```bash
+python scripts/bootstrap/fetch_task_assets.py --target sustaindc
+```
+
 - `agent_ls`：负载迁移
 - `agent_dc`：冷却控制
 - `agent_bat`：电池调度
@@ -42,15 +48,14 @@ benchmarks/SustainableDataCenterControl/hand_written_control/
 在仓库根目录执行：
 
 ```bash
-conda create -n sustaindc python=3.10 -y
-conda run -n sustaindc python -m pip install -r benchmarks/SustainableDataCenterControl/requirements.txt
+bash init.sh
+RUN_VALIDATION=0 bash scripts/env/setup_v1_task_envs.sh
 ```
 
 如果要运行 unified task，还需要准备评测框架环境：
 
 ```bash
-conda create -n frontier-eval-2 python=3.12 -y
-conda run -n frontier-eval-2 python -m pip install -r frontier_eval/requirements.txt
+source .venvs/frontier-eval-driver/bin/activate
 ```
 
 ## 你需要修改哪里
@@ -66,14 +71,14 @@ conda run -n frontier-eval-2 python -m pip install -r frontier_eval/requirements
 从仓库根目录运行：
 
 ```bash
-conda run -n sustaindc python benchmarks/SustainableDataCenterControl/hand_written_control/verification/evaluate.py
+.venvs/frontier-v1-sustaindc/bin/python benchmarks/SustainableDataCenterControl/hand_written_control/verification/evaluate.py
 ```
 
 或者先进入子任务目录再运行：
 
 ```bash
 cd benchmarks/SustainableDataCenterControl/hand_written_control
-conda run -n sustaindc python verification/evaluate.py
+../../../.venvs/frontier-v1-sustaindc/bin/python verification/evaluate.py
 ```
 
 在已验证环境上的实测耗时约为 `19.8s`。
@@ -87,10 +92,10 @@ conda run -n sustaindc python verification/evaluate.py
 从仓库根目录运行：
 
 ```bash
-conda run -n frontier-eval-2 python -m frontier_eval \
+python -m frontier_eval \
   task=unified \
   task.benchmark=SustainableDataCenterControl/hand_written_control \
-  task.runtime.conda_env=sustaindc \
+  task.runtime.env_name=frontier-v1-sustaindc \
   algorithm=openevolve \
   algorithm.iterations=0
 ```
@@ -109,10 +114,10 @@ cd benchmarks/SustainableDataCenterControl/hand_written_control
 git clone https://github.com/HewlettPackard/dc-rl.git sustaindc_fresh
 git -C sustaindc_fresh checkout a92b475
 
-conda run -n sustaindc python -m pip install -r sustaindc_fresh/requirements.txt
+.venvs/frontier-v1-sustaindc/bin/python -m pip install -r sustaindc_fresh/requirements.txt
 git -C sustaindc_fresh apply patches/sustaindc_optional_runtime.patch
 
-conda run -n sustaindc python verification/evaluate.py --sustaindc-root sustaindc_fresh
+.venvs/frontier-v1-sustaindc/bin/python verification/evaluate.py --sustaindc-root sustaindc_fresh
 ```
 
 ## 为什么需要这个 Patch

@@ -1,5 +1,3 @@
 name: unified
 benchmark: StructuralOptimization/PyMOTOSIMPCompliance
 metadata_dir: frontier_eval
-runtime:
-  use_conda_run: false

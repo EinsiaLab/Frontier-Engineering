@@ -14,17 +14,15 @@ All commands below are repository-relative and avoid absolute paths so the setup
 
 Verified setup:
 
-- `sustaindc` environment for direct verification and the unified benchmark runtime
-- `frontier-eval-2` environment for `python -m frontier_eval`
+- `.venvs/frontier-v1-sustaindc` for direct verification and benchmark runtime
+- `.venvs/frontier-eval-driver` for `python -m frontier_eval`
 
 Example setup from repository root:
 
 ```bash
-conda create -n sustaindc python=3.10 -y
-conda create -n frontier-eval-2 python=3.12 -y
-
-conda run -n sustaindc python -m pip install -r benchmarks/SustainableDataCenterControl/requirements.txt
-conda run -n frontier-eval-2 python -m pip install -r frontier_eval/requirements.txt
+bash init.sh
+RUN_VALIDATION=0 bash scripts/env/setup_v1_task_envs.sh
+source .venvs/frontier-eval-driver/bin/activate
 ```
 
 `benchmarks/SustainableDataCenterControl/requirements.txt` currently delegates to the vendored upstream requirement set under `hand_written_control/sustaindc/requirements.txt`.
@@ -34,14 +32,14 @@ conda run -n frontier-eval-2 python -m pip install -r frontier_eval/requirements
 - `hand_written_control/`
   - direct verification:
     ```bash
-    conda run -n sustaindc python benchmarks/SustainableDataCenterControl/hand_written_control/verification/evaluate.py
+    .venvs/frontier-v1-sustaindc/bin/python benchmarks/SustainableDataCenterControl/hand_written_control/verification/evaluate.py
     ```
   - unified run:
     ```bash
-    conda run -n frontier-eval-2 python -m frontier_eval \
+    python -m frontier_eval \
       task=unified \
       task.benchmark=SustainableDataCenterControl/hand_written_control \
-      task.runtime.conda_env=sustaindc \
+      task.runtime.env_name=frontier-v1-sustaindc \
       algorithm=openevolve \
       algorithm.iterations=0
     ```

@@ -1,0 +1,115 @@
+{
+  "bundles": [
+    {
+      "id": "car_aerodynamics_sensing",
+      "description": "PhySense code, dataset, checkpoint, and reference points for Aerodynamics/CarAerodynamicsSensing.",
+      "tags": [
+        "Aerodynamics/CarAerodynamicsSensing",
+        "car-aero",
+        "v1-baseline-assets"
+      ],
+      "steps": [
+        {
+          "type": "git_clone",
+          "repo": "https://github.com/thuml/PhySense.git",
+          "dest": "third_party/PhySense"
+        },
+        {
+          "type": "gdrive_folder",
+          "url": "https://drive.google.com/drive/folders/1Xt395uC-RreWQ_bh5v_Bu-AOwV6SRt_w?usp=share_link",
+          "dest": "benchmarks/Aerodynamics/CarAerodynamicsSensing/data/physense_car_data",
+          "expected_paths": [
+            "pressure_files",
+            "velocity_files"
+          ]
+        },
+        {
+          "type": "gdrive_folder",
+          "url": "https://drive.google.com/drive/folders/1kODTzH5n_njQ7lgL-2i2aXbt33UjGKk9?usp=sharing",
+          "dest": "benchmarks/Aerodynamics/CarAerodynamicsSensing/data/physense_car_ckpt",
+          "expected_any": [
+            "physense_transolver_car_base.pth",
+            "physense_transolver_car_best_base.pth"
+          ]
+        },
+        {
+          "type": "command",
+          "cwd": "benchmarks/Aerodynamics/CarAerodynamicsSensing",
+          "argv": [
+            "{env_python:frontier-v1-kernel}",
+            "references/extract_car_mesh.py",
+            "--data-dir",
+            "data/physense_car_data",
+            "--output",
+            "references/car_surface_points.npy"
+          ],
+          "outputs": [
+            "references/car_surface_points.npy"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sustaindc",
+      "description": "Upstream dc-rl checkout for SustainableDataCenterControl when the vendored tree is absent.",
+      "tags": [
+        "SustainableDataCenterControl",
+        "sustaindc",
+        "v1-baseline-assets"
+      ],
+      "steps": [
+        {
+          "type": "git_clone",
+          "repo": "https://github.com/HewlettPackard/dc-rl.git",
+          "dest": "benchmarks/SustainableDataCenterControl/hand_written_control/sustaindc",
+          "checkout": "a92b475",
+          "patch": "benchmarks/SustainableDataCenterControl/hand_written_control/patches/sustaindc_optional_runtime.patch"
+        }
+      ]
+    },
+    {
+      "id": "abmcts",
+      "description": "Local TreeQuest checkout for AB-MCTS runs.",
+      "tags": [
+        "abmcts",
+        "algorithms"
+      ],
+      "steps": [
+        {
+          "type": "git_clone",
+          "repo": "https://github.com/SakanaAI/treequest.git",
+          "dest": "third_party/treequest"
+        },
+        {
+          "type": "editable_install",
+          "env_name": "frontier-eval-driver",
+          "project": "third_party/treequest"
+        }
+      ]
+    },
+    {
+      "id": "shinkaevolve",
+      "description": "Local ShinkaEvolve checkout, local patch, and editable install into the driver environment.",
+      "tags": [
+        "shinkaevolve",
+        "algorithms"
+      ],
+      "steps": [
+        {
+          "type": "git_clone",
+          "repo": "https://github.com/SakanaAI/ShinkaEvolve.git",
+          "dest": "third_party/ShinkaEvolve"
+        },
+        {
+          "type": "shinkaevolve_patch",
+          "repo": "third_party/ShinkaEvolve"
+        },
+        {
+          "type": "editable_install",
+          "env_name": "frontier-eval-driver",
+          "project": "third_party/ShinkaEvolve"
+        }
+      ]
+    }
+  ]
+}

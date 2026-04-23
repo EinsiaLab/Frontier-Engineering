@@ -70,13 +70,13 @@ Each subtask now includes benchmark-local unified metadata under:
 - `<subtask>/frontier_eval/constraints.txt`
 - `<subtask>/frontier_eval/run_eval.py`
 
-Run unified task from repository root (driver in `frontier-eval-2`, benchmark runtime in `stock`):
+Run unified task from repository root (driver in `.venvs/frontier-eval-driver`, benchmark runtime in `.venvs/frontier-v1-main`):
 
 ```bash
-/path/to/frontier-eval-2/bin/python -m frontier_eval \
+.venvs/frontier-eval-driver/bin/python -m frontier_eval \
   task=unified \
   task.benchmark=InventoryOptimization/tree_gsm_safety_stock \
-  task.runtime.conda_env=stock \
+  task.runtime.env_name=frontier-v1-main \
   algorithm=openevolve \
   algorithm.iterations=0
 ```
@@ -85,17 +85,17 @@ Run all 5 subtasks:
 
 ```bash
 for d in tree_gsm_safety_stock general_meio joint_replenishment finite_horizon_dp disruption_eoqd; do
-  /path/to/frontier-eval-2/bin/python -m frontier_eval \
+  .venvs/frontier-eval-driver/bin/python -m frontier_eval \
     task=unified \
     task.benchmark=InventoryOptimization/$d \
-    task.runtime.conda_env=stock \
+    task.runtime.env_name=frontier-v1-main \
     algorithm=openevolve \
     algorithm.iterations=0
 done
 ```
 
 ## Runtime Notes
-Measured on local verification run (`stock` env), one evaluation per subtask:
+Measured on local verification run (`frontier-v1-main` runtime), one evaluation per subtask:
 
 - `tree_gsm_safety_stock`: about 3-4s
 - `general_meio`: about 20-25s (longer task, simulation-heavy)

@@ -28,16 +28,16 @@ pip install -r ../requirements.txt
 From repository root:
 
 ```bash
-conda run -n pyportfolioopt python benchmarks/PyPortfolioOpt/cvar_stress_control/verification/evaluate.py
+.venvs/frontier-v1-main/bin/python benchmarks/PyPortfolioOpt/cvar_stress_control/verification/evaluate.py
 ```
 
 Run with `frontier_eval` unified task:
 
 ```bash
-conda run -n frontier-eval-2 python -m frontier_eval \
+.venvs/frontier-eval-driver/bin/python -m frontier_eval \
   task=unified \
   task.benchmark=PyPortfolioOpt/cvar_stress_control \
-  task.runtime.conda_env=pyportfolioopt \
+  task.runtime.env_name=frontier-v1-main \
   algorithm.iterations=0
 ```
 

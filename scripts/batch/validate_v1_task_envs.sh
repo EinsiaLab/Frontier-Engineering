@@ -1,23 +1,30 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT"
 
+source "$ROOT/scripts/env/lib_uv_env.sh"
+
 DRIVER_PY="${DRIVER_PY:-}"
-DRIVER_ENV="${DRIVER_ENV:-frontier-eval-2}"
+DRIVER_ENV="${DRIVER_ENV:-frontier-eval-driver}"
 V1_MATRIX="${V1_MATRIX:-frontier_eval/conf/batch/v1.yaml}"
 GPU_DEVICES="${GPU_DEVICES:-0}"
 RUN_BASE_DIR="${RUN_BASE_DIR:-runs/batch_validation}"
+ENGDESIGN_EVAL_MODE="${ENGDESIGN_EVAL_MODE:-auto}"
+ENGDESIGN_DOCKER_IMAGE="${ENGDESIGN_DOCKER_IMAGE:-engdesign-sim:frontier-eval}"
 
 if [[ -n "$DRIVER_PY" ]]; then
   DRIVER_CMD=("$DRIVER_PY")
 else
-  if ! command -v conda >/dev/null 2>&1; then
-    echo "conda not found; set DRIVER_PY explicitly or make conda available in PATH" >&2
+  ensure_uv_in_path
+  DRIVER_PY="$(uv_env_python "$ROOT" "$DRIVER_ENV")"
+  if [[ ! -x "$DRIVER_PY" ]]; then
+    echo "driver python not found: $DRIVER_PY" >&2
+    echo "Run bash init.sh or bash scripts/env/setup_v1_task_envs.sh first." >&2
     exit 127
   fi
-  DRIVER_CMD=(conda run -n "$DRIVER_ENV" python)
+  DRIVER_CMD=("$DRIVER_PY")
 fi
 
 run_driver() {
@@ -27,14 +34,13 @@ run_driver() {
 run_cpu_batch() {
   run_driver -m frontier_eval.batch \
     --matrix "$V1_MATRIX" \
-    --exclude-tasks \
-      Robotics/QuadrupedGaitOptimization \
-      Robotics/RobotArmCycleTimeOptimization \
-      Aerodynamics/CarAerodynamicsSensing \
-      KernelEngineering/MLA \
-      KernelEngineering/TriMul \
-      KernelEngineering/FlashAttention \
-      engdesign \
+    --exclude-tasks Robotics/QuadrupedGaitOptimization \
+    --exclude-tasks Robotics/RobotArmCycleTimeOptimization \
+    --exclude-tasks Aerodynamics/CarAerodynamicsSensing \
+    --exclude-tasks KernelEngineering/MLA \
+    --exclude-tasks KernelEngineering/TriMul \
+    --exclude-tasks KernelEngineering/FlashAttention \
+    --exclude-tasks engdesign \
     --base-dir "$RUN_BASE_DIR" \
     --override algorithm.iterations=0
 }
@@ -61,6 +67,17 @@ run_kernel_batch() {
     --override algorithm.iterations=0
 }
 
+run_engdesign_batch() {
+  ENGDESIGN_EVAL_MODE="$ENGDESIGN_EVAL_MODE" \
+  ENGDESIGN_DOCKER_IMAGE="$ENGDESIGN_DOCKER_IMAGE" \
+    run_driver -m frontier_eval.batch \
+    --matrix "$V1_MATRIX" \
+    --tasks engdesign \
+    --base-dir "$RUN_BASE_DIR" \
+    --override algorithm.iterations=0
+}
+
 run_cpu_batch
 run_gpu_batch
 run_kernel_batch
+run_engdesign_batch

@@ -14,13 +14,12 @@
 
 ## 2. 本地运行 (Local Run)
 
-在准备好 `frontier-eval-2` 环境后，你可以直接在任务目录下运行基准测试：
+在准备好 `frontier-eval-driver` 环境后，你可以直接在任务目录下运行基准测试：
 
 ```bash
-conda activate frontier-eval-2
 cd benchmarks/ParticlePhysics/ProtonTherapyPlanning
-python baseline/solution.py
-python verification/evaluator.py plan.json
+../../../.venvs/frontier-eval-driver/bin/python baseline/solution.py
+../../../.venvs/frontier-eval-driver/bin/python verification/evaluator.py plan.json
 ```
 
 `verification/requirements.txt` 目前仅依赖 `numpy>=1.24.0`。
@@ -38,15 +37,13 @@ python verification/evaluator.py plan.json
 在仓库根目录下，运行标准的兼容性检查命令：
 
 ```bash
-conda activate frontier-eval-2
-python -m frontier_eval task=proton_therapy_planning algorithm=openevolve algorithm.iterations=0
+.venvs/frontier-eval-driver/bin/python -m frontier_eval task=proton_therapy_planning algorithm=openevolve algorithm.iterations=0
 ```
 
 在完成 [frontier_eval/README.md](../../../frontier_eval/README.md) 中描述的框架级 `.env` 或模型配置后，你可以通过增加 `algorithm.iterations` 来启动真实的搜索，例如：
 
 ```bash
-conda activate frontier-eval-2
-python -m frontier_eval task=proton_therapy_planning algorithm=openevolve algorithm.iterations=10
+.venvs/frontier-eval-driver/bin/python -m frontier_eval task=proton_therapy_planning algorithm=openevolve algorithm.iterations=10
 ```
 
 ## 4. 评估指标

@@ -187,6 +187,8 @@ class ShinkaEvolveAlgorithm(Algorithm):
         except Exception as e:  # pragma: no cover
             raise RuntimeError(
                 "ShinkaEvolve is not importable.\n"
+                "Bootstrap the local checkout and editable install with:\n"
+                "  python scripts/bootstrap/fetch_task_assets.py --target shinkaevolve\n"
                 "Install it from the official repo (the PyPI package `shinka` is NOT ShinkaEvolve).\n"
                 "Recommended (editable VCS install):\n"
                 "  pip install -e 'git+https://github.com/SakanaAI/ShinkaEvolve.git#egg=shinka'\n"
@@ -318,21 +320,6 @@ class ShinkaEvolveAlgorithm(Algorithm):
         }
         if job_type == "local":
             job_kwargs["time"] = _hms_from_seconds(evaluator_timeout_s)
-
-            # Shinka's local scheduler launches evaluations via `python ...` (PATH lookup).
-            # If `python` in PATH differs from the current interpreter (e.g., when running
-            # Frontier Eval via `conda run ...` without activating the env), evaluations may
-            # run in the wrong environment and miss deps (e.g., `anndata`), causing `valid=0`.
-            # Auto-pin the conda env unless the user explicitly overrides it.
-            if "conda_env" not in job_overrides:
-                conda_env = str(os.environ.get("CONDA_DEFAULT_ENV", "") or "").strip()
-                python_in_path = shutil.which("python")
-                if conda_env and python_in_path:
-                    try:
-                        if Path(python_in_path).resolve() != Path(sys.executable).resolve():
-                            job_kwargs["conda_env"] = conda_env
-                    except Exception:
-                        job_kwargs["conda_env"] = conda_env
         _deep_merge_dict(job_kwargs, job_overrides)
         job_config = self._se_LocalJobConfig(**job_kwargs)
 

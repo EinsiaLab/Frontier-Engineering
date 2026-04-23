@@ -38,11 +38,12 @@ The code above will use `submission.custom_kernel` for evaluation. You can choos
 
 ```bash
 OPENAI_MODEL=qwen/qwen3-coder-next \
-python -m frontier_eval \
-task=unified task.benchmark=KernelEngineering/TriMul \
-task.runtime.conda_env=kernel \
-algorithm.iterations=20 \
-algorithm.oe.evaluator.timeout=1800
+.venvs/frontier-eval-driver/bin/python -m frontier_eval \
+  task=unified \
+  task.benchmark=KernelEngineering/TriMul \
+  task.runtime.env_name=frontier-v1-kernel \
+  algorithm.iterations=20 \
+  algorithm.oe.evaluator.timeout=1800
 ```
 
 Backwards-compatible alias (routes to the same unified benchmark via config): `task=trimul`.

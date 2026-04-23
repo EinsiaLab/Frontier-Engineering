@@ -1,0 +1,16 @@
+{
+  "name": "frontier-eval-driver",
+  "python": "3.12",
+  "requirements": [
+    "frontier_eval/requirements.txt",
+    "benchmarks/ComputerSystems/DuckDBWorkloadOptimization/verification/requirements.txt",
+    "benchmarks/PowerSystems/EV2GymSmartCharging/verification/requirements.txt"
+  ],
+  "packages": [],
+  "system_requirements": [
+    "octave"
+  ],
+  "notes": [
+    "Install GNU Octave separately if you plan to run Octave-backed validators such as Astrodynamics/MannedLunarLanding."
+  ]
+}

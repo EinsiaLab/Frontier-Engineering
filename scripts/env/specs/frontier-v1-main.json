@@ -1,0 +1,21 @@
+{
+  "name": "frontier-v1-main",
+  "python": "3.12",
+  "requirements": [
+    "frontier_eval/requirements.txt",
+    "benchmarks/PyPortfolioOpt/requirements.txt",
+    "benchmarks/Robotics/QuadrupedGaitOptimization/verification/requirements.txt",
+    "benchmarks/Robotics/RobotArmCycleTimeOptimization/verification/requirements.txt",
+    "benchmarks/Optics/requirements.txt"
+  ],
+  "packages": [
+    "mqt.bench",
+    "qiskit==2.3.1",
+    "stockpyl",
+    "job-shop-lib>=1.7,<2"
+  ],
+  "notes": [
+    "This runtime covers the default v1 CPU/GPU tasks.",
+    "Large model checkpoints or benchmark-local datasets still need to be prepared separately."
+  ]
+}

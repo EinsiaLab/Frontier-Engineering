@@ -70,13 +70,13 @@ done
 - `<子任务>/frontier_eval/constraints.txt`
 - `<子任务>/frontier_eval/run_eval.py`
 
-在仓库根目录运行（`frontier-eval-2` 作为驱动环境，`stock` 作为任务运行环境）：
+在仓库根目录运行（`.venvs/frontier-eval-driver` 作为驱动环境，`.venvs/frontier-v1-main` 作为任务运行环境）：
 
 ```bash
-/path/to/frontier-eval-2/bin/python -m frontier_eval \
+.venvs/frontier-eval-driver/bin/python -m frontier_eval \
   task=unified \
   task.benchmark=InventoryOptimization/tree_gsm_safety_stock \
-  task.runtime.conda_env=stock \
+  task.runtime.env_name=frontier-v1-main \
   algorithm=openevolve \
   algorithm.iterations=0
 ```
@@ -85,17 +85,17 @@ done
 
 ```bash
 for d in tree_gsm_safety_stock general_meio joint_replenishment finite_horizon_dp disruption_eoqd; do
-  /path/to/frontier-eval-2/bin/python -m frontier_eval \
+  .venvs/frontier-eval-driver/bin/python -m frontier_eval \
     task=unified \
     task.benchmark=InventoryOptimization/$d \
-    task.runtime.conda_env=stock \
+    task.runtime.env_name=frontier-v1-main \
     algorithm=openevolve \
     algorithm.iterations=0
 done
 ```
 
 ## 运行时长说明
-以下为本地 `stock` 环境单次评测耗时（近似值）：
+以下为本地 `frontier-v1-main` 运行时单次评测耗时（近似值）：
 
 - `tree_gsm_safety_stock`：约 3-4 秒
 - `general_meio`：约 20-25 秒（耗时较长，仿真较重）

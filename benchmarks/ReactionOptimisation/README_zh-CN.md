@@ -31,39 +31,34 @@
 
 已验证的配置：
 
-- `summit` 环境：用于 direct verification 和 unified task 的实际评测
-- `frontier-eval-2` 环境：用于运行 `python -m frontier_eval`
+- `.venvs/frontier-v1-summit`：用于 direct verification 和实际 benchmark 运行时
+- `.venvs/frontier-eval-driver`：用于运行 `python -m frontier_eval`
 
 在仓库根目录执行示例：
 
 ```bash
-conda create -n summit python=3.9
-conda create -n frontier-eval-2 python=3.12
-
-conda activate summit
-python -m pip install -r benchmarks/ReactionOptimisation/requirements.txt
-
-conda activate frontier-eval-2
-python -m pip install -r frontier_eval/requirements.txt
+bash init.sh
+RUN_VALIDATION=0 bash scripts/env/setup_v1_task_envs.sh
+source .venvs/frontier-eval-driver/bin/activate
 ```
 
-如果你想只用一个环境，也可以把这两个 `requirements.txt` 都安装到同一个 env 中。
+发布版矩阵会单独使用 `frontier-v1-summit` 作为运行时，因为这组任务相比默认 driver 环境更慢、也更容易受依赖影响。
 
 ## Direct Verification
 
 通用命令：
 
 ```bash
-conda run -n summit python benchmarks/ReactionOptimisation/<task>/verification/evaluate.py
+.venvs/frontier-v1-summit/bin/python benchmarks/ReactionOptimisation/<task>/verification/evaluate.py
 ```
 
 已验证命令：
 
 ```bash
-conda run -n summit python benchmarks/ReactionOptimisation/snar_multiobjective/verification/evaluate.py
-conda run -n summit python benchmarks/ReactionOptimisation/mit_case1_mixed/verification/evaluate.py
-conda run -n summit python benchmarks/ReactionOptimisation/reizman_suzuki_pareto/verification/evaluate.py
-conda run -n summit python benchmarks/ReactionOptimisation/dtlz2_pareto/verification/evaluate.py
+.venvs/frontier-v1-summit/bin/python benchmarks/ReactionOptimisation/snar_multiobjective/verification/evaluate.py
+.venvs/frontier-v1-summit/bin/python benchmarks/ReactionOptimisation/mit_case1_mixed/verification/evaluate.py
+.venvs/frontier-v1-summit/bin/python benchmarks/ReactionOptimisation/reizman_suzuki_pareto/verification/evaluate.py
+.venvs/frontier-v1-summit/bin/python benchmarks/ReactionOptimisation/dtlz2_pareto/verification/evaluate.py
 ```
 
 在已验证环境中的实测耗时：
@@ -84,10 +79,10 @@ conda run -n summit python benchmarks/ReactionOptimisation/dtlz2_pareto/verifica
 通用命令：
 
 ```bash
-conda run -n frontier-eval-2 python -m frontier_eval \
+python -m frontier_eval \
   task=unified \
   task.benchmark=ReactionOptimisation/<task> \
-  task.runtime.conda_env=summit \
+  task.runtime.python_path=uv-env:frontier-v1-summit \
   algorithm=openevolve \
   algorithm.iterations=0
 ```
@@ -95,7 +90,7 @@ conda run -n frontier-eval-2 python -m frontier_eval \
 可直接复制的单行示例：
 
 ```bash
-conda run -n frontier-eval-2 python -m frontier_eval task=unified task.benchmark=ReactionOptimisation/snar_multiobjective task.runtime.conda_env=summit algorithm=openevolve algorithm.iterations=0
+python -m frontier_eval task=unified task.benchmark=ReactionOptimisation/snar_multiobjective task.runtime.python_path=uv-env:frontier-v1-summit algorithm=openevolve algorithm.iterations=0
 ```
 
 已验证的 `task.benchmark`：
@@ -110,10 +105,9 @@ conda run -n frontier-eval-2 python -m frontier_eval task=unified task.benchmark
 补充说明：
 
 - `algorithm.iterations=0` 是框架适配验证，但它依然会对 `baseline/solution.py` 跑一次完整 benchmark 评测。
-- 在已验证环境中，这 4 个任务都能在默认 `300s` evaluator timeout 下完成。
-- 如果机器更慢，`snar_multiobjective` 和 `reizman_suzuki_pareto` 可以把 `algorithm.oe.evaluator.timeout` 提高到 `600`。
-- 如果失败的 run 里显示 `runtime_conda_env=frontier-eval-2`，而不是 `summit`，说明 shell 没有正确解析 `task.runtime.conda_env=summit` 这个 override。最常见的原因是在 `task.benchmark=...` 后面误加了一个 `>`，或者多行命令复制时断掉了。此时请直接使用上面的单行命令重试。
-- 可以通过 run 目录下的 `.hydra/overrides.yaml` 确认 override 是否真的生效，里面应当出现 `task.runtime.conda_env=summit`。
+- 发布版 `v1` 矩阵对 `snar_multiobjective`、`mit_case1_mixed`、`reizman_suzuki_pareto` 默认使用 `algorithm.oe.evaluator.timeout=600`。如果机器更慢，建议直接沿用这个设置。
+- 如果你不想使用简写，也可以把 `task.runtime.python_path=uv-env:frontier-v1-summit` 替换成绝对解释器路径 `.venvs/frontier-v1-summit/bin/python`。
+- 可以通过 run 目录下的 `.hydra/overrides.yaml` 确认 override 是否真的生效，里面应当出现 `task.runtime.python_path=uv-env:frontier-v1-summit`。
 
 ## 当前 Baseline 与 Reference
 

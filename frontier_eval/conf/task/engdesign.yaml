@@ -4,6 +4,5 @@ metadata_dir: frontier_eval
 
 runtime:
   # EngDesign benchmark uses docker by default in `benchmarks/EngDesign/frontier_eval/run_eval.sh`.
-  # Disable conda-run wrapping so the shell command can choose docker/local mode directly.
-  use_conda_run: false
+  # Keep shell execution explicit so the task-level wrapper can decide docker/local mode.
   shell: bash

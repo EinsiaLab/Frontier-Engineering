@@ -88,7 +88,7 @@ docker run --rm -v $(pwd)/submission.json:/workspace/submission.json quad-eval
 Unified benchmark: `task=unified task.benchmark=Robotics/QuadrupedGaitOptimization`
 
 ```bash
-python -m frontier_eval task=unified task.benchmark=Robotics/QuadrupedGaitOptimization task.runtime.conda_env=<your_env> algorithm.iterations=0
+.venvs/frontier-eval-driver/bin/python -m frontier_eval task=unified task.benchmark=Robotics/QuadrupedGaitOptimization task.runtime.env_name=frontier-v1-main algorithm.iterations=0
 ```
 
 Backwards-compatible alias (routes to the same unified benchmark via config): `task=quadruped_gait`.

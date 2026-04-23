@@ -1,4 +1,3 @@
-import instructor
 from pydantic import BaseModel, Field
 
 class ConfigFile(BaseModel):
