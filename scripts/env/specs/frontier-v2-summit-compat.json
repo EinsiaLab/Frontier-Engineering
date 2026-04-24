@@ -1,0 +1,14 @@
+{
+  "name": "frontier-v2-summit-compat",
+  "python": "3.9",
+  "requirements": [
+    "scripts/env/requirements/frontier-v2-summit-compat.txt"
+  ],
+  "packages": [
+    "setuptools<81"
+  ],
+  "notes": [
+    "This environment pins scikit-learn below 1.3 to keep summit==0.8.9 importable for the v2 task set.",
+    "Use it for ReactionOptimisation/dtlz2_pareto instead of frontier-v2-summit."
+  ]
+}

@@ -30,8 +30,14 @@ NUM_SEGMENTS = 100
 EPSILON = 2.0  # Increased tolerance for initial submissions
 INVALID_SCORE_SCALE = 0.1
 INVALID_SCORE_CAP = 0.1
-# Reference values (to be calibrated with baseline solution)
-R0_DEV = 1e-9  # Reference outage probability (adjusted for initial testing)
+STD_TOL = 1e-9
+OUTAGE_PROB_REL_TOL = 1e-6
+OUTAGE_PROB_ABS_TOL = 1e-12
+INTEGER_TOL = 1e-6
+LOG_WEIGHT_CLIP = 100.0
+# Reference value calibrated from the shipped baseline under evaluator-owned
+# sampling and the frozen PMD smoke-test constants.
+R0_DEV = 2.3e-8
 R0_LOG_DEV = float(math.log(R0_DEV))
 T0_DEV = 10.0
 
@@ -132,6 +138,187 @@ def _normalize_result(result: Any) -> tuple[float, float, float, float, float, f
     raise ValueError("simulate_variance_controlled 返回值格式不支持")
 
 
+def _validate_result(payload: tuple[float, float, float, float, float, float]) -> dict[str, float | bool]:
+    outages_log, weights_log, outage_prob, total_samples, actual_std, converged = payload
+
+    if not np.isfinite(weights_log):
+        raise ValueError("weights_log 必须是有限值")
+    if np.isnan(outages_log) or outages_log == float("inf"):
+        raise ValueError("outages_log 必须是有限值或 -inf")
+    if not np.isfinite(total_samples) or total_samples <= 0:
+        raise ValueError("total_samples 必须是正数")
+    rounded_samples = int(round(total_samples))
+    if abs(total_samples - rounded_samples) > INTEGER_TOL:
+        raise ValueError("total_samples 必须是整数")
+    if rounded_samples > MAX_SAMPLES:
+        raise ValueError(f"total_samples={rounded_samples} 超过 max_samples={MAX_SAMPLES}")
+    if np.isnan(actual_std) or actual_std < 0.0:
+        raise ValueError("actual_std 必须是非负数或 inf")
+
+    converged_value = bool(converged)
+    if converged_value and (not np.isfinite(actual_std) or actual_std > TARGET_STD + STD_TOL):
+        raise ValueError("converged=True 但 actual_std 未达到 target_std")
+
+    if outages_log == float("-inf"):
+        if not np.isfinite(outage_prob) or not math.isclose(outage_prob, 0.0, abs_tol=OUTAGE_PROB_ABS_TOL):
+            raise ValueError("outages_log=-inf 时 outage_prob 必须为 0")
+        if converged_value:
+            raise ValueError("未观测到 outage 时不应标记 converged=True")
+        derived_outage_prob = 0.0
+        outage_prob_log = -20.0
+    else:
+        if not np.isfinite(outages_log):
+            raise ValueError("outages_log 必须是有限值或 -inf")
+        if not np.isfinite(outage_prob) or outage_prob < 0.0 or outage_prob > 1.0 + OUTAGE_PROB_REL_TOL:
+            raise ValueError("outage_prob 必须位于 [0, 1]")
+        log_ratio = outages_log - weights_log
+        if log_ratio > math.log1p(OUTAGE_PROB_REL_TOL):
+            raise ValueError("outages_log 对应的 outage 权重不能超过总权重")
+        derived_outage_prob = float(math.exp(log_ratio))
+        if not math.isclose(
+            outage_prob,
+            derived_outage_prob,
+            rel_tol=OUTAGE_PROB_REL_TOL,
+            abs_tol=OUTAGE_PROB_ABS_TOL,
+        ):
+            raise ValueError("outage_prob 与 outages_log/weights_log 推导出的概率不一致")
+        outage_prob_log = float(log_ratio)
+
+    return {
+        "outages_log": outages_log,
+        "weights_log": weights_log,
+        "outage_prob": derived_outage_prob,
+        "total_samples": float(rounded_samples),
+        "actual_std": actual_std,
+        "converged": converged_value,
+        "outage_prob_log": outage_prob_log,
+    }
+
+
+def _as_1d_float_array(value: Any, *, name: str, expected_len: int) -> np.ndarray:
+    arr = np.asarray(value, dtype=np.float64)
+    if arr.shape != (expected_len,):
+        raise ValueError(f"{name} shape must be ({expected_len},), got {arr.shape}")
+    if not np.all(np.isfinite(arr)):
+        raise ValueError(f"{name} must contain only finite values")
+    return arr
+
+
+def _as_beta_batch(value: Any, *, expected_segments: int, requested_batch: int) -> np.ndarray:
+    arr = np.asarray(value, dtype=np.float64)
+    expected_shape_tail = (expected_segments, 3)
+    if arr.ndim != 3 or arr.shape[1:] != expected_shape_tail:
+        raise ValueError(f"beta_vectors shape must be (batch, {expected_segments}, 3), got {arr.shape}")
+    if arr.shape[0] <= 0 or arr.shape[0] > requested_batch:
+        raise ValueError(f"beta batch size must be in [1, {requested_batch}], got {arr.shape[0]}")
+    if not np.all(np.isfinite(arr)):
+        raise ValueError("beta_vectors must contain only finite values")
+    return arr
+
+
+def _summarize_weighted_event_run(
+    *,
+    event_weights: list[float],
+    total_weight: float,
+    total_samples: int,
+    contributions: list[float],
+    min_events: int,
+) -> dict[str, float | bool]:
+    if total_samples <= 0 or not np.isfinite(total_weight) or total_weight <= 0.0:
+        raise ValueError("evaluator-owned simulation produced no positive total weight")
+
+    if event_weights:
+        event_sum = float(np.sum(event_weights))
+        prob = event_sum / total_weight
+        prob_log = float(math.log(max(prob, OUTAGE_PROB_ABS_TOL)))
+        contribution_arr = np.asarray(contributions, dtype=np.float64)
+        actual_std = float(np.std(contribution_arr / (total_weight / total_samples)) / math.sqrt(total_samples))
+        converged = bool(len(event_weights) >= min_events and actual_std <= TARGET_STD + STD_TOL)
+    else:
+        prob = 0.0
+        prob_log = -20.0
+        actual_std = float("inf")
+        converged = False
+
+    return {
+        "prob": prob,
+        "prob_log": prob_log,
+        "total_samples": float(total_samples),
+        "actual_std": actual_std,
+        "converged": converged,
+        "event_count": float(len(event_weights)),
+    }
+
+
+def _run_evaluator_owned_simulation(sampler: Any, fiber: Any) -> dict[str, float | bool]:
+    total_weight = 0.0
+    total_samples = 0
+    event_weights: list[float] = []
+    contributions: list[float] = []
+
+    while total_samples < MAX_SAMPLES:
+        requested_batch = min(BATCH_SIZE, MAX_SAMPLES - total_samples)
+        try:
+            beta_vectors, log_pdf_biased = sampler.sample(
+                num_segments=fiber.num_segments,
+                batch_size=requested_batch,
+            )
+        except Exception as e:
+            raise RuntimeError(f"sample 执行失败: {e}") from e
+
+        beta_vectors = _as_beta_batch(
+            beta_vectors,
+            expected_segments=fiber.num_segments,
+            requested_batch=requested_batch,
+        )
+        batch_size_actual = int(beta_vectors.shape[0])
+        log_pdf_biased = _as_1d_float_array(log_pdf_biased, name="log_pdf_biased", expected_len=batch_size_actual)
+
+        log_pdf_true = np.sum(
+            -0.5 * np.sum(beta_vectors**2, axis=2) - 1.5 * np.log(2 * np.pi),
+            axis=1,
+        )
+        if not np.all(np.isfinite(log_pdf_true)):
+            raise ValueError("true log pdf contains non-finite values")
+
+        log_weights = np.clip(log_pdf_true - log_pdf_biased, -LOG_WEIGHT_CLIP, LOG_WEIGHT_CLIP)
+        weights = np.exp(log_weights)
+        if not np.all(np.isfinite(weights)) or np.any(weights < 0.0):
+            raise ValueError("importance weights must be finite and non-negative")
+
+        dgd = fiber.evolve_pmd(beta_vectors)
+        if dgd.shape != (batch_size_actual,) or not np.all(np.isfinite(dgd)):
+            raise ValueError("DGD values must be finite with shape (batch,)")
+
+        for i in range(batch_size_actual):
+            is_outage = bool(dgd[i] > DGD_THRESHOLD)
+            weight = float(weights[i])
+            total_weight += weight
+            contributions.append(weight if is_outage else 0.0)
+            if is_outage:
+                event_weights.append(weight)
+
+        total_samples += batch_size_actual
+        if len(event_weights) >= MIN_OUTAGES:
+            interim = _summarize_weighted_event_run(
+                event_weights=event_weights,
+                total_weight=total_weight,
+                total_samples=total_samples,
+                contributions=contributions,
+                min_events=MIN_OUTAGES,
+            )
+            if bool(interim["converged"]):
+                break
+
+    return _summarize_weighted_event_run(
+        event_weights=event_weights,
+        total_weight=total_weight,
+        total_samples=total_samples,
+        contributions=contributions,
+        min_events=MIN_OUTAGES,
+    )
+
+
 def _build_fiber(repo_root: Path):
     PMDFiberModel = _import_fiber_model(repo_root)
     return PMDFiberModel(
@@ -184,43 +371,28 @@ def evaluate(program_path: str, *, repo_root: Path | None = None):
             except Exception as e:
                 raise RuntimeError(f"PMDSampler 初始化失败: {e}") from e
             
-            if not hasattr(sampler, "simulate_variance_controlled"):
-                raise AttributeError("PMDSampler 缺少 simulate_variance_controlled 方法")
+            if not hasattr(sampler, "sample"):
+                raise AttributeError("PMDSampler 缺少 sample 方法")
             
             t0 = time.time()
-            try:
-                result = sampler.simulate_variance_controlled(
-                    fiber_model=fiber,
-                    dgd_threshold=DGD_THRESHOLD,
-                    target_std=TARGET_STD,
-                    max_samples=MAX_SAMPLES,
-                    batch_size=BATCH_SIZE,
-                    min_outages=MIN_OUTAGES,
-                )
-            except Exception as e:
-                raise RuntimeError(f"simulate_variance_controlled 执行失败: {e}") from e
+            result = _run_evaluator_owned_simulation(sampler, fiber)
             dt = time.time() - t0
             
-            outages_log, weights_log, outage_prob, total_samples, actual_std, converged = _normalize_result(result)
-            outage_prob_log = float(outages_log - weights_log)
-            
-            # Handle case when no outages found (outages_log = -inf)
-            if not np.isfinite(outage_prob_log):
-                # Use a very small outage probability estimate instead of -inf
-                outage_prob_log = float('-20.0')  # log(2e-9), very small but finite
-            
+            outage_prob_log = float(result["prob_log"])
             runtimes.append(float(dt))
             outage_logs.append(outage_prob_log)
-            probs.append(outage_prob)
-            samples.append(total_samples)
-            stds.append(actual_std)
-            converged_flags.append(converged)
+            probs.append(float(result["prob"]))
+            samples.append(float(result["total_samples"]))
+            stds.append(float(result["actual_std"]))
+            converged_flags.append(1.0 if bool(result["converged"]) else 0.0)
         
         runtime_median = float(np.median(runtimes))
         outage_log_median = float(np.median(outage_logs))
         outage_log_ratio = float(abs(outage_log_median - R0_LOG_DEV))
         
-        valid = float(outage_log_ratio < EPSILON)
+        variance_ok = float(np.nanmedian(stds) <= TARGET_STD + STD_TOL)
+        convergence_ok = float(np.mean(converged_flags) >= 0.5)
+        valid = float(outage_log_ratio < EPSILON and variance_ok and convergence_ok)
         raw_score = float(T0_DEV / (runtime_median * outage_log_ratio + 1e-6))
         if valid > 0:
             score = raw_score
@@ -238,8 +410,13 @@ def evaluate(program_path: str, *, repo_root: Path | None = None):
             "actual_samples_median": float(np.nanmedian(samples)),
             "actual_std_median": float(np.nanmedian(stds)),
             "converged_rate": float(np.mean(converged_flags)),
+            "variance_ok": variance_ok,
+            "convergence_ok": convergence_ok,
             "dgd_threshold": DGD_THRESHOLD,
         })
+        artifacts["validity_reason"] = (
+            "ok" if valid > 0 else f"anchor_ok={outage_log_ratio < EPSILON},variance_ok={bool(variance_ok)},convergence_ok={bool(convergence_ok)}"
+        )
         artifacts["dev_constants"] = json.dumps({
             "fiber_length_km": FIBER_LENGTH_KM,
             "pmd_coefficient": PMD_COEFFICIENT,
@@ -248,6 +425,9 @@ def evaluate(program_path: str, *, repo_root: Path | None = None):
             "max_samples": MAX_SAMPLES,
             "batch_size": BATCH_SIZE,
             "epsilon": EPSILON,
+            "std_tol": STD_TOL,
+            "log_weight_clip": LOG_WEIGHT_CLIP,
+            "simulation_owner": "evaluator",
             "r0_dev": R0_DEV,
             "t0_dev": T0_DEV,
             "repeats": REPEATS,
@@ -288,4 +468,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

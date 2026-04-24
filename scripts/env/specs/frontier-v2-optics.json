@@ -1,0 +1,14 @@
+{
+  "name": "frontier-v2-optics",
+  "python": "3.12",
+  "requirements": [
+    "frontier_eval/requirements.txt",
+    "scripts/env/requirements/frontier-v2-optics-compat.txt"
+  ],
+  "packages": [],
+  "notes": [
+    "This environment is the v2 runtime for Optics tasks.",
+    "It is isolated from frontier-v1-main so v2 validation can continue without changing v1 env contents.",
+    "The v2 Optics env requires host libGL.so.1 (for OpenCV/slmsuite oracle paths)."
+  ]
+}

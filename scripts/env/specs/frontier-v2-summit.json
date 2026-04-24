@@ -1,0 +1,14 @@
+{
+  "name": "frontier-v2-summit",
+  "python": "3.9",
+  "requirements": [
+    "benchmarks/ReactionOptimisation/requirements.txt"
+  ],
+  "packages": [
+    "setuptools<81"
+  ],
+  "notes": [
+    "This environment is the v2 runtime for ReactionOptimisation tasks such as dtlz2_pareto.",
+    "Use it through task.runtime.python_path=uv-env:frontier-v2-summit or by calling the interpreter directly."
+  ]
+}
