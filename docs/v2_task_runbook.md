@@ -170,7 +170,9 @@ The timing ledger records whether a result includes setup or dataset download. M
 
 | Task | Result | Exact wall time | Evaluator `runtime_s` | Reproduction command |
 |---|---:|---:|---:|---|
+| `MaterialEngineering/MicrowaveAbsorberDesign` | `combined_score=0.26620516373737335`, `valid=1.0` | TODO: rerun direct shell timing if needed; unified smoke succeeded | `0.8660` from unified smoke | `bash scripts/run_v2_unified.sh MaterialEngineering/MicrowaveAbsorberDesign algorithm=openevolve algorithm.iterations=0` |
 | `ParticlePhysics/MuonTomography` | `combined_score=199.32012533144325`, `valid=1.0` | TODO: rerun required | TODO: rerun required | `bash scripts/run_v2_unified.sh ParticlePhysics/MuonTomography algorithm=openevolve algorithm.iterations=0` |
+| `ParticlePhysics/PETScannerOptimization` | `combined_score=598.1942761314276`, `valid=1.0` | TODO: rerun direct shell timing if needed; unified smoke succeeded | `0.7759` from unified smoke | `bash scripts/run_v2_unified.sh ParticlePhysics/PETScannerOptimization algorithm=openevolve algorithm.iterations=0` |
 | `ParticlePhysics/ProtonTherapyPlanning` | `valid=1.0` | TODO: rerun required | TODO: rerun required | `.venvs/frontier-v2-extra/bin/python -m frontier_eval task=proton_therapy_planning algorithm=openevolve algorithm.iterations=0` |
 | `SingleCellAnalysis/denoising` | blocked | N/A | N/A | Requires external Docker workflow. |
 | `SingleCellAnalysis/perturbation_prediction` | `combined_score=0.5401216273566543`, `valid=1.0` | TODO: rerun required; exclude data download unless stated | TODO: rerun required | `bash scripts/run_perturbation_prediction_baseline.sh` |
@@ -190,6 +192,8 @@ The timing ledger records whether a result includes setup or dataset download. M
 
 ## Code-change audit notes
 
+- `benchmarks/MaterialEngineering/MicrowaveAbsorberDesign/*` was added directly on mainline using benchmark-local `frontier_eval/` metadata for `task=unified`. Direct baseline and unified smoke both succeeded.
+- `benchmarks/ParticlePhysics/PETScannerOptimization/*` was added directly on mainline using benchmark-local `frontier_eval/` metadata for `task=unified`. The evaluator now requires exactly 20 rings with unique contiguous `ring_id` values and rejects malformed schemas outright.
 - `benchmarks/ParticlePhysics/MuonTomography/frontier_eval/evaluator.py` now prefers the benchmark-local verifier before falling back to the repository verifier. This keeps copied benchmark sandboxes from depending on a full repository tree.
 - `benchmarks/ParticlePhysics/MuonTomography/baseline/solution.json` only gained a trailing newline; no semantic baseline change is intended.
 - `benchmarks/CommunicationEngineering/LDPCErrorFloor/verification/evaluator.py`, `benchmarks/CommunicationEngineering/PMDSimulation/verification/evaluator.py`, and `benchmarks/CommunicationEngineering/RayleighFadingBER/verification/evaluator.py` now run evaluator-owned simulations. Candidate `sample()` provides samples and biased log pdf values; the evaluator computes true log pdf, importance weights, event indicators, probabilities, variance, and convergence.
