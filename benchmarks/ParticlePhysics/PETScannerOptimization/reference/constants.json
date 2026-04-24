@@ -1,0 +1,19 @@
+{
+  "search_space": {
+    "ring_radius": { "min": 300.0, "max": 500.0 },
+    "crystal_thickness": { "min": 10.0, "max": 30.0 },
+    "crystal_width": { "min": 2.0, "max": 6.0 }
+  },
+  "physics": {
+    "lyso_attenuation_coefficient_mm_inv": 0.087,
+    "doi_parallax_factor": 200.0
+  },
+  "budget": {
+    "max_lyso_volume_mm3": 15000000.0,
+    "volume_penalty_rate": 0.002
+  },
+  "scoring": {
+    "sensitivity_weight": 20000.0,
+    "resolution_penalty_weight": 500.0
+  }
+}

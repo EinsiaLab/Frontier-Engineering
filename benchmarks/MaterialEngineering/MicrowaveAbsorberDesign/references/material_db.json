@@ -1,0 +1,29 @@
+{
+  "matrix": {
+    "eps_real": 3.0,
+    "eps_imag": 0.1,
+    "mu_real": 1.0,
+    "mu_imag": 0.0,
+    "density": 1.2,
+    "cost_proxy": 1.0,
+    "description": "Epoxy resin matrix"
+  },
+  "dielectric_filler": {
+    "eps_real": 12.0,
+    "eps_imag": 2.5,
+    "mu_real": 1.0,
+    "mu_imag": 0.0,
+    "density": 2.0,
+    "cost_proxy": 2.0,
+    "description": "Carbon-based dielectric filler"
+  },
+  "magnetic_filler": {
+    "eps_real": 6.0,
+    "eps_imag": 0.8,
+    "mu_real": 1.8,
+    "mu_imag": 0.4,
+    "density": 7.8,
+    "cost_proxy": 3.0,
+    "description": "Ferrite-type magnetic filler"
+  }
+}

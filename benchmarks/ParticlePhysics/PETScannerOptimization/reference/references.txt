@@ -1,0 +1,2 @@
+This benchmark is a lightweight engineering abstraction of PET detector geometry trade-offs.
+It is intentionally evaluator-transparent and is meant for repository-local optimization workflows rather than direct clinical modeling.

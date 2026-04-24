@@ -1,0 +1,6 @@
+UnifiedTask constraints:
+1) Only modify `baseline/solution.py`.
+2) Preserve the output filename `solution.json` and the ring-array schema expected by `verification/evaluator.py`.
+3) Do not modify benchmark assets, documentation, references, verification code, or `frontier_eval/` metadata.
+4) Output exactly 20 ring objects with valid `ring_id`, `R`, `H`, and `W`.
+5) Prioritize validity and stable geometry trade-offs before score chasing.

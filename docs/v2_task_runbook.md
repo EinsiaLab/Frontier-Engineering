@@ -25,7 +25,9 @@ No output is expected. This proves the repository configuration was not changed;
 
 | Task | Environment | Status | Notes |
 |---|---|---|---|
+| `MaterialEngineering/MicrowaveAbsorberDesign` | `.venvs/frontier-v2-extra` | verified | Direct baseline and unified smoke both succeeded on mainline. |
 | `ParticlePhysics/MuonTomography` | `.venvs/frontier-v2-extra` | verified | Direct baseline plus evaluator succeeded; unified v2 run succeeded after using the v2 runtime. |
+| `ParticlePhysics/PETScannerOptimization` | `.venvs/frontier-v2-extra` | verified | Direct baseline and unified smoke succeeded; evaluator now rejects malformed ring schemas. |
 | `ParticlePhysics/ProtonTherapyPlanning` | `.venvs/frontier-v2-extra` | verified | `frontier_eval task=proton_therapy_planning algorithm.iterations=0` succeeded. |
 | `SingleCellAnalysis/denoising` | none | blocked | Task README requires the external `openproblems-bio/task_denoising` repository and Docker container builds. |
 | `SingleCellAnalysis/perturbation_prediction` | `.venvs/frontier-v2-extra` | verified | Baseline plus scorer succeeded after caching `de_train.h5ad`, `de_test.h5ad`, and `id_map.csv`. |
@@ -76,7 +78,25 @@ This path requires a working `mamba` or `conda` installation.
 Use the repository-local unified helper when a task should run through `task=unified` with the v2 runtime:
 
 ```bash
+bash scripts/run_v2_unified.sh MaterialEngineering/MicrowaveAbsorberDesign \
+  algorithm=openevolve \
+  algorithm.iterations=0
+```
+
+```bash
 bash scripts/run_v2_unified.sh ParticlePhysics/MuonTomography \
+  algorithm=openevolve \
+  algorithm.iterations=0
+```
+
+```bash
+cd benchmarks/ParticlePhysics/PETScannerOptimization
+../../../.venvs/frontier-v2-extra/bin/python baseline/solution.py
+../../../.venvs/frontier-v2-extra/bin/python verification/evaluator.py solution.json
+```
+
+```bash
+bash scripts/run_v2_unified.sh ParticlePhysics/PETScannerOptimization \
   algorithm=openevolve \
   algorithm.iterations=0
 ```
