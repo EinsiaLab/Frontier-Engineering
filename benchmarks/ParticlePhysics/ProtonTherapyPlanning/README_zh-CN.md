@@ -32,24 +32,24 @@ cd benchmarks/ParticlePhysics/ProtonTherapyPlanning
 
 ## 3. 使用 `frontier_eval` 运行
 
-本题当前属于 **v2 特殊路径任务**：它在 `frontier_eval` 中注册为 `proton_therapy_planning`，但尚未迁移到 benchmark-local `task=unified` 元数据方案。
+本题现在已经通过 benchmark-local `task=unified` 元数据接入主线 v2 工作流。
 
-在仓库根目录下，运行标准的兼容性检查命令：
+在仓库根目录下，标准兼容性检查命令为：
 
 ```bash
-.venvs/frontier-v2-extra/bin/python -m frontier_eval \
-  task=proton_therapy_planning \
+bash scripts/run_v2_unified.sh ParticlePhysics/ProtonTherapyPlanning \
   algorithm=openevolve \
   algorithm.iterations=0
 ```
 
-在完成 [frontier_eval/README.md](../../../frontier_eval/README.md) 中描述的框架级 `.env` 或模型配置后，你可以通过增加 `algorithm.iterations` 来启动真实的搜索，例如：
+如果需要运行等价的显式 `frontier_eval` 命令：
 
 ```bash
 .venvs/frontier-v2-extra/bin/python -m frontier_eval \
-  task=proton_therapy_planning \
+  task=unified \
+  task.benchmark=ParticlePhysics/ProtonTherapyPlanning \
   algorithm=openevolve \
-  algorithm.iterations=10
+  algorithm.iterations=0
 ```
 
 ## 4. 评估指标

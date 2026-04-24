@@ -17,7 +17,9 @@
 
 ## 快速开始
 
-本题属于当前 v2 任务集，使用 `.venvs/frontier-v2-extra` 作为本地运行环境，但它目前仍是 **特殊的非-unified 任务**。它的正式复现路径仍然是：
+本题属于当前 v2 任务集，使用 `.venvs/frontier-v2-extra` 作为本地运行环境，并且现在也支持 benchmark-local `task=unified`。
+
+它的正式复现路径仍然是：
 
 1. 下载 / 缓存公开数据
 2. 生成预测结果
@@ -41,4 +43,12 @@ bash scripts/data/fetch_perturbation_prediction.sh
 ```bash
 .venvs/frontier-v2-extra/bin/python benchmarks/SingleCellAnalysis/perturbation_prediction/verification/evaluate_perturbation_prediction.py \
   --prediction prediction.h5ad
+```
+
+Unified smoke 命令：
+
+```bash
+bash scripts/run_v2_unified.sh SingleCellAnalysis/perturbation_prediction \
+  algorithm=openevolve \
+  algorithm.iterations=0
 ```

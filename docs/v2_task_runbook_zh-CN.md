@@ -9,8 +9,8 @@
 | `MaterialEngineering/MicrowaveAbsorberDesign` | `.venvs/frontier-v2-extra` | verified | direct baseline 与 unified smoke 均已通过。 |
 | `ParticlePhysics/MuonTomography` | `.venvs/frontier-v2-extra` | verified | direct baseline 与 unified v2 已通过。 |
 | `ParticlePhysics/PETScannerOptimization` | `.venvs/frontier-v2-extra` | verified | direct baseline 与 unified smoke 已通过；evaluator 已加严 ring schema 校验。 |
-| `ParticlePhysics/ProtonTherapyPlanning` | `.venvs/frontier-v2-extra` | verified | 属于 v2 特殊路径任务，当前仍走注册 task，不是 benchmark-local unified。 |
-| `SingleCellAnalysis/perturbation_prediction` | `.venvs/frontier-v2-extra` | verified | 属于 v2 特殊路径任务，当前通过 fetch + baseline + scorer 复现，不是 benchmark-local unified。 |
+| `ParticlePhysics/ProtonTherapyPlanning` | `.venvs/frontier-v2-extra` | verified | 主线已补 benchmark-local unified 元数据。 |
+| `SingleCellAnalysis/perturbation_prediction` | `.venvs/frontier-v2-extra` | verified | 仍保留 fetch + baseline + scorer 路径，同时主线已补 unified 元数据。 |
 | `CommunicationEngineering/LDPCErrorFloor` | `.venvs/frontier-v2-extra` | hardened | evaluator 已改为 evaluator-owned 统计链路。 |
 | `CommunicationEngineering/PMDSimulation` | `.venvs/frontier-v2-extra` | hardened | evaluator 已改为 evaluator-owned 统计链路。 |
 | `CommunicationEngineering/RayleighFadingBER` | `.venvs/frontier-v2-extra` | hardened | evaluator 已改为 evaluator-owned 统计链路。 |
@@ -28,14 +28,13 @@
 当前 v2 任务分成两类：
 
 - `unified`：通过 benchmark-local `frontier_eval/` 元数据接入 `task=unified`
-- `special-case`：属于 v2 任务集，但当前仍使用非-unified 的正式运行路径
+- `special-case`：属于 v2 任务集，但仍保留额外的非-unified 正式运行路径
 
 当前 special-case 任务只有：
 
-- `ParticlePhysics/ProtonTherapyPlanning`
 - `SingleCellAnalysis/perturbation_prediction`
 
-其余本手册覆盖的 v2 任务都以 unified 路径为主。
+它已经支持 unified，但仍保留 fetch + baseline + scorer 的数据导向复现路径。
 
 ## 常用命令
 
@@ -45,6 +44,7 @@
 bash scripts/run_v2_unified.sh MaterialEngineering/MicrowaveAbsorberDesign algorithm=openevolve algorithm.iterations=0
 bash scripts/run_v2_unified.sh ParticlePhysics/MuonTomography algorithm=openevolve algorithm.iterations=0
 bash scripts/run_v2_unified.sh ParticlePhysics/PETScannerOptimization algorithm=openevolve algorithm.iterations=0
+bash scripts/run_v2_unified.sh ParticlePhysics/ProtonTherapyPlanning algorithm=openevolve algorithm.iterations=0
 bash scripts/run_v2_unified.sh CommunicationEngineering/LDPCErrorFloor algorithm=openevolve algorithm.iterations=0 algorithm.oe.evaluator.timeout=60
 bash scripts/run_v2_unified.sh CommunicationEngineering/PMDSimulation algorithm=openevolve algorithm.iterations=0
 bash scripts/run_v2_unified.sh CommunicationEngineering/RayleighFadingBER algorithm=openevolve algorithm.iterations=0
@@ -53,18 +53,17 @@ bash scripts/run_v2_unified.sh ReactionOptimisation/dtlz2_pareto task.runtime.py
 
 ### Special-case 任务
 
-`ProtonTherapyPlanning`：
-
-```bash
-.venvs/frontier-v2-extra/bin/python -m frontier_eval \
-  task=proton_therapy_planning \
-  algorithm=openevolve \
-  algorithm.iterations=0
-```
-
 `perturbation_prediction`：
 
 ```bash
 bash scripts/data/fetch_perturbation_prediction.sh
 bash scripts/run_perturbation_prediction_baseline.sh
+```
+
+其 unified smoke 命令：
+
+```bash
+bash scripts/run_v2_unified.sh SingleCellAnalysis/perturbation_prediction \
+  algorithm=openevolve \
+  algorithm.iterations=0
 ```

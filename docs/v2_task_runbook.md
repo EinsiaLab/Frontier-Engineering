@@ -28,9 +28,9 @@ No output is expected. This proves the repository configuration was not changed;
 | `MaterialEngineering/MicrowaveAbsorberDesign` | `.venvs/frontier-v2-extra` | verified | Direct baseline and unified smoke both succeeded on mainline. |
 | `ParticlePhysics/MuonTomography` | `.venvs/frontier-v2-extra` | verified | Direct baseline plus evaluator succeeded; unified v2 run succeeded after using the v2 runtime. |
 | `ParticlePhysics/PETScannerOptimization` | `.venvs/frontier-v2-extra` | verified | Direct baseline and unified smoke succeeded; evaluator now rejects malformed ring schemas. |
-| `ParticlePhysics/ProtonTherapyPlanning` | `.venvs/frontier-v2-extra` | verified | `frontier_eval task=proton_therapy_planning algorithm.iterations=0` succeeded. |
+| `ParticlePhysics/ProtonTherapyPlanning` | `.venvs/frontier-v2-extra` | verified | Unified metadata added on mainline; v2 path now uses `task=unified`. |
 | `SingleCellAnalysis/denoising` | none | blocked | Task README requires the external `openproblems-bio/task_denoising` repository and Docker container builds. |
-| `SingleCellAnalysis/perturbation_prediction` | `.venvs/frontier-v2-extra` | verified | Baseline plus scorer succeeded after caching `de_train.h5ad`, `de_test.h5ad`, and `id_map.csv`. |
+| `SingleCellAnalysis/perturbation_prediction` | `.venvs/frontier-v2-extra` | verified | Baseline plus scorer succeeded after caching data; unified metadata added on mainline. |
 | `CommunicationEngineering/LDPCErrorFloor` | `.venvs/frontier-v2-extra` | hardened | Evaluator now owns sampling loop statistics; calibrated baseline is valid. |
 | `CommunicationEngineering/PMDSimulation` | `.venvs/frontier-v2-extra` | hardened | Evaluator now owns sampling loop statistics; calibrated baseline is valid. |
 | `CommunicationEngineering/RayleighFadingBER` | `.venvs/frontier-v2-extra` | hardened | Evaluator now owns sampling loop statistics; calibrated baseline is valid. |
@@ -102,8 +102,7 @@ bash scripts/run_v2_unified.sh ParticlePhysics/PETScannerOptimization \
 ```
 
 ```bash
-.venvs/frontier-v2-extra/bin/python -m frontier_eval \
-  task=proton_therapy_planning \
+bash scripts/run_v2_unified.sh ParticlePhysics/ProtonTherapyPlanning \
   algorithm=openevolve \
   algorithm.iterations=0
 ```
@@ -150,6 +149,14 @@ bash scripts/data/fetch_perturbation_prediction.sh
 bash scripts/run_perturbation_prediction_baseline.sh
 ```
 
+Unified smoke command:
+
+```bash
+bash scripts/run_v2_unified.sh SingleCellAnalysis/perturbation_prediction \
+  algorithm=openevolve \
+  algorithm.iterations=0
+```
+
 The data script downloads:
 
 | File | Size observed in validation |
@@ -173,9 +180,9 @@ The timing ledger records whether a result includes setup or dataset download. M
 | `MaterialEngineering/MicrowaveAbsorberDesign` | `combined_score=0.26620516373737335`, `valid=1.0` | TODO: rerun direct shell timing if needed; unified smoke succeeded | `0.8660` from unified smoke | `bash scripts/run_v2_unified.sh MaterialEngineering/MicrowaveAbsorberDesign algorithm=openevolve algorithm.iterations=0` |
 | `ParticlePhysics/MuonTomography` | `combined_score=199.32012533144325`, `valid=1.0` | TODO: rerun required | TODO: rerun required | `bash scripts/run_v2_unified.sh ParticlePhysics/MuonTomography algorithm=openevolve algorithm.iterations=0` |
 | `ParticlePhysics/PETScannerOptimization` | `combined_score=598.1942761314276`, `valid=1.0` | TODO: rerun direct shell timing if needed; unified smoke succeeded | `0.7759` from unified smoke | `bash scripts/run_v2_unified.sh ParticlePhysics/PETScannerOptimization algorithm=openevolve algorithm.iterations=0` |
-| `ParticlePhysics/ProtonTherapyPlanning` | `valid=1.0` | TODO: rerun required | TODO: rerun required | `.venvs/frontier-v2-extra/bin/python -m frontier_eval task=proton_therapy_planning algorithm=openevolve algorithm.iterations=0` |
+| `ParticlePhysics/ProtonTherapyPlanning` | `combined_score=-2685.8873258471367`, `valid=1.0` | TODO: rerun direct shell timing if needed; unified smoke succeeded | `1.0057` from unified smoke | `bash scripts/run_v2_unified.sh ParticlePhysics/ProtonTherapyPlanning algorithm=openevolve algorithm.iterations=0` |
 | `SingleCellAnalysis/denoising` | blocked | N/A | N/A | Requires external Docker workflow. |
-| `SingleCellAnalysis/perturbation_prediction` | `combined_score=0.5401216273566543`, `valid=1.0` | TODO: rerun required; exclude data download unless stated | TODO: rerun required | `bash scripts/run_perturbation_prediction_baseline.sh` |
+| `SingleCellAnalysis/perturbation_prediction` | `combined_score=0.5401216273566543`, `valid=1.0` | TODO: rerun direct shell timing if needed; unified smoke and scorer both succeeded | `9.1265` from unified smoke | `bash scripts/run_perturbation_prediction_baseline.sh` or unified smoke via `bash scripts/run_v2_unified.sh SingleCellAnalysis/perturbation_prediction algorithm=openevolve algorithm.iterations=0` |
 | `CommunicationEngineering/LDPCErrorFloor` | `combined_score=173.55873302857728`, `valid=1.0` | `5.394720554351807s` direct evaluator | `5.1566126346588135s` | `bash scripts/run_v2_unified.sh CommunicationEngineering/LDPCErrorFloor algorithm=openevolve algorithm.iterations=0 algorithm.oe.evaluator.timeout=60` |
 | `CommunicationEngineering/PMDSimulation` | `combined_score=14109.80093471527`, `valid=1.0` | `2.4655303955078125s` direct evaluator | `0.6930792331695557s` | `bash scripts/run_v2_unified.sh CommunicationEngineering/PMDSimulation algorithm=openevolve algorithm.iterations=0` |
 | `CommunicationEngineering/RayleighFadingBER` | `combined_score=3302.3160509043173`, `valid=1.0` | `0.20431160926818848s` direct evaluator | `0.006053924560546875s` | `bash scripts/run_v2_unified.sh CommunicationEngineering/RayleighFadingBER algorithm=openevolve algorithm.iterations=0` |
@@ -194,22 +201,19 @@ The timing ledger records whether a result includes setup or dataset download. M
 
 - `benchmarks/MaterialEngineering/MicrowaveAbsorberDesign/*` was added directly on mainline using benchmark-local `frontier_eval/` metadata for `task=unified`. Direct baseline and unified smoke both succeeded.
 - `benchmarks/ParticlePhysics/PETScannerOptimization/*` was added directly on mainline using benchmark-local `frontier_eval/` metadata for `task=unified`. The evaluator now requires exactly 20 rings with unique contiguous `ring_id` values and rejects malformed schemas outright.
+- `benchmarks/ParticlePhysics/ProtonTherapyPlanning/*` now also has benchmark-local `frontier_eval/` metadata and unified smoke succeeds on `.venvs/frontier-v2-extra`.
 - `benchmarks/ParticlePhysics/MuonTomography/frontier_eval/evaluator.py` now prefers the benchmark-local verifier before falling back to the repository verifier. This keeps copied benchmark sandboxes from depending on a full repository tree.
 - `benchmarks/ParticlePhysics/MuonTomography/baseline/solution.json` only gained a trailing newline; no semantic baseline change is intended.
 - `benchmarks/CommunicationEngineering/LDPCErrorFloor/verification/evaluator.py`, `benchmarks/CommunicationEngineering/PMDSimulation/verification/evaluator.py`, and `benchmarks/CommunicationEngineering/RayleighFadingBER/verification/evaluator.py` now run evaluator-owned simulations. Candidate `sample()` provides samples and biased log pdf values; the evaluator computes true log pdf, importance weights, event indicators, probabilities, variance, and convergence.
 - `benchmarks/SingleCellAnalysis/perturbation_prediction/verification/evaluate_perturbation_prediction.py` added `mean_rowwise_topk_sign_agreement` and includes it in `combined_score`.
+- `benchmarks/SingleCellAnalysis/perturbation_prediction/*` now also has benchmark-local `frontier_eval/` metadata; unified smoke matches the script-based scorer path.
 - `scripts/env/specs/frontier-v2-*` and `scripts/env/requirements/frontier-v2-*` define isolated v2 runtimes.
 
 ## Unified vs. special-case tasks
 
 Most tasks in this v2 subset are benchmark-local `task=unified` benchmarks.
 
-The current exceptions are:
-
-- `ParticlePhysics/ProtonTherapyPlanning`
-- `SingleCellAnalysis/perturbation_prediction`
-
-These are still part of the v2 task set, but they currently use their own canonical reproduction paths rather than benchmark-local unified metadata.
+`SingleCellAnalysis/perturbation_prediction` still keeps a script-based fetch + scorer path as its canonical data-oriented reproduction flow, but it now also has benchmark-local unified metadata for v2 smoke and framework runs.
 
 ## Evaluator hardening status
 

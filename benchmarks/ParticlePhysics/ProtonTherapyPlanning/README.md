@@ -32,24 +32,24 @@ The baseline above has been verified in this repository with the following resul
 
 ## 3. Run with `frontier_eval`
 
-This task is currently a **special-case v2 task**. It is registered in `frontier_eval` as `proton_therapy_planning` and does **not** yet use benchmark-local `task=unified` metadata.
+This task is now integrated through benchmark-local `task=unified` metadata on the mainline v2 workflow.
 
 From the repository root, the standard compatibility check is:
 
 ```bash
-.venvs/frontier-v2-extra/bin/python -m frontier_eval \
-  task=proton_therapy_planning \
+bash scripts/run_v2_unified.sh ParticlePhysics/ProtonTherapyPlanning \
   algorithm=openevolve \
   algorithm.iterations=0
 ```
 
-After completing the framework-level `.env` or model configuration described in [frontier_eval/README.md](../../../frontier_eval/README.md), you can start a real search by increasing `algorithm.iterations`, for example:
+If you want to run the equivalent explicit `frontier_eval` command:
 
 ```bash
 .venvs/frontier-v2-extra/bin/python -m frontier_eval \
-  task=proton_therapy_planning \
+  task=unified \
+  task.benchmark=ParticlePhysics/ProtonTherapyPlanning \
   algorithm=openevolve \
-  algorithm.iterations=10
+  algorithm.iterations=0
 ```
 
 ## 4. Evaluation Metrics

@@ -17,7 +17,9 @@ It uses the public OpenProblems dataset hosted on `openproblems-data` (S3) and r
 
 ## Quick start
 
-This task is part of the current v2 task set and uses `.venvs/frontier-v2-extra` for local execution, but it is currently a **special-case non-unified task**. Its canonical reproduction path is still:
+This task is part of the current v2 task set, uses `.venvs/frontier-v2-extra`, and now also supports benchmark-local `task=unified`.
+
+Its canonical reproduction path remains:
 
 1. download/cache the public dataset
 2. generate a prediction
@@ -41,4 +43,12 @@ Evaluate a prediction:
 ```bash
 .venvs/frontier-v2-extra/bin/python benchmarks/SingleCellAnalysis/perturbation_prediction/verification/evaluate_perturbation_prediction.py \
   --prediction prediction.h5ad
+```
+
+Unified smoke run:
+
+```bash
+bash scripts/run_v2_unified.sh SingleCellAnalysis/perturbation_prediction \
+  algorithm=openevolve \
+  algorithm.iterations=0
 ```
