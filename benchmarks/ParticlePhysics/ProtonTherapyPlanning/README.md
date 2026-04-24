@@ -14,12 +14,12 @@ For detailed physical and mathematical models, objective functions, and I/O form
 
 ## 2. Local Run
 
-After preparing the `frontier-eval-driver` environment, you can run the benchmark directly from the task directory:
+For the current v2 task set, this task uses `.venvs/frontier-v2-extra` for direct local execution:
 
 ```bash
 cd benchmarks/ParticlePhysics/ProtonTherapyPlanning
-../../../.venvs/frontier-eval-driver/bin/python baseline/solution.py
-../../../.venvs/frontier-eval-driver/bin/python verification/evaluator.py plan.json
+../../../.venvs/frontier-v2-extra/bin/python baseline/solution.py
+../../../.venvs/frontier-v2-extra/bin/python verification/evaluator.py plan.json
 ```
 
 `verification/requirements.txt` currently only requires `numpy>=1.24.0`.
@@ -32,18 +32,24 @@ The baseline above has been verified in this repository with the following resul
 
 ## 3. Run with `frontier_eval`
 
-This task is registered in `frontier_eval` as `proton_therapy_planning`.
+This task is currently a **special-case v2 task**. It is registered in `frontier_eval` as `proton_therapy_planning` and does **not** yet use benchmark-local `task=unified` metadata.
 
 From the repository root, the standard compatibility check is:
 
 ```bash
-.venvs/frontier-eval-driver/bin/python -m frontier_eval task=proton_therapy_planning algorithm=openevolve algorithm.iterations=0
+.venvs/frontier-v2-extra/bin/python -m frontier_eval \
+  task=proton_therapy_planning \
+  algorithm=openevolve \
+  algorithm.iterations=0
 ```
 
 After completing the framework-level `.env` or model configuration described in [frontier_eval/README.md](../../../frontier_eval/README.md), you can start a real search by increasing `algorithm.iterations`, for example:
 
 ```bash
-.venvs/frontier-eval-driver/bin/python -m frontier_eval task=proton_therapy_planning algorithm=openevolve algorithm.iterations=10
+.venvs/frontier-v2-extra/bin/python -m frontier_eval \
+  task=proton_therapy_planning \
+  algorithm=openevolve \
+  algorithm.iterations=10
 ```
 
 ## 4. Evaluation Metrics

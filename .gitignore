@@ -8,6 +8,7 @@ third_party/*
 .venvs/
 __pycache__/
 .pytest_cache/
+**/temp/
 runs/
 runs_old/
 runs_old_2/

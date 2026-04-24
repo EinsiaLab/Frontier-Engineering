@@ -200,6 +200,17 @@ The timing ledger records whether a result includes setup or dataset download. M
 - `benchmarks/SingleCellAnalysis/perturbation_prediction/verification/evaluate_perturbation_prediction.py` added `mean_rowwise_topk_sign_agreement` and includes it in `combined_score`.
 - `scripts/env/specs/frontier-v2-*` and `scripts/env/requirements/frontier-v2-*` define isolated v2 runtimes.
 
+## Unified vs. special-case tasks
+
+Most tasks in this v2 subset are benchmark-local `task=unified` benchmarks.
+
+The current exceptions are:
+
+- `ParticlePhysics/ProtonTherapyPlanning`
+- `SingleCellAnalysis/perturbation_prediction`
+
+These are still part of the v2 task set, but they currently use their own canonical reproduction paths rather than benchmark-local unified metadata.
+
 ## Evaluator hardening status
 
 The three CommunicationEngineering rare-event evaluators are hardened against the earlier self-reported-statistics attack. A malicious candidate that self-reports the reference probability, `actual_std=0`, and `converged=True` through `simulate_variance_controlled()` is invalid because scoring no longer consumes that return value.

@@ -73,7 +73,7 @@ MolecularMechanics/
 
 It is easiest to keep the framework environment and the benchmark runtime environment separate:
 
-- `.venvs/frontier-eval-driver`
+- `.venvs/frontier-v2-extra`
   - runs `python -m frontier_eval`
 - `openff-dev`
   - a separately bootstrapped runtime that runs the actual MolecularMechanics evaluation
@@ -83,14 +83,14 @@ Recommended setup from the repository root:
 ```bash
 bash init.sh
 bash scripts/bootstrap/install_openff_dev.sh
-source .venvs/frontier-eval-driver/bin/activate
+source .venvs/frontier-v2-extra/bin/activate
 ```
 
 If you already have both runtimes, run from the repository root:
 
 ```bash
 bash init.sh
-source .venvs/frontier-eval-driver/bin/activate
+source .venvs/frontier-v2-extra/bin/activate
 .venvs/openff-dev/bin/python -m pip install -r benchmarks/MolecularMechanics/requirements.txt
 ./.venvs/openff-dev/bin/python scripts/bootstrap/verify_openff_dev.py --repo-root .
 ```
@@ -112,7 +112,7 @@ Notes:
 - For manual task execution
   - `.venvs/openff-dev` is enough
 - For `frontier_eval`
-  - the framework process stays in `frontier-eval-driver`
+  - the framework process stays in `frontier-v2-extra`
   - the benchmark evaluation process switches to `openff-dev`
 
 ## Frontier Eval (Unified)
@@ -129,7 +129,7 @@ Shortcut task names:
 
 These timings were measured on `2026-03-16` with:
 
-- `.venvs/frontier-eval-driver/bin/python -m frontier_eval ...`
+- `.venvs/frontier-v2-extra/bin/python -m frontier_eval ...`
 - `algorithm=openevolve`
 - `algorithm.iterations=0`
 - benchmark runtime environment `openff-dev`
@@ -137,17 +137,17 @@ These timings were measured on `2026-03-16` with:
 Quick runs:
 
 ```bash
-.venvs/frontier-eval-driver/bin/python -m frontier_eval \
+.venvs/frontier-v2-extra/bin/python -m frontier_eval \
   task=molecular_mechanics_weighted_parameter_coverage \
   algorithm=openevolve \
   algorithm.iterations=0
 
-.venvs/frontier-eval-driver/bin/python -m frontier_eval \
+.venvs/frontier-v2-extra/bin/python -m frontier_eval \
   task=molecular_mechanics_diverse_conformer_portfolio \
   algorithm=openevolve \
   algorithm.iterations=0
 
-.venvs/frontier-eval-driver/bin/python -m frontier_eval \
+.venvs/frontier-v2-extra/bin/python -m frontier_eval \
   task=molecular_mechanics_torsion_profile_fitting \
   algorithm=openevolve \
   algorithm.iterations=0
@@ -156,7 +156,7 @@ Quick runs:
 Equivalent explicit unified command:
 
 ```bash
-.venvs/frontier-eval-driver/bin/python -m frontier_eval \
+.venvs/frontier-v2-extra/bin/python -m frontier_eval \
   task=unified \
   task.benchmark=MolecularMechanics/torsion_profile_fitting \
   task.runtime.python_path=uv-env:openff-dev \

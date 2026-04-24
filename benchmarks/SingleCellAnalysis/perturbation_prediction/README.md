@@ -12,21 +12,33 @@ It uses the public OpenProblems dataset hosted on `openproblems-data` (S3) and r
 
 - `baseline/`: simple reference methods (outputs `prediction.h5ad`)
 - `verification/`: dataset downloader + scoring script
+- `scripts/`: initialization helper for the v2 task set
 - `Task.md`: full task specification
 
 ## Quick start
 
+This task is part of the current v2 task set and uses `.venvs/frontier-v2-extra` for local execution, but it is currently a **special-case non-unified task**. Its canonical reproduction path is still:
+
+1. download/cache the public dataset
+2. generate a prediction
+3. run the scorer
+
+Fetch data:
+
+```bash
+bash scripts/data/fetch_perturbation_prediction.sh
+```
+
 Generate a baseline prediction:
 
 ```bash
-python benchmarks/SingleCellAnalysis/perturbation_prediction/baseline/run_mean_across_compounds.py \
+.venvs/frontier-v2-extra/bin/python benchmarks/SingleCellAnalysis/perturbation_prediction/baseline/run_mean_across_compounds.py \
   --output prediction.h5ad
 ```
 
 Evaluate a prediction:
 
 ```bash
-python benchmarks/SingleCellAnalysis/perturbation_prediction/verification/evaluate_perturbation_prediction.py \
+.venvs/frontier-v2-extra/bin/python benchmarks/SingleCellAnalysis/perturbation_prediction/verification/evaluate_perturbation_prediction.py \
   --prediction prediction.h5ad
 ```
-
