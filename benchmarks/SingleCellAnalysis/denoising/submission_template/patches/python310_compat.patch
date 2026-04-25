@@ -1,0 +1,53 @@
+diff --git a/src/methods/magic/config.vsh.yaml b/src/methods/magic/config.vsh.yaml
+index 6c8390e..62d8162 100644
+--- a/src/methods/magic/config.vsh.yaml
++++ b/src/methods/magic/config.vsh.yaml
+@@ -55,10 +55,10 @@ resources:
+     path: script.py
+ engines:
+   - type: docker
+-    image: openproblems/base_python:1
++    image: python:3.10
+     setup:
+       - type: python
+-        pip: [scprep, magic-impute, scipy, scikit-learn<1.2, numpy<2]
++        pip: [anndata, scprep, magic-impute, scipy, scikit-learn, numpy<2]
+ runners:
+   - type: executable
+   - type: nextflow
+diff --git a/src/metrics/mse/config.vsh.yaml b/src/metrics/mse/config.vsh.yaml
+index cc51ac5..229a051 100644
+--- a/src/metrics/mse/config.vsh.yaml
++++ b/src/metrics/mse/config.vsh.yaml
+@@ -19,10 +19,12 @@ resources:
+     path: script.py
+ engines:
+   - type: docker
+-    image: openproblems/base_python:1
++    image: python:3.10
+     setup:
+       - type: python
+         pypi:
++          - anndata
++          - scanpy
+           - scikit-learn
+           - scprep
+           - numpy<2
+diff --git a/src/metrics/poisson/config.vsh.yaml b/src/metrics/poisson/config.vsh.yaml
+index b4b1f9c..9fe06e8 100644
+--- a/src/metrics/poisson/config.vsh.yaml
++++ b/src/metrics/poisson/config.vsh.yaml
+@@ -19,10 +19,11 @@ resources:
+     path: script.py
+ engines:
+   - type: docker
+-    image: openproblems/base_python:1
++    image: python:3.10
+     setup:
+       - type: python
+-        pypi: 
++        pypi:
++          - anndata
+           - scprep
+           - numpy<2
+ runners:

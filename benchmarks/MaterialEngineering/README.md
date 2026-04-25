@@ -1,13 +1,9 @@
-# Material Engineering
+# MaterialEngineering
 
-English | [简体中文](./README_zh-CN.md)
+This domain contains engineering optimization tasks related to **functional material design**, where the goal is to optimize material composition, structure, or processing parameters under real-world manufacturing and performance constraints.
 
-## Domain Background
+## Tasks
 
-Material engineering tasks in this repository focus on explicit trade-offs between physical performance, thickness, density, and manufacturing cost while remaining lightweight enough for local unified evaluation.
-
-## Sub-task Index
-
-* **[Microwave Absorber Design](./MicrowaveAbsorberDesign/README.md)**
-  * **Background**: Single-layer X-band microwave absorber design backed by a PEC.
-  * **Objective**: Optimize thickness and constituent fractions to balance reflection loss, bandwidth, density, and cost.
+| Task | Description | Status |
+|------|-------------|--------|
+| [MicrowaveAbsorberDesign](./MicrowaveAbsorberDesign/) | Single-layer X-band microwave absorber optimization | In Progress |

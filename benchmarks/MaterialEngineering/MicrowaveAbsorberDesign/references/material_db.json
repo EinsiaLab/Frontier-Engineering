@@ -15,7 +15,7 @@
     "mu_imag": 0.0,
     "density": 2.0,
     "cost_proxy": 2.0,
-    "description": "Carbon-based dielectric filler"
+    "description": "Carbon-based dielectric filler (e.g., reduced graphene oxide)"
   },
   "magnetic_filler": {
     "eps_real": 6.0,
@@ -24,6 +24,12 @@
     "mu_imag": 0.4,
     "density": 7.8,
     "cost_proxy": 3.0,
-    "description": "Ferrite-type magnetic filler"
+    "description": "Ferrite-type magnetic filler (e.g., carbonyl iron, bulk density ~7.8 g/cm3)"
+  },
+  "_notes": {
+    "electromagnetic_parameters": "All permittivity and permeability values are frequency-independent constant approximations. Real materials exhibit frequency-dependent dispersion, especially in the X-band.",
+    "mixing_rule": "The evaluator uses linear volume-fraction mixing. More accurate effective medium theories (Maxwell-Garnett, Bruggeman) may be adopted in future versions.",
+    "density_values": "Density values represent bulk material densities. The effective composite density is computed via linear volume-fraction mixing.",
+    "sign_convention": "Complex permittivity: eps_r = eps_real - j*eps_imag (negative imaginary part). Same convention for permeability."
   }
 }

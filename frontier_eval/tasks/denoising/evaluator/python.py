@@ -65,6 +65,14 @@ def _safe_metric_key(value: str) -> str:
     return re.sub(r"[^A-Za-z0-9]+", "_", value).strip("_").lower() or "unknown"
 
 
+def _prepend_path(env: dict[str, str], path: Path) -> None:
+    if not path.is_dir():
+        return
+    current = env.get("PATH", "")
+    prefix = str(path)
+    env["PATH"] = prefix if not current else prefix + os.pathsep + current
+
+
 def _discover_latest_run_dir(results_dir: Path, before: set[str]) -> Path | None:
     if not results_dir.is_dir():
         return None
@@ -191,6 +199,13 @@ def evaluate(
     benchmark_dir = (repo_root / "benchmarks" / "SingleCellAnalysis" / "denoising").resolve()
     task_dir = (benchmark_dir / "task_denoising").resolve()
     results_dir = (task_dir / "temp" / "results").resolve()
+    local_tools_dir = (benchmark_dir / ".tools").resolve()
+    local_tools_bin = (local_tools_dir / "bin").resolve()
+    local_java_home = (local_tools_dir / "jdk-17").resolve()
+    local_cache_dir = (benchmark_dir / ".cache").resolve()
+    local_nxf_home = (local_cache_dir / "nextflow").resolve()
+    local_capsule_dir = (local_cache_dir / "capsule").resolve()
+    local_viash_home = (local_cache_dir / "viash").resolve()
 
     submission_src = (task_dir / "src" / "methods" / METHOD_ID / "script.py").resolve()
     submission_nf = (
@@ -236,9 +251,17 @@ def evaluate(
         ref_text = _collect_reference_methods(task_dir, ref_methods)
         if ref_text:
             artifacts["reference_methods"] = _truncate_middle(ref_text, limit=150_000)
+    artifacts["bootstrap_hint"] = "bash scripts/bootstrap/setup_denoising_task.sh"
+    artifacts["local_tools_bin"] = str(local_tools_bin)
+    artifacts["local_java_home"] = str(local_java_home)
+    artifacts["local_nxf_home"] = str(local_nxf_home)
+    artifacts["local_viash_home"] = str(local_viash_home)
 
     if not benchmark_dir.is_dir() or not task_dir.is_dir():
-        artifacts["error_message"] = f"denoising benchmark folder missing: {benchmark_dir}"
+        artifacts["error_message"] = (
+            f"denoising benchmark folder missing: {benchmark_dir}. "
+            "Run `bash scripts/bootstrap/setup_denoising_task.sh` first."
+        )
         metrics["runtime_s"] = float(time.time() - start)
         return _wrap(metrics, artifacts)
     if not program_path_obj.is_file():
@@ -272,6 +295,15 @@ def evaluate(
     env["PYTHONPATH"] = (
         str(repo_root) + (os.pathsep + env["PYTHONPATH"] if env.get("PYTHONPATH") else "")
     )
+    if local_java_home.is_dir():
+        env.setdefault("JAVA_HOME", str(local_java_home))
+        _prepend_path(env, local_java_home / "bin")
+    _prepend_path(env, local_tools_bin)
+    env.setdefault("NXF_HOME", str(local_nxf_home))
+    env.setdefault("CAPSULE_DIR", str(local_capsule_dir))
+    env.setdefault("VIASH_HOME", str(local_viash_home))
+    artifacts["effective_java_home"] = env.get("JAVA_HOME", "")
+    artifacts["effective_nxf_home"] = env.get("NXF_HOME", "")
 
     lock_path = (task_dir / "temp" / ".frontier_eval_submission.lock").resolve()
     artifacts["lock_path"] = str(lock_path)

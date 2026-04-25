@@ -21,8 +21,8 @@ def normalize(value, vmin, vmax):
 def compute_rl_and_eab(eps_r, mu_r, d_mm, freqs_hz, threshold_db=-10.0):
     d_m = d_mm * 1e-3
     rl_db = np.zeros(len(freqs_hz))
-    for i, freq_hz in enumerate(freqs_hz):
-        gamma = 1j * (2.0 * np.pi * freq_hz * d_m / C0) * np.sqrt(mu_r * eps_r)
+    for i, f in enumerate(freqs_hz):
+        gamma = 1j * (2.0 * np.pi * f * d_m / C0) * np.sqrt(mu_r * eps_r)
         z_in = Z0 * np.sqrt(mu_r / eps_r) * np.tanh(gamma)
         refl = abs((z_in - Z0) / (z_in + Z0))
         rl_db[i] = 20.0 * np.log10(max(refl, 1e-15))
@@ -59,46 +59,49 @@ def main():
         config["freq_ghz_max"] * 1e9,
         config["num_freq_points"],
     )
-    weights = config["weights"]
+    w = config["weights"]
     norm = config["normalization"]
+
     mat = matdb["matrix"]
     die = matdb["dielectric_filler"]
     mag = matdb["magnetic_filler"]
 
     best_score = -1e18
     best_sub = None
-    random.seed(42)
 
-    for _ in range(500):
+    random.seed(42)
+    N_SAMPLES = 500
+
+    for _ in range(N_SAMPLES):
         phi_d = random.uniform(0.05, 0.50)
         phi_m = random.uniform(0.05, 0.50)
-        phi_x = 1.0 - phi_d - phi_m
-        if phi_x < 0.05:
+        remainder = 1.0 - phi_d - phi_m
+        if remainder < 0.05:
             continue
+        phi_x = remainder
         d_mm = random.uniform(config["d_mm_min"], config["d_mm_max"])
 
         eps_real = phi_x * mat["eps_real"] + phi_d * die["eps_real"] + phi_m * mag["eps_real"]
         eps_imag = phi_x * mat["eps_imag"] + phi_d * die["eps_imag"] + phi_m * mag["eps_imag"]
-        mu_real = phi_x * mat["mu_real"] + phi_d * die["mu_real"] + phi_m * mag["mu_real"]
-        mu_imag = phi_x * mat["mu_imag"] + phi_d * die["mu_imag"] + phi_m * mag["mu_imag"]
-        density = phi_x * mat["density"] + phi_d * die["density"] + phi_m * mag["density"]
-        cost = phi_x * mat["cost_proxy"] + phi_d * die["cost_proxy"] + phi_m * mag["cost_proxy"]
+        mu_real  = phi_x * mat["mu_real"]  + phi_d * die["mu_real"]  + phi_m * mag["mu_real"]
+        mu_imag  = phi_x * mat["mu_imag"]  + phi_d * die["mu_imag"]  + phi_m * mag["mu_imag"]
+        density  = phi_x * mat["density"]  + phi_d * die["density"]  + phi_m * mag["density"]
+        cost     = phi_x * mat["cost_proxy"] + phi_d * die["cost_proxy"] + phi_m * mag["cost_proxy"]
 
-        rl_min, eab10 = compute_rl_and_eab(
-            complex(eps_real, -eps_imag),
-            complex(mu_real, -mu_imag),
-            d_mm,
-            freqs_hz,
-        )
+        eps_r = complex(eps_real, -eps_imag)
+        mu_r  = complex(mu_real,  -mu_imag)
+
+        rl_min, eab10 = compute_rl_and_eab(eps_r, mu_r, d_mm, freqs_hz)
+
+        # Normalized scoring (same as official evaluator)
         score = (
-            weights["eab10"] * normalize(eab10, norm["eab10_ghz"]["min"], norm["eab10_ghz"]["max"])
-            + weights["rl_min"]
-            * normalize(abs(rl_min), norm["abs_rl_min_db"]["min"], norm["abs_rl_min_db"]["max"])
-            - weights["thickness"]
-            * normalize(d_mm, norm["thickness_mm"]["min"], norm["thickness_mm"]["max"])
-            - weights["density"] * normalize(density, norm["density"]["min"], norm["density"]["max"])
-            - weights["cost"] * normalize(cost, norm["cost"]["min"], norm["cost"]["max"])
+            w["eab10"]     * normalize(eab10,       norm["eab10_ghz"]["min"],     norm["eab10_ghz"]["max"])
+            + w["rl_min"]  * normalize(abs(rl_min),  norm["abs_rl_min_db"]["min"], norm["abs_rl_min_db"]["max"])
+            - w["thickness"] * normalize(d_mm,       norm["thickness_mm"]["min"],  norm["thickness_mm"]["max"])
+            - w["density"]   * normalize(density,    norm["density"]["min"],        norm["density"]["max"])
+            - w["cost"]      * normalize(cost,       norm["cost"]["min"],           norm["cost"]["max"])
         )
+
         if score > best_score:
             best_score = score
             best_sub = {
@@ -109,12 +112,15 @@ def main():
                 "phi_matrix": round(phi_x, 4),
             }
 
-    best_sub["phi_matrix"] = round(
-        1.0 - best_sub["phi_dielectric"] - best_sub["phi_magnetic"], 6
-    )
+    if best_sub:
+        best_sub["phi_matrix"] = round(1.0 - best_sub["phi_dielectric"] - best_sub["phi_magnetic"], 6)
+
     output_path = temp_dir / "submission.json"
-    output_path.write_text(json.dumps(best_sub, indent=2) + "\n", encoding="utf-8")
+    with open(output_path, "w", encoding="utf-8") as f:
+        json.dump(best_sub, f, indent=2)
+
     print(f"Baseline search completed. Best score proxy: {best_score:.4f}")
+    print(f"Submission: {json.dumps(best_sub, indent=2)}")
     print(f"Written to {output_path}")
 
 

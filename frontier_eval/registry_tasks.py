@@ -30,7 +30,11 @@ from frontier_eval.tasks.flash_attention import FlashAttentionTask
 from frontier_eval.tasks.topology_optimization import TopologyOptimizationTask
 from frontier_eval.tasks.unified import UnifiedTask
 from frontier_eval.tasks.muon_tomography import MuonTomographyTask
+from frontier_eval.tasks.microwave_absorber_design import MicrowaveAbsorberDesignTask
+from frontier_eval.tasks.lightweight_broadband_absorber import LightweightBroadbandAbsorberTask
+from frontier_eval.tasks.nanocarbon_absorber_optimization import NanoCarbonAbsorberOptimizationTask
 from frontier_eval.tasks.proton_therapy_planning import ProtonTherapyPlanningTask
+
 
 _TASKS: dict[str, Type[Task]] = {
     SmokeTask.NAME: SmokeTask,
@@ -57,6 +61,10 @@ _TASKS: dict[str, Type[Task]] = {
     TopologyOptimizationTask.NAME: TopologyOptimizationTask,
     UnifiedTask.NAME: UnifiedTask,
     MuonTomographyTask.NAME: MuonTomographyTask,
+    MicrowaveAbsorberDesignTask.NAME: MicrowaveAbsorberDesignTask,
+    LightweightBroadbandAbsorberTask.NAME: LightweightBroadbandAbsorberTask,
+    NanoCarbonAbsorberOptimizationTask.NAME: NanoCarbonAbsorberOptimizationTask,
+
     ProtonTherapyPlanningTask.NAME: ProtonTherapyPlanningTask,
 }
 

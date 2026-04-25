@@ -13,11 +13,11 @@
   "phi_sum_tolerance": 1e-6,
   "rl_threshold_db": -10.0,
   "normalization": {
-    "eab10_ghz": { "min": 0.0, "max": 4.0 },
+    "eab10_ghz":     { "min": 0.0, "max": 4.0 },
     "abs_rl_min_db": { "min": 0.0, "max": 30.0 },
-    "thickness_mm": { "min": 1.0, "max": 5.0 },
-    "density": { "min": 1.0, "max": 8.0 },
-    "cost": { "min": 1.0, "max": 3.0 }
+    "thickness_mm":  { "min": 1.0, "max": 5.0 },
+    "density":       { "min": 1.0, "max": 8.0 },
+    "cost":          { "min": 1.0, "max": 3.0 }
   },
   "weights": {
     "eab10": 1.0,
@@ -26,5 +26,5 @@
     "density": 0.1,
     "cost": 0.05
   },
-  "notes": "All metrics are min-max normalized to [0,1] before applying weights. Higher combined_score is better."
+  "notes": "All metrics are min-max normalized to [0,1] before applying weights. Higher combined_score is better. Thickness penalty increased (0.5) to favor thinner designs. Normalization ranges are based on physically reasonable bounds for single-layer X-band absorbers."
 }
