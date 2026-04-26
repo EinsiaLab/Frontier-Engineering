@@ -100,7 +100,9 @@ Infeasible if:
 ```bash
 python verification/evaluator.py scripts/init.py
 python verification/evaluator.py baseline/solution.py
-python -m frontier_eval task=lightweight_broadband_absorber algorithm.iterations=0
+bash scripts/run_v2_unified.sh MaterialEngineering/LightweightBroadbandAbsorber \
+  algorithm=openevolve \
+  algorithm.iterations=0
 ```
 
 ## 7. References

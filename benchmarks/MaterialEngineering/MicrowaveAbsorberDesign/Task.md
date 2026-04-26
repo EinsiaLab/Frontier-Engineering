@@ -154,6 +154,8 @@ python verification/evaluator.py scripts/init.py
 # Test the baseline
 python verification/evaluator.py baseline/solution.py
 
-# Framework compatibility check
-python -m frontier_eval task=MicrowaveAbsorberDesign algorithm.iterations=0
+# Mainline unified compatibility check
+bash scripts/run_v2_unified.sh MaterialEngineering/MicrowaveAbsorberDesign \
+  algorithm=openevolve \
+  algorithm.iterations=0
 ```

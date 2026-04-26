@@ -6,4 +6,5 @@ This domain contains engineering optimization tasks related to **functional mate
 
 | Task | Description | Status |
 |------|-------------|--------|
-| [MicrowaveAbsorberDesign](./MicrowaveAbsorberDesign/) | Single-layer X-band microwave absorber optimization | In Progress |
+| [MicrowaveAbsorberDesign](./MicrowaveAbsorberDesign/) | Single-layer X-band microwave absorber optimization | Verified on v2 mainline |
+| [LightweightBroadbandAbsorber](./LightweightBroadbandAbsorber/) | Lightweight broadband absorber with EAB hard constraint | Verified on this branch |

@@ -14,5 +14,13 @@ python verification/evaluator.py scripts/init.py
 python verification/evaluator.py baseline/solution.py
 ```
 
+## Unified Run
+
+```bash
+bash scripts/run_v2_unified.sh MaterialEngineering/LightweightBroadbandAbsorber \
+  algorithm=openevolve \
+  algorithm.iterations=0
+```
+
 ## Reference
 Wang et al., *Materials* 2024, 17, 3433.
