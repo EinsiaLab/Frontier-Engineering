@@ -58,12 +58,14 @@ case "${TASK_NAME}" in
   holographic_*)
     TASK_KIND="holographic"
     SOURCE_JSON_REL="verification/artifacts/summary.json"
+    HOLO_SEED="${HOLO_EVAL_SEED:-0}"
     EVAL_CMD=(
       "${PYTHON_CMD}" "verification/evaluate.py"
       "--device" "cpu"
       "--baseline-steps" "24"
       "--reference-steps" "40"
       "--artifacts-dir" "verification/artifacts"
+      "--seed" "${HOLO_SEED}"
     )
     ;;
   *)

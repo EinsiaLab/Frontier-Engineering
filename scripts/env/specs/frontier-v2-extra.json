@@ -1,0 +1,22 @@
+{
+  "name": "frontier-v2-extra",
+  "python": "3.12",
+  "requirements": [
+    "frontier_eval/requirements.txt",
+    "benchmarks/MaterialEngineering/LightweightBroadbandAbsorber/verification/requirements.txt",
+    "benchmarks/MaterialEngineering/MicrowaveAbsorberDesign/verification/requirements.txt",
+    "benchmarks/MaterialEngineering/NanoCarbonAbsorberOptimization/verification/requirements.txt",
+    "benchmarks/ParticlePhysics/PETScannerOptimization/verification/requirements.txt",
+    "benchmarks/SingleCellAnalysis/perturbation_prediction/verification/requirements-perturbation_prediction.txt",
+    "benchmarks/CommunicationEngineering/LDPCErrorFloor/verification/requirements.txt",
+    "benchmarks/CommunicationEngineering/PMDSimulation/verification/requirements.txt",
+    "benchmarks/CommunicationEngineering/RayleighFadingBER/verification/requirements.txt"
+  ],
+  "packages": [],
+  "notes": [
+    "This environment is for the v2 task set only and is intentionally isolated from the released v1 env specs.",
+    "MaterialEngineering/LightweightBroadbandAbsorber, MaterialEngineering/MicrowaveAbsorberDesign, MaterialEngineering/NanoCarbonAbsorberOptimization, and ParticlePhysics/PETScannerOptimization are numpy-only tasks routed through the branch's unified flow.",
+    "SingleCellAnalysis/perturbation_prediction still needs its external dataset download path prepared separately.",
+    "CommunicationEngineering tasks can run from this env without Docker."
+  ]
+}

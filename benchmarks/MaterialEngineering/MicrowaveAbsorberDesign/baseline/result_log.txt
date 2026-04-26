@@ -1,0 +1,35 @@
+Baseline Execution Log
+======================
+Command: python verification/evaluator.py baseline/solution.py
+Date: 2026-03-17
+Method: Random search (500 samples, seed=42)
+
+Submission:
+{
+  "benchmark_id": "microwave_absorber_single_layer_xband",
+  "d_mm": 2.1165,
+  "phi_dielectric": 0.439,
+  "phi_magnetic": 0.4851,
+  "phi_matrix": 0.0759
+}
+
+Evaluation Result:
+{
+  "valid": 1,
+  "feasible": 1,
+  "combined_score": 0.3794,
+  "rl_min_db": -12.4184,
+  "eab10_ghz": 2.1,
+  "thickness_mm": 2.1165,
+  "density": 4.75286,
+  "cost_proxy": 2.4092,
+  "runtime_sec": 0.497
+}
+
+Notes:
+- combined_score > 0, confirming baseline produces a feasible solution.
+- RL_min = -12.42 dB (below -10 dB threshold, effective absorption achieved).
+- EAB_10 = 2.1 GHz effective absorption bandwidth (RL <= -10 dB, maximum continuous span).
+- All metrics are min-max normalized to [0,1] before weighting.
+- Magnetic filler density uses bulk value (7.8 g/cm3).
+- Thickness penalty weight = 0.5 (elevated for lightweight applications).

@@ -21,13 +21,17 @@ We welcome new engineering problem ideas — even without complete verification 
       <td>Maximize CRTBP lunar payload under trajectory and dynamics constraints (Octave validated)</td>
     </tr>
     <tr>
-      <td rowspan="2"><b>ParticlePhysics</b></td>
+      <td rowspan="3"><b>ParticlePhysics</b></td>
       <td><code>MuonTomography</code></td>
       <td>Muon detector placement optimization under flux, budget, and excavation constraints</td>
     </tr>
     <tr>
       <td><code>ProtonTherapyPlanning</code></td>
       <td>IMPT dose weight optimization under tumor coverage, OAR safety, and beam cost constraints</td>
+    </tr>
+    <tr>
+      <td><code>PETScannerOptimization</code></td>
+      <td>PET detector ring geometry optimization under sensitivity, parallax, and crystal-volume budget trade-offs</td>
     </tr>
     <tr>
       <td rowspan="3"><b>KernelEngineering</b></td>
@@ -250,6 +254,19 @@ We welcome new engineering problem ideas — even without complete verification 
     <tr>
       <td><code>discrete_rebalance_mip</code></td>
       <td>Discrete lot-constrained rebalancing with mixed-integer optimization</td>
+    </tr>
+    <tr>
+      <td rowspan="3"><b>MaterialEngineering</b></td>
+      <td><code>MicrowaveAbsorberDesign</code></td>
+      <td>Single-layer X-band microwave absorber optimization under bandwidth, reflection-loss, density, and cost trade-offs</td>
+    </tr>
+    <tr>
+      <td><code>LightweightBroadbandAbsorber</code></td>
+      <td>Lightweight broadband absorber optimization with a minimum effective-bandwidth hard constraint</td>
+    </tr>
+    <tr>
+      <td><code>NanoCarbonAbsorberOptimization</code></td>
+      <td>Mixed-variable nano-carbon absorber optimization over material type, carbon content, and thickness</td>
     </tr>
     <tr>
       <td rowspan="7"><b>JobShop</b></td>

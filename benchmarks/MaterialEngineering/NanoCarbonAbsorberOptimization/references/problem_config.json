@@ -1,0 +1,31 @@
+{
+  "benchmark_id": "nanocarbon_absorber_optimization_2_18ghz",
+  "task_name": "NanoCarbonAbsorberOptimization",
+  "description": "Mixed-variable optimization of nano-carbon type and content in Nd-BaM composites for broadband microwave absorption (2-18 GHz)",
+  "freq_ghz_min": 2.0,
+  "freq_ghz_max": 18.0,
+  "num_freq_points": 321,
+  "backing": "PEC",
+  "d_mm_min": 1.5,
+  "d_mm_max": 5.0,
+  "carbon_content_min": 0.01,
+  "carbon_content_max": 0.10,
+  "valid_carbon_types": ["CNTs", "GO", "OLC"],
+  "rl_threshold_db": -10.0,
+  "min_eab_ghz": 3.0,
+  "normalization": {
+    "eab10_ghz": { "min": 0.0, "max": 16.0 },
+    "abs_rl_min_db": { "min": 0.0, "max": 130.0 },
+    "thickness_mm": { "min": 1.5, "max": 5.0 },
+    "density": { "min": 3.0, "max": 5.5 },
+    "cost": { "min": 1.0, "max": 4.0 }
+  },
+  "weights": {
+    "eab10": 1.0,
+    "rl_min": 0.2,
+    "thickness": 0.3,
+    "density": 0.15,
+    "cost": 0.05
+  },
+  "notes": "Mixed-variable optimization with a discrete carbon_type and continuous carbon_content / thickness. EAB < 3.0 GHz is infeasible."
+}
