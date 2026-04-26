@@ -1,7 +1,0 @@
-{
-  "benchmark_id": "microwave_absorber_single_layer_xband",
-  "d_mm": 2.1165,
-  "phi_dielectric": 0.439,
-  "phi_magnetic": 0.4851,
-  "phi_matrix": 0.0759
-}
