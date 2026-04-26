@@ -27,6 +27,7 @@ No output is expected. This proves the repository configuration was not changed;
 |---|---|---|---|
 | `MaterialEngineering/LightweightBroadbandAbsorber` | `.venvs/frontier-v2-extra` | verified | Direct baseline and unified smoke both succeeded on this branch. |
 | `MaterialEngineering/MicrowaveAbsorberDesign` | `.venvs/frontier-v2-extra` | verified | Direct baseline and unified smoke both succeeded on mainline. |
+| `MaterialEngineering/NanoCarbonAbsorberOptimization` | `.venvs/frontier-v2-extra` | verified | Mixed-variable material task from PR50; direct baseline and unified smoke both succeeded on this branch. |
 | `ParticlePhysics/MuonTomography` | `.venvs/frontier-v2-extra` | verified | Direct baseline plus evaluator succeeded; unified v2 run succeeded after using the v2 runtime. |
 | `ParticlePhysics/PETScannerOptimization` | `.venvs/frontier-v2-extra` | verified | Direct baseline and unified smoke succeeded; evaluator now rejects malformed ring schemas. |
 | `ParticlePhysics/ProtonTherapyPlanning` | `.venvs/frontier-v2-extra` | verified | Unified metadata added on mainline; v2 path now uses `task=unified`. |
@@ -86,6 +87,12 @@ bash scripts/run_v2_unified.sh MaterialEngineering/LightweightBroadbandAbsorber 
 
 ```bash
 bash scripts/run_v2_unified.sh MaterialEngineering/MicrowaveAbsorberDesign \
+  algorithm=openevolve \
+  algorithm.iterations=0
+```
+
+```bash
+bash scripts/run_v2_unified.sh MaterialEngineering/NanoCarbonAbsorberOptimization \
   algorithm=openevolve \
   algorithm.iterations=0
 ```
@@ -186,6 +193,7 @@ The timing ledger records whether a result includes setup or dataset download. M
 |---|---:|---:|---:|---|
 | `MaterialEngineering/LightweightBroadbandAbsorber` | `combined_score=0.36364088798998295`, `valid=1.0` | TODO: rerun direct shell timing if needed; unified smoke succeeded | `0.8587` from unified smoke | `bash scripts/run_v2_unified.sh MaterialEngineering/LightweightBroadbandAbsorber algorithm=openevolve algorithm.iterations=0` |
 | `MaterialEngineering/MicrowaveAbsorberDesign` | `combined_score=0.26620516373737335`, `valid=1.0` | TODO: rerun direct shell timing if needed; unified smoke succeeded | `0.8660` from unified smoke | `bash scripts/run_v2_unified.sh MaterialEngineering/MicrowaveAbsorberDesign algorithm=openevolve algorithm.iterations=0` |
+| `MaterialEngineering/NanoCarbonAbsorberOptimization` | `combined_score=0.1569881650805824`, `valid=1.0` | TODO: rerun direct shell timing if needed; unified smoke succeeded | `0.8695` from unified smoke | `bash scripts/run_v2_unified.sh MaterialEngineering/NanoCarbonAbsorberOptimization algorithm=openevolve algorithm.iterations=0` |
 | `ParticlePhysics/MuonTomography` | `combined_score=199.32012533144325`, `valid=1.0` | TODO: rerun required | TODO: rerun required | `bash scripts/run_v2_unified.sh ParticlePhysics/MuonTomography algorithm=openevolve algorithm.iterations=0` |
 | `ParticlePhysics/PETScannerOptimization` | `combined_score=598.1942761314276`, `valid=1.0` | TODO: rerun direct shell timing if needed; unified smoke succeeded | `0.7759` from unified smoke | `bash scripts/run_v2_unified.sh ParticlePhysics/PETScannerOptimization algorithm=openevolve algorithm.iterations=0` |
 | `ParticlePhysics/ProtonTherapyPlanning` | `combined_score=-2685.8873258471367`, `valid=1.0` | TODO: rerun direct shell timing if needed; unified smoke succeeded | `1.0057` from unified smoke | `bash scripts/run_v2_unified.sh ParticlePhysics/ProtonTherapyPlanning algorithm=openevolve algorithm.iterations=0` |
@@ -209,6 +217,7 @@ The timing ledger records whether a result includes setup or dataset download. M
 
 - `benchmarks/MaterialEngineering/LightweightBroadbandAbsorber/*` is kept on this branch and aligned to benchmark-local `frontier_eval/` metadata for `task=unified`.
 - `benchmarks/MaterialEngineering/MicrowaveAbsorberDesign/*` remains the primary PR45-derived absorber task and uses benchmark-local `frontier_eval/` metadata for `task=unified`. Direct baseline and unified smoke both succeeded.
+- `benchmarks/MaterialEngineering/NanoCarbonAbsorberOptimization/*` from PR50 is integrated on this branch via benchmark-local `frontier_eval/` metadata rather than the global task registry route.
 - `benchmarks/ParticlePhysics/PETScannerOptimization/*` was added directly on mainline using benchmark-local `frontier_eval/` metadata for `task=unified`. The evaluator now requires exactly 20 rings with unique contiguous `ring_id` values and rejects malformed schemas outright.
 - `benchmarks/ParticlePhysics/ProtonTherapyPlanning/*` now also has benchmark-local `frontier_eval/` metadata and unified smoke succeeds on `.venvs/frontier-v2-extra`.
 - `benchmarks/ParticlePhysics/MuonTomography/frontier_eval/evaluator.py` now prefers the benchmark-local verifier before falling back to the repository verifier. This keeps copied benchmark sandboxes from depending on a full repository tree.

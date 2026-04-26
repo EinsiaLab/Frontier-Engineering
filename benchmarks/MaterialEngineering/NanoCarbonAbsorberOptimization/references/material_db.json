@@ -1,0 +1,58 @@
+{
+  "base_absorber": {
+    "name": "Nd0.15-BaM",
+    "description": "Rare-earth Nd-doped M-type barium ferrite base absorber.",
+    "mu_real": 1.1,
+    "mu_imag": 0.08,
+    "eps_real": 5.0,
+    "eps_imag": 0.3,
+    "density": 5.1
+  },
+  "carbon_materials": {
+    "CNTs": {
+      "description": "Multi-walled carbon nanotubes with strongest conductivity among the three NC types.",
+      "density": 1.7,
+      "cost_proxy": 3.0,
+      "eps_params": {
+        "eps_real_base": 6.0,
+        "eps_real_slope": 180.0,
+        "eps_imag_base": 0.5,
+        "eps_imag_slope": 90.0
+      },
+      "mu_params": {
+        "mu_real_offset": -0.02,
+        "mu_imag_offset": -0.01
+      }
+    },
+    "GO": {
+      "description": "Graphene oxide with high resistivity and strong polarization from functional groups.",
+      "density": 2.0,
+      "cost_proxy": 2.5,
+      "eps_params": {
+        "eps_real_base": 4.5,
+        "eps_real_slope": 30.0,
+        "eps_imag_base": 0.2,
+        "eps_imag_slope": 8.0
+      },
+      "mu_params": {
+        "mu_real_offset": -0.01,
+        "mu_imag_offset": 0.0
+      }
+    },
+    "OLC": {
+      "description": "Onion-like carbon with moderate conductivity and spherical morphology.",
+      "density": 1.9,
+      "cost_proxy": 4.0,
+      "eps_params": {
+        "eps_real_base": 5.0,
+        "eps_real_slope": 50.0,
+        "eps_imag_base": 0.3,
+        "eps_imag_slope": 20.0
+      },
+      "mu_params": {
+        "mu_real_offset": -0.01,
+        "mu_imag_offset": 0.0
+      }
+    }
+  }
+}

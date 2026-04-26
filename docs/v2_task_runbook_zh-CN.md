@@ -8,6 +8,7 @@
 |---|---|---|---|
 | `MaterialEngineering/LightweightBroadbandAbsorber` | `.venvs/frontier-v2-extra` | verified | direct baseline 与 unified smoke 均已在本分支通过。 |
 | `MaterialEngineering/MicrowaveAbsorberDesign` | `.venvs/frontier-v2-extra` | verified | direct baseline 与 unified smoke 均已通过。 |
+| `MaterialEngineering/NanoCarbonAbsorberOptimization` | `.venvs/frontier-v2-extra` | verified | PR50 混合变量材料任务；direct baseline 与 unified smoke 均已在本分支通过。 |
 | `ParticlePhysics/MuonTomography` | `.venvs/frontier-v2-extra` | verified | direct baseline 与 unified v2 已通过。 |
 | `ParticlePhysics/PETScannerOptimization` | `.venvs/frontier-v2-extra` | verified | direct baseline 与 unified smoke 已通过；evaluator 已加严 ring schema 校验。 |
 | `ParticlePhysics/ProtonTherapyPlanning` | `.venvs/frontier-v2-extra` | verified | 主线已补 benchmark-local unified 元数据。 |
@@ -44,6 +45,7 @@
 ```bash
 bash scripts/run_v2_unified.sh MaterialEngineering/LightweightBroadbandAbsorber algorithm=openevolve algorithm.iterations=0
 bash scripts/run_v2_unified.sh MaterialEngineering/MicrowaveAbsorberDesign algorithm=openevolve algorithm.iterations=0
+bash scripts/run_v2_unified.sh MaterialEngineering/NanoCarbonAbsorberOptimization algorithm=openevolve algorithm.iterations=0
 bash scripts/run_v2_unified.sh ParticlePhysics/MuonTomography algorithm=openevolve algorithm.iterations=0
 bash scripts/run_v2_unified.sh ParticlePhysics/PETScannerOptimization algorithm=openevolve algorithm.iterations=0
 bash scripts/run_v2_unified.sh ParticlePhysics/ProtonTherapyPlanning algorithm=openevolve algorithm.iterations=0

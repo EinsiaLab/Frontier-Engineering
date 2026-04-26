@@ -14,3 +14,6 @@
 * **[轻量宽带吸波材料设计](./LightweightBroadbandAbsorber/README.md)**
   * **背景**：面向 8.2-18 GHz 的轻量宽带吸波体设计。
   * **目标**：在带宽、吸收深度、厚度、密度和成本之间折中，并满足最小 EAB 硬约束。
+* **[纳米碳吸波材料优化](./NanoCarbonAbsorberOptimization/README.md)**
+  * **背景**：在 Nd-BaM 复合体系中联合选择纳米碳类型和含量。
+  * **目标**：在 2-18 GHz 频段内优化离散碳材料选择、碳含量和厚度。
