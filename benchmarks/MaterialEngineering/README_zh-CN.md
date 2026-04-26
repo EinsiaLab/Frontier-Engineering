@@ -6,6 +6,8 @@
 
 本仓库中的材料工程任务关注物理性能、厚度、密度和制造成本之间的显式工程折中，同时保持 unified 本地评测可运行。
 
+在当前分支上，材料工程任务统一通过 benchmark-local `task=unified` 元数据接入，并默认使用 `.venvs/frontier-v2-extra` 作为轻量运行环境。
+
 ## 任务索引
 
 * **[微波吸波材料设计](./MicrowaveAbsorberDesign/README.md)**
