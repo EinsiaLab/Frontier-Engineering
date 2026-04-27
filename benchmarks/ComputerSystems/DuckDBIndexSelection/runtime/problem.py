@@ -1,6 +1,9 @@
 from __future__ import annotations
 
-from benchmarks.ComputerSystems.duckdb_local_workload import INDEX_CANDIDATES, measure_index_design, normalize_name_list
+try:
+    from .duckdb_local_workload import INDEX_CANDIDATES, measure_index_design, normalize_name_list
+except ImportError:
+    from benchmarks.ComputerSystems.duckdb_local_workload import INDEX_CANDIDATES, measure_index_design, normalize_name_list
 
 
 PUBLIC_CASES = (

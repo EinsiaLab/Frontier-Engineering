@@ -1,6 +1,9 @@
 from __future__ import annotations
 
-from benchmarks.ComputerSystems.duckdb_local_workload import measure_query_rewrite
+try:
+    from .duckdb_local_workload import measure_query_rewrite
+except ImportError:
+    from benchmarks.ComputerSystems.duckdb_local_workload import measure_query_rewrite
 
 
 PUBLIC_CASES = (
