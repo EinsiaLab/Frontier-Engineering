@@ -16,6 +16,14 @@
 | `CommunicationEngineering/LDPCErrorFloor` | `.venvs/frontier-v2-extra` | hardened | evaluator 已改为 evaluator-owned 统计链路。 |
 | `CommunicationEngineering/PMDSimulation` | `.venvs/frontier-v2-extra` | hardened | evaluator 已改为 evaluator-owned 统计链路。 |
 | `CommunicationEngineering/RayleighFadingBER` | `.venvs/frontier-v2-extra` | hardened | evaluator 已改为 evaluator-owned 统计链路。 |
+| `ComputerSystems/DuckDBIndexSelection` | `.venvs/frontier-v2-extra` | verified | PR44 第一批任务；direct baseline 已切到 multi-case DuckDB evaluator，并带 benchmark-local unified 元数据。 |
+| `ComputerSystems/DuckDBPreAggregationSelection` | `.venvs/frontier-v2-extra` | verified | PR44 第一批任务；direct baseline 已切到 multi-case pre-aggregation evaluator，并带 benchmark-local unified 元数据。 |
+| `ComputerSystems/DuckDBQueryRewrite` | `.venvs/frontier-v2-extra` | verified | PR44 第一批任务；direct baseline 已切到 multi-case 语义等价 evaluator，并带 benchmark-local unified 元数据。 |
+| `OperationsResearch/DynamicCurrentMinimumTimeRouting` | `.venvs/frontier-v2-extra` | verified | PR44 第一批任务；direct baseline 已切到 multi-case routing evaluator，并带 benchmark-local unified 元数据。 |
+| `OperationsResearch/FuelMinimizingShipWeatherRouting` | `.venvs/frontier-v2-extra` | verified | PR44 第一批任务；direct baseline 已切到 multi-case fuel-routing evaluator，并带 benchmark-local unified 元数据。 |
+| `Robotics/GridPathPlanningWithObstacles` | `.venvs/frontier-v2-extra` | verified | PR44 第二批任务；direct baseline 已切到 multi-grid evaluator，并带 benchmark-local unified 元数据。 |
+| `Robotics/MultiRobotPrioritizedPlanning` | `.venvs/frontier-v2-extra` | verified | PR44 第二批任务；direct baseline 已切到 multi-case MAPF evaluator，并带 benchmark-local unified 元数据。 |
+| `Robotics/NarrowPassagePlanning` | `.venvs/frontier-v2-extra` | verified | PR44 第二批任务；direct baseline 已切到 multi-grid bottleneck evaluator，并带 benchmark-local unified 元数据。 |
 | `ReactionOptimisation/dtlz2_pareto` | `.venvs/frontier-v2-summit-compat` | verified | 需要兼容环境。 |
 | `MolecularMechanics/weighted_parameter_coverage` | `.venvs/openff-dev` | verified | OpenFF 特殊运行时，不是 uv-only。 |
 | `MolecularMechanics/diverse_conformer_portfolio` | `.venvs/openff-dev` | verified | OpenFF 特殊运行时，不是 uv-only。 |
@@ -52,6 +60,14 @@ bash scripts/run_v2_unified.sh ParticlePhysics/ProtonTherapyPlanning algorithm=o
 bash scripts/run_v2_unified.sh CommunicationEngineering/LDPCErrorFloor algorithm=openevolve algorithm.iterations=0 algorithm.oe.evaluator.timeout=60
 bash scripts/run_v2_unified.sh CommunicationEngineering/PMDSimulation algorithm=openevolve algorithm.iterations=0
 bash scripts/run_v2_unified.sh CommunicationEngineering/RayleighFadingBER algorithm=openevolve algorithm.iterations=0
+bash scripts/run_v2_unified.sh ComputerSystems/DuckDBIndexSelection algorithm=openevolve algorithm.iterations=0
+bash scripts/run_v2_unified.sh ComputerSystems/DuckDBPreAggregationSelection algorithm=openevolve algorithm.iterations=0
+bash scripts/run_v2_unified.sh ComputerSystems/DuckDBQueryRewrite algorithm=openevolve algorithm.iterations=0
+bash scripts/run_v2_unified.sh OperationsResearch/DynamicCurrentMinimumTimeRouting algorithm=openevolve algorithm.iterations=0
+bash scripts/run_v2_unified.sh OperationsResearch/FuelMinimizingShipWeatherRouting algorithm=openevolve algorithm.iterations=0
+bash scripts/run_v2_unified.sh Robotics/GridPathPlanningWithObstacles algorithm=openevolve algorithm.iterations=0
+bash scripts/run_v2_unified.sh Robotics/MultiRobotPrioritizedPlanning algorithm=openevolve algorithm.iterations=0
+bash scripts/run_v2_unified.sh Robotics/NarrowPassagePlanning algorithm=openevolve algorithm.iterations=0
 bash scripts/run_v2_unified.sh ReactionOptimisation/dtlz2_pareto task.runtime.python_path=uv-env:frontier-v2-summit-compat algorithm=openevolve algorithm.iterations=0
 ```
 

@@ -28,8 +28,10 @@ _ensure_import_path()
 
 try:
     from benchmarks.Robotics.MultiRobotPrioritizedPlanning.baseline.solution import plan_paths as _baseline_plan_paths
+    from benchmarks.Robotics.MultiRobotPrioritizedPlanning.runtime.problem import load_instance, total_cost
 except ModuleNotFoundError:
     from baseline.solution import plan_paths as _baseline_plan_paths
+    from runtime.problem import load_instance, total_cost
 
 
 # EVOLVE-BLOCK-START
@@ -39,9 +41,5 @@ def plan_paths(grid, starts, goals):
 
 
 if __name__ == "__main__":
-    try:
-        from benchmarks.Robotics.MultiRobotPrioritizedPlanning.runtime.problem import GOALS, FREE_GRID, STARTS, total_cost, validate_paths
-    except ModuleNotFoundError:
-        from runtime.problem import GOALS, FREE_GRID, STARTS, total_cost, validate_paths
-
-    print(total_cost(validate_paths(plan_paths(FREE_GRID, STARTS, GOALS))))
+    instance = load_instance()
+    print(total_cost(instance, plan_paths(instance["grid"], instance["starts"], instance["goals"])))

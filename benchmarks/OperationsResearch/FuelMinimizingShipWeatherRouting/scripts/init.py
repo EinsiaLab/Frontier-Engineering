@@ -41,5 +41,6 @@ def solve(instance):
 
 
 if __name__ == "__main__":
-    result = solve(load_instance())
-    print(route_metrics(result))
+    instance = load_instance()
+    result = solve(instance)
+    print(route_metrics(instance, result))

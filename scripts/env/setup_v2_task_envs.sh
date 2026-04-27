@@ -35,7 +35,13 @@ Managed v2 task-set environments live under:
 Recommended reuse of existing environments without changing their specs:
   .venvs/frontier-v2-extra     -> MaterialEngineering/*, MuonTomography,
                                   PETScannerOptimization, ProtonTherapyPlanning,
-                                  perturbation_prediction, CommunicationEngineering v2 tasks
+                                  perturbation_prediction, CommunicationEngineering v2 tasks,
+                                  DuckDBIndexSelection, DuckDBPreAggregationSelection,
+                                  DuckDBQueryRewrite, DynamicCurrentMinimumTimeRouting,
+                                  FuelMinimizingShipWeatherRouting,
+                                  GridPathPlanningWithObstacles,
+                                  MultiRobotPrioritizedPlanning,
+                                  NarrowPassagePlanning
   .venvs/frontier-v2-summit    -> legacy v2 summit runtime
   .venvs/frontier-v2-summit-compat -> ReactionOptimisation/dtlz2_pareto
   .venvs/frontier-v2-optics    -> Optics v2 tasks

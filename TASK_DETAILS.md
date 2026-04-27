@@ -208,13 +208,25 @@ We welcome new engineering problem ideas — even without complete verification 
       <td>Polarization-multiplexed holography</td>
     </tr>
     <tr>
-      <td rowspan="2"><b>ComputerSystems</b></td>
+      <td rowspan="5"><b>ComputerSystems</b></td>
       <td><code>MallocLab</code></td>
       <td>High-performance C memory allocator (utilization &amp; throughput)</td>
     </tr>
     <tr>
       <td><code>DuckDBWorkloadOptimization</code></td>
       <td>Index / materialized-view selection and query rewriting on official DuckDB workloads</td>
+    </tr>
+    <tr>
+      <td><code>DuckDBIndexSelection</code></td>
+      <td>Whitelist index selection for a family of analytical DuckDB workloads</td>
+    </tr>
+    <tr>
+      <td><code>DuckDBPreAggregationSelection</code></td>
+      <td>Whitelist pre-aggregation selection for a family of analytical DuckDB reporting workloads</td>
+    </tr>
+    <tr>
+      <td><code>DuckDBQueryRewrite</code></td>
+      <td>Semantics-preserving SQL rewrite across a family of analytical DuckDB queries</td>
     </tr>
     <tr>
       <td><b>EngDesign</b></td>
@@ -315,7 +327,16 @@ We welcome new engineering problem ideas — even without complete verification 
       <td>pyMOTO-based 2D beam topology optimization (SIMP + OC/MMA) under a volume-fraction constraint</td>
     </tr>
     <tr>
-      <td rowspan="6"><b>Robotics</b></td>
+      <td rowspan="2"><b>OperationsResearch</b></td>
+      <td><code>DynamicCurrentMinimumTimeRouting</code></td>
+      <td>Constrained minimum-time ship routing over coastal grids with currents and draft limits</td>
+    </tr>
+    <tr>
+      <td><code>FuelMinimizingShipWeatherRouting</code></td>
+      <td>Fuel-minimizing ship weather routing over coastal grids with arrival-time constraints</td>
+    </tr>
+    <tr>
+      <td rowspan="9"><b>Robotics</b></td>
       <td><code>DynamicObstacleAvoidanceNavigation</code></td>
       <td>Navigate a differential-drive robot from start to goal in a dynamic environment</td>
     </tr>
@@ -338,6 +359,18 @@ We welcome new engineering problem ideas — even without complete verification 
     <tr>
       <td><code>CoFlyersVasarhelyiTuning</code></td>
       <td>Tune the Vasarhelyi flocking parameters for the CoFlyers swarm system</td>
+    </tr>
+    <tr>
+      <td><code>GridPathPlanningWithObstacles</code></td>
+      <td>Single-robot collision-free path planning across a family of obstacle grids</td>
+    </tr>
+    <tr>
+      <td><code>MultiRobotPrioritizedPlanning</code></td>
+      <td>Prioritized multi-robot path planning across a family of grid MAPF cases</td>
+    </tr>
+    <tr>
+      <td><code>NarrowPassagePlanning</code></td>
+      <td>Single-robot path planning across a family of narrow-passage bottleneck grids</td>
     </tr>
     <tr>
       <td rowspan="2"><b>Aerodynamics</b></td>

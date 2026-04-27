@@ -3,6 +3,9 @@
   "python": "3.12",
   "requirements": [
     "frontier_eval/requirements.txt",
+    "benchmarks/ComputerSystems/DuckDBIndexSelection/verification/requirements.txt",
+    "benchmarks/ComputerSystems/DuckDBPreAggregationSelection/verification/requirements.txt",
+    "benchmarks/ComputerSystems/DuckDBQueryRewrite/verification/requirements.txt",
     "benchmarks/MaterialEngineering/LightweightBroadbandAbsorber/verification/requirements.txt",
     "benchmarks/MaterialEngineering/MicrowaveAbsorberDesign/verification/requirements.txt",
     "benchmarks/MaterialEngineering/NanoCarbonAbsorberOptimization/verification/requirements.txt",
@@ -15,7 +18,9 @@
   "packages": [],
   "notes": [
     "This environment is for the v2 task set only and is intentionally isolated from the released v1 env specs.",
+    "ComputerSystems/DuckDBIndexSelection, ComputerSystems/DuckDBPreAggregationSelection, and ComputerSystems/DuckDBQueryRewrite need DuckDB and run from this env.",
     "MaterialEngineering/LightweightBroadbandAbsorber, MaterialEngineering/MicrowaveAbsorberDesign, MaterialEngineering/NanoCarbonAbsorberOptimization, and ParticlePhysics/PETScannerOptimization are numpy-only tasks routed through the branch's unified flow.",
+    "OperationsResearch/DynamicCurrentMinimumTimeRouting, OperationsResearch/FuelMinimizingShipWeatherRouting, and the PR44 Robotics planning tasks are pure-Python tasks and can reuse this env.",
     "SingleCellAnalysis/perturbation_prediction still needs its external dataset download path prepared separately.",
     "CommunicationEngineering tasks can run from this env without Docker."
   ]

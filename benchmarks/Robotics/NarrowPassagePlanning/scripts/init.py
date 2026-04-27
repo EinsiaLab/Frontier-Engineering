@@ -28,8 +28,10 @@ _ensure_import_path()
 
 try:
     from benchmarks.Robotics.NarrowPassagePlanning.baseline.solution import plan_path as _baseline_plan_path
+    from benchmarks.Robotics.NarrowPassagePlanning.runtime.problem import load_instance, path_cost
 except ModuleNotFoundError:
     from baseline.solution import plan_path as _baseline_plan_path
+    from runtime.problem import load_instance, path_cost
 
 
 # EVOLVE-BLOCK-START
@@ -39,8 +41,5 @@ def plan_path(grid, start, goal):
 
 
 if __name__ == "__main__":
-    try:
-        from benchmarks.Robotics.NarrowPassagePlanning.runtime.problem import GOAL, FREE_GRID, START, path_cost
-    except ModuleNotFoundError:
-        from runtime.problem import GOAL, FREE_GRID, START, path_cost
-    print(path_cost(plan_path(FREE_GRID, START, GOAL)))
+    instance = load_instance()
+    print(path_cost(instance, plan_path(instance["grid"], instance["start"], instance["goal"])))

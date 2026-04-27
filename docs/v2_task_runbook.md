@@ -36,6 +36,14 @@ No output is expected. This proves the repository configuration was not changed;
 | `CommunicationEngineering/LDPCErrorFloor` | `.venvs/frontier-v2-extra` | hardened | Evaluator now owns sampling loop statistics; calibrated baseline is valid. |
 | `CommunicationEngineering/PMDSimulation` | `.venvs/frontier-v2-extra` | hardened | Evaluator now owns sampling loop statistics; calibrated baseline is valid. |
 | `CommunicationEngineering/RayleighFadingBER` | `.venvs/frontier-v2-extra` | hardened | Evaluator now owns sampling loop statistics; calibrated baseline is valid. |
+| `ComputerSystems/DuckDBIndexSelection` | `.venvs/frontier-v2-extra` | verified | PR44 first-batch task; direct baseline uses multi-case DuckDB evaluator and benchmark-local unified metadata. |
+| `ComputerSystems/DuckDBPreAggregationSelection` | `.venvs/frontier-v2-extra` | verified | PR44 first-batch task; direct baseline uses multi-case pre-aggregation evaluator and benchmark-local unified metadata. |
+| `ComputerSystems/DuckDBQueryRewrite` | `.venvs/frontier-v2-extra` | verified | PR44 first-batch task; direct baseline uses multi-case semantic-equivalence evaluator and benchmark-local unified metadata. |
+| `OperationsResearch/DynamicCurrentMinimumTimeRouting` | `.venvs/frontier-v2-extra` | verified | PR44 first-batch task; direct baseline uses multi-case routing evaluator and benchmark-local unified metadata. |
+| `OperationsResearch/FuelMinimizingShipWeatherRouting` | `.venvs/frontier-v2-extra` | verified | PR44 first-batch task; direct baseline uses multi-case fuel-routing evaluator and benchmark-local unified metadata. |
+| `Robotics/GridPathPlanningWithObstacles` | `.venvs/frontier-v2-extra` | verified | PR44 second-batch task; direct baseline uses multi-grid evaluator and benchmark-local unified metadata. |
+| `Robotics/MultiRobotPrioritizedPlanning` | `.venvs/frontier-v2-extra` | verified | PR44 second-batch task; direct baseline uses multi-case MAPF evaluator and benchmark-local unified metadata. |
+| `Robotics/NarrowPassagePlanning` | `.venvs/frontier-v2-extra` | verified | PR44 second-batch task; direct baseline uses multi-grid bottleneck evaluator and benchmark-local unified metadata. |
 | `ReactionOptimisation/dtlz2_pareto` | `.venvs/frontier-v2-summit-compat` | verified | Use the compat env that pins `scikit-learn < 1.3`. |
 | `MolecularMechanics/weighted_parameter_coverage` | `.venvs/openff-dev` | verified | Non-uv OpenFF runtime works; unified run succeeded. |
 | `MolecularMechanics/diverse_conformer_portfolio` | `.venvs/openff-dev` | verified | Non-uv OpenFF runtime works; unified run succeeded. |
@@ -136,6 +144,54 @@ bash scripts/run_v2_unified.sh CommunicationEngineering/PMDSimulation \
 
 ```bash
 bash scripts/run_v2_unified.sh CommunicationEngineering/RayleighFadingBER \
+  algorithm=openevolve \
+  algorithm.iterations=0
+```
+
+```bash
+bash scripts/run_v2_unified.sh ComputerSystems/DuckDBIndexSelection \
+  algorithm=openevolve \
+  algorithm.iterations=0
+```
+
+```bash
+bash scripts/run_v2_unified.sh ComputerSystems/DuckDBPreAggregationSelection \
+  algorithm=openevolve \
+  algorithm.iterations=0
+```
+
+```bash
+bash scripts/run_v2_unified.sh ComputerSystems/DuckDBQueryRewrite \
+  algorithm=openevolve \
+  algorithm.iterations=0
+```
+
+```bash
+bash scripts/run_v2_unified.sh OperationsResearch/DynamicCurrentMinimumTimeRouting \
+  algorithm=openevolve \
+  algorithm.iterations=0
+```
+
+```bash
+bash scripts/run_v2_unified.sh OperationsResearch/FuelMinimizingShipWeatherRouting \
+  algorithm=openevolve \
+  algorithm.iterations=0
+```
+
+```bash
+bash scripts/run_v2_unified.sh Robotics/GridPathPlanningWithObstacles \
+  algorithm=openevolve \
+  algorithm.iterations=0
+```
+
+```bash
+bash scripts/run_v2_unified.sh Robotics/MultiRobotPrioritizedPlanning \
+  algorithm=openevolve \
+  algorithm.iterations=0
+```
+
+```bash
+bash scripts/run_v2_unified.sh Robotics/NarrowPassagePlanning \
   algorithm=openevolve \
   algorithm.iterations=0
 ```
