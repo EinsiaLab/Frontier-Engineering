@@ -1,0 +1,31 @@
+{
+  "benchmark_id": "lightweight_broadband_absorber_8_18ghz",
+  "task_name": "LightweightBroadbandAbsorber",
+  "description": "Lightweight broadband CNTs@Nd-BaM/PE absorber optimization, 8.2-18 GHz",
+  "freq_ghz_min": 8.2,
+  "freq_ghz_max": 18.0,
+  "num_freq_points": 197,
+  "backing": "PEC",
+  "d_mm_min": 1.0,
+  "d_mm_max": 5.0,
+  "phi_min": 0.0,
+  "phi_max": 1.0,
+  "phi_sum_tolerance": 1e-6,
+  "rl_threshold_db": -10.0,
+  "min_eab_ghz": 4.0,
+  "normalization": {
+    "eab10_ghz":     { "min": 0.0,  "max": 9.8 },
+    "abs_rl_min_db": { "min": 0.0,  "max": 60.0 },
+    "thickness_mm":  { "min": 1.0,  "max": 5.0 },
+    "density":       { "min": 0.9,  "max": 5.5 },
+    "cost":          { "min": 1.0,  "max": 4.0 }
+  },
+  "weights": {
+    "eab10": 1.0,
+    "rl_min": 0.15,
+    "thickness": 0.4,
+    "density": 0.5,
+    "cost": 0.05
+  },
+  "notes": "Density penalty is dominant (0.5) to incentivize lightweight designs. EAB < 4.0 GHz => infeasible. All metrics normalized to [0,1]. Based on Wang et al., Materials 2024, 17, 3433."
+}

@@ -113,7 +113,14 @@ def evaluate(program_path: str, *, repo_root: Path | None = None):
         # ==========================================
         # 2) run evaluator.py
         # ==========================================
-        eval_script = (repo_root / "benchmarks" / "ParticlePhysics" / "MuonTomography" / "verification" / "evaluator.py").resolve()
+        # Prefer the benchmark-local verifier shipped next to this unified wrapper.
+        # This keeps evaluation stable inside copied sandbox benchmarks, where
+        # `<repo_root>/benchmarks/...` may not exist as a full repository tree.
+        local_eval_script = (Path(__file__).resolve().parents[1] / "verification" / "evaluator.py").resolve()
+        repo_eval_script = (
+            repo_root / "benchmarks" / "ParticlePhysics" / "MuonTomography" / "verification" / "evaluator.py"
+        ).resolve()
+        eval_script = local_eval_script if local_eval_script.is_file() else repo_eval_script
         
         try:
             proc2 = subprocess.run(

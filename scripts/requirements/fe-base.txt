@@ -1,0 +1,15 @@
+# fe-base: general-purpose runtime for tasks that need only standard scientific deps.
+# Covers: CoFlyersVasarhelyiTuning, DawnAircraftDesignOptimization,
+#         DuckDBWorkloadOptimization, EV2GymSmartCharging,
+#         PyMOTOSIMPCompliance, ProtonTherapyPlanning
+numpy>=1.24
+duckdb>=1.1.0
+ev2gym
+pandapower
+multicopula
+numba
+psutil
+pandas
+PyYAML
+# pkg_resources compatibility (ev2gym uses it)
+setuptools<81

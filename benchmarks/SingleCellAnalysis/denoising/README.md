@@ -3,6 +3,65 @@ Removing noise from sparse single-cell RNA-sequencing count data
 
 This task originates from https://openproblems.bio/benchmarks/denoising?version=v1.0.0
 
+## Repo-local bootstrap
+
+The recommended setup path in this repository is:
+
+```bash
+bash scripts/bootstrap/setup_denoising_task.sh
+source benchmarks/SingleCellAnalysis/denoising/env.sh
+```
+
+This installs repo-local tooling under `benchmarks/SingleCellAnalysis/denoising/.tools/`,
+clones the external `task_denoising` repository into
+`benchmarks/SingleCellAnalysis/denoising/task_denoising/`, and prepares the
+`submission` method template expected by `frontier_eval`.
+
+Optional heavier steps:
+
+```bash
+bash scripts/bootstrap/setup_denoising_task.sh --sync-resources
+bash scripts/bootstrap/setup_denoising_task.sh --build-components --build-containers
+```
+
+### Docker requirement
+
+Building containers requires Docker. The Docker daemon must be accessible to the
+current user (i.e. the user must be in the `docker` group):
+
+```bash
+sudo usermod -aG docker $USER
+newgrp docker        # apply without re-login
+```
+
+If Docker Hub is not reachable (common in mainland China), configure an HTTP proxy
+for the Docker daemon before building containers. Create
+`/etc/systemd/system/docker.service.d/http-proxy.conf`:
+
+```ini
+[Service]
+Environment="HTTP_PROXY=http://127.0.0.1:7890"
+Environment="HTTPS_PROXY=http://127.0.0.1:7890"
+Environment="NO_PROXY=localhost,127.0.0.1"
+```
+
+Then reload and restart Docker:
+
+```bash
+sudo systemctl daemon-reload && sudo systemctl restart docker
+```
+
+### Known compatibility fix applied to `task_denoising`
+
+`openproblems/base_python:1` ships Python 3.12. The `scprep` package requires
+`pandas < 2.1`, which has no Python 3.12 binary wheels and cannot be built from
+source on Python 3.12 due to a `pkg_resources` / setuptools incompatibility.
+
+The three affected components (`methods/magic`, `metrics/mse`, `metrics/poisson`)
+have been patched inside `task_denoising` to use `python:3.10` as their base image
+and to list `anndata`/`scanpy` explicitly (previously inherited from the base image).
+These patches are applied automatically by `setup_denoising_task.sh`.
+
 ## How to Run
 ```bash
 cd benchmarks/SingleCellAnalysis/denoising

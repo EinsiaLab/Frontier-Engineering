@@ -35,6 +35,8 @@ T0_DEV = 10.0
 ERR_RATIO_REL_TOL = 1e-6
 ERR_RATIO_ABS_TOL = 1e-12
 INTEGER_TOL = 1e-6
+STD_TOL = 1e-9
+LOG_WEIGHT_CLIP = 100.0
 
 
 def _is_repo_root(path: Path) -> bool:
@@ -220,6 +222,138 @@ def _validate_result(payload: dict[str, float | bool]) -> dict[str, float | bool
     }
 
 
+def _as_1d_float_array(value: Any, *, name: str, expected_len: int) -> np.ndarray:
+    arr = np.asarray(value, dtype=np.float64)
+    if arr.shape != (expected_len,):
+        raise ValueError(f"{name} shape must be ({expected_len},), got {arr.shape}")
+    if not np.all(np.isfinite(arr)):
+        raise ValueError(f"{name} must contain only finite values")
+    return arr
+
+
+def _as_channel_batch(value: Any, *, expected_branches: int, requested_batch: int) -> np.ndarray:
+    arr = np.asarray(value, dtype=np.float64)
+    if arr.ndim != 2 or arr.shape[1] != expected_branches:
+        raise ValueError(f"h_magnitudes shape must be (batch, {expected_branches}), got {arr.shape}")
+    if arr.shape[0] <= 0 or arr.shape[0] > requested_batch:
+        raise ValueError(f"channel batch size must be in [1, {requested_batch}], got {arr.shape[0]}")
+    if not np.all(np.isfinite(arr)) or np.any(arr <= 0.0):
+        raise ValueError("h_magnitudes must contain only finite positive values")
+    return arr
+
+
+def _summarize_weighted_event_run(
+    *,
+    event_weights: list[float],
+    total_weight: float,
+    total_samples: int,
+    contributions: list[float],
+    min_events: int,
+) -> dict[str, float | bool]:
+    if total_samples <= 0 or not np.isfinite(total_weight) or total_weight <= 0.0:
+        raise ValueError("evaluator-owned simulation produced no positive total weight")
+
+    if event_weights:
+        event_sum = float(np.sum(event_weights))
+        ratio = event_sum / total_weight
+        ratio_log = float(math.log(max(ratio, ERR_RATIO_ABS_TOL)))
+        contribution_arr = np.asarray(contributions, dtype=np.float64)
+        actual_std = float(np.std(contribution_arr / (total_weight / total_samples)) / math.sqrt(total_samples))
+        converged = bool(len(event_weights) >= min_events and actual_std <= TARGET_STD + STD_TOL)
+    else:
+        ratio = 0.0
+        ratio_log = -20.0
+        actual_std = float("inf")
+        converged = False
+
+    return {
+        "ratio": ratio,
+        "ratio_log": ratio_log,
+        "total_samples": float(total_samples),
+        "actual_std": actual_std,
+        "converged": converged,
+        "event_count": float(len(event_weights)),
+    }
+
+
+def _run_evaluator_owned_simulation(sampler: Any, channel: Any, *, seed: int) -> dict[str, float | bool]:
+    rng = Generator(Philox(seed + 10_000))
+    total_weight = 0.0
+    total_samples = 0
+    event_weights: list[float] = []
+    contributions: list[float] = []
+    sigma_h = float(channel.sigma_h)
+
+    while total_samples < MAX_SAMPLES:
+        requested_batch = min(BATCH_SIZE, MAX_SAMPLES - total_samples)
+        try:
+            h_magnitudes, log_pdf_biased = sampler.sample(
+                num_branches=channel.num_branches,
+                batch_size=requested_batch,
+                sigma_h=sigma_h,
+            )
+        except Exception as e:
+            raise RuntimeError(f"sample 执行失败: {e}") from e
+
+        h_magnitudes = _as_channel_batch(
+            h_magnitudes,
+            expected_branches=channel.num_branches,
+            requested_batch=requested_batch,
+        )
+        batch_size_actual = int(h_magnitudes.shape[0])
+        log_pdf_biased = _as_1d_float_array(log_pdf_biased, name="log_pdf_biased", expected_len=batch_size_actual)
+
+        log_pdf_true = np.sum(
+            -h_magnitudes**2 / (2 * sigma_h**2) - np.log(sigma_h**2) + np.log(h_magnitudes),
+            axis=1,
+        )
+        if not np.all(np.isfinite(log_pdf_true)):
+            raise ValueError("true log pdf contains non-finite values")
+
+        log_weights = np.clip(log_pdf_true - log_pdf_biased, -LOG_WEIGHT_CLIP, LOG_WEIGHT_CLIP)
+        weights = np.exp(log_weights)
+        if not np.all(np.isfinite(weights)) or np.any(weights < 0.0):
+            raise ValueError("importance weights must be finite and non-negative")
+
+        combined_snr = channel.combine_snr(h_magnitudes, DIVERSITY_TYPE, SNR_DB)
+        if combined_snr.shape != (batch_size_actual,) or not np.all(np.isfinite(combined_snr)):
+            raise ValueError("combined SNR values must be finite with shape (batch,)")
+
+        ber = np.asarray(channel.compute_ber(combined_snr, MODULATION), dtype=np.float64)
+        if ber.shape != (batch_size_actual,) or not np.all(np.isfinite(ber)):
+            raise ValueError("BER values must be finite with shape (batch,)")
+        ber = np.clip(ber, 0.0, 1.0)
+        error_draws = rng.random(batch_size_actual) < ber
+
+        for i in range(batch_size_actual):
+            is_error = bool(error_draws[i])
+            weight = float(weights[i])
+            total_weight += weight
+            contributions.append(weight if is_error else 0.0)
+            if is_error:
+                event_weights.append(weight)
+
+        total_samples += batch_size_actual
+        if len(event_weights) >= MIN_ERRORS:
+            interim = _summarize_weighted_event_run(
+                event_weights=event_weights,
+                total_weight=total_weight,
+                total_samples=total_samples,
+                contributions=contributions,
+                min_events=MIN_ERRORS,
+            )
+            if bool(interim["converged"]):
+                break
+
+    return _summarize_weighted_event_run(
+        event_weights=event_weights,
+        total_weight=total_weight,
+        total_samples=total_samples,
+        contributions=contributions,
+        min_events=MIN_ERRORS,
+    )
+
+
 def _build_channel(repo_root: Path):
     RayleighFadingChannel = _import_channel_model(repo_root)
     return RayleighFadingChannel(num_branches=NUM_BRANCHES, sigma_h=1.0)
@@ -269,43 +403,29 @@ def evaluate(program_path: str, *, repo_root: Path | None = None):
             except Exception as e:
                 raise RuntimeError(f"DeepFadeSampler 初始化失败: {e}") from e
             
-            if not hasattr(sampler, "simulate_variance_controlled"):
-                raise AttributeError("DeepFadeSampler 缺少 simulate_variance_controlled 方法")
+            if not hasattr(sampler, "sample"):
+                raise AttributeError("DeepFadeSampler 缺少 sample 方法")
             
             t0 = time.time()
-            try:
-                result = sampler.simulate_variance_controlled(
-                    channel_model=channel,
-                    diversity_type=DIVERSITY_TYPE,
-                    modulation=MODULATION,
-                    snr_db=SNR_DB,
-                    target_std=TARGET_STD,
-                    max_samples=MAX_SAMPLES,
-                    batch_size=BATCH_SIZE,
-                    min_errors=MIN_ERRORS,
-                )
-            except Exception as e:
-                raise RuntimeError(f"simulate_variance_controlled 执行失败: {e}") from e
+            result = _run_evaluator_owned_simulation(sampler, channel, seed=rep)
             dt = time.time() - t0
             
-            normalized = _normalize_result(result)
-            validated = _validate_result(normalized)
-            err_rate_log = float(validated["err_rate_log"])
+            err_rate_log = float(result["ratio_log"])
             
             runtimes.append(float(dt))
             err_logs.append(err_rate_log)
-            ratios.append(float(validated["err_ratio"]))
-            samples.append(float(validated["total_samples"]))
-            stds.append(float(validated["actual_std"]))
-            converged_flags.append(1.0 if bool(validated["converged"]) else 0.0)
+            ratios.append(float(result["ratio"]))
+            samples.append(float(result["total_samples"]))
+            stds.append(float(result["actual_std"]))
+            converged_flags.append(1.0 if bool(result["converged"]) else 0.0)
             repetition_diagnostics.append({
                 "repeat": rep,
                 "runtime_s": float(dt),
-                "err_ratio": float(validated["err_ratio"]),
+                "err_ratio": float(result["ratio"]),
                 "err_rate_log": err_rate_log,
-                "total_samples": float(validated["total_samples"]),
-                "actual_std": float(validated["actual_std"]),
-                "converged": bool(validated["converged"]),
+                "total_samples": float(result["total_samples"]),
+                "actual_std": float(result["actual_std"]),
+                "converged": bool(result["converged"]),
             })
         
         runtime_median = float(np.median(runtimes))
@@ -313,7 +433,7 @@ def evaluate(program_path: str, *, repo_root: Path | None = None):
         err_log_ratio = float(abs(err_log_median - R0_LOG_DEV))
         actual_std_median = float(np.nanmedian(stds))
         converged_rate = float(np.mean(converged_flags))
-        variance_ok = actual_std_median <= TARGET_STD + ERR_RATIO_ABS_TOL
+        variance_ok = actual_std_median <= TARGET_STD + STD_TOL
         convergence_ok = math.isclose(converged_rate, 1.0, abs_tol=ERR_RATIO_ABS_TOL)
         
         valid = float(err_log_ratio < EPSILON and variance_ok and convergence_ok)
@@ -335,12 +455,18 @@ def evaluate(program_path: str, *, repo_root: Path | None = None):
             "convergence_ok": 1.0 if convergence_ok else 0.0,
             "snr_db": SNR_DB,
         })
+        artifacts["validity_reason"] = (
+            "ok" if valid > 0 else f"anchor_ok={err_log_ratio < EPSILON},variance_ok={bool(variance_ok)},convergence_ok={bool(convergence_ok)}"
+        )
         artifacts["dev_constants"] = json.dumps({
             "snr_db": SNR_DB,
             "target_std": TARGET_STD,
             "max_samples": MAX_SAMPLES,
             "batch_size": BATCH_SIZE,
             "epsilon": EPSILON,
+            "std_tol": STD_TOL,
+            "log_weight_clip": LOG_WEIGHT_CLIP,
+            "simulation_owner": "evaluator",
             "r0_dev": R0_DEV,
             "t0_dev": T0_DEV,
             "repeats": REPEATS,

@@ -32,6 +32,7 @@ from frontier_eval.tasks.unified import UnifiedTask
 from frontier_eval.tasks.muon_tomography import MuonTomographyTask
 from frontier_eval.tasks.proton_therapy_planning import ProtonTherapyPlanningTask
 
+
 _TASKS: dict[str, Type[Task]] = {
     SmokeTask.NAME: SmokeTask,
     CryptoAES128Task.NAME: CryptoAES128Task,

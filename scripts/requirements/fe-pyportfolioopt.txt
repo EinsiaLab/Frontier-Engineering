@@ -1,0 +1,11 @@
+# fe-pyportfolioopt: runtime for PyPortfolioOpt benchmark family.
+# See benchmarks/PyPortfolioOpt/requirements.txt
+numpy>=1.26.0,<3.0.0
+scipy>=1.11.0,<2.0.0
+cvxpy>=1.4.0,<2.0.0
+PyPortfolioOpt>=1.5.6
+highspy>=1.8.0
+ecos>=2.0.14,<2.1.0
+osqp>=0.6.5
+scs>=3.2.7
+packaging

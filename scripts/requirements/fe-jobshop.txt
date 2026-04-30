@@ -1,0 +1,4 @@
+# fe-jobshop: runtime for all JobShop benchmark families (ft, la, orb, yn, abz, swv, ta).
+# See benchmarks/JobShop/requirements.txt
+ortools>=9.9,<9.13
+job_shop_lib

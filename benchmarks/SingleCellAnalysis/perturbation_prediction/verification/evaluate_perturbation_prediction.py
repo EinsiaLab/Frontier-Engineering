@@ -19,6 +19,7 @@ from scipy.stats import rankdata
 
 
 DATASET_ID = "neurips-2023-data"
+TOPK_GENES = 50
 BASE_URL = (
     "https://openproblems-data.s3.amazonaws.com/"
     "resources/task_perturbation_prediction/datasets/neurips-2023-data/"
@@ -131,6 +132,22 @@ def _rowwise_cosine(truth: np.ndarray, pred: np.ndarray) -> np.ndarray:
     return out.astype(np.float64, copy=False)
 
 
+def _rowwise_topk_sign_agreement(truth: np.ndarray, pred: np.ndarray, *, k: int) -> np.ndarray:
+    t = np.nan_to_num(truth.astype(np.float64, copy=False), copy=False)
+    p = np.nan_to_num(pred.astype(np.float64, copy=False), copy=False)
+    n_rows, n_cols = t.shape
+    topk = max(1, min(int(k), n_cols))
+    out = np.zeros(n_rows, dtype=np.float64)
+
+    for i in range(n_rows):
+        truth_idx = np.argpartition(np.abs(t[i]), -topk)[-topk:]
+        pred_idx = np.argpartition(np.abs(p[i]), -topk)[-topk:]
+        overlap = len(set(map(int, truth_idx)) & set(map(int, pred_idx))) / float(topk)
+        sign_match = float(np.mean(np.sign(t[i, truth_idx]) == np.sign(p[i, truth_idx])))
+        out[i] = 0.5 * overlap + 0.5 * sign_match
+    return out
+
+
 def evaluate(
     prediction_path: str,
     *,
@@ -188,16 +205,19 @@ def evaluate(
     row_pearson = _rowwise_pearson(truth_x, pred_x)
     row_spearman = _rowwise_spearman(truth_x, pred_x)
     row_cosine = _rowwise_cosine(truth_x, pred_x)
+    row_topk_sign = _rowwise_topk_sign_agreement(truth_x, pred_x, k=TOPK_GENES)
 
     mean_rmse = float(np.mean(row_rmse))
     mean_mae = float(np.mean(row_mae))
     mean_pearson = float(np.mean(row_pearson))
     mean_spearman = float(np.mean(row_spearman))
     mean_cosine = float(np.mean(row_cosine))
+    mean_topk_sign = float(np.mean(row_topk_sign))
 
     corr_score = (mean_pearson + 1.0) / 2.0
     err_score = 1.0 / (1.0 + mean_rmse)
-    combined = float((corr_score + err_score) / 2.0)
+    topk_score = float(np.clip(mean_topk_sign, 0.0, 1.0))
+    combined = float(0.4 * corr_score + 0.4 * err_score + 0.2 * topk_score)
 
     metrics = {
         "combined_score": combined,
@@ -206,6 +226,8 @@ def evaluate(
         "mean_rowwise_pearson": mean_pearson,
         "mean_rowwise_spearman": mean_spearman,
         "mean_rowwise_cosine": mean_cosine,
+        "mean_rowwise_topk_sign_agreement": mean_topk_sign,
+        "topk_genes": float(TOPK_GENES),
         "n_test": float(truth_x.shape[0]),
         "n_genes": float(truth_x.shape[1]),
         "runtime_s": float(time.time() - start),

@@ -17,3 +17,6 @@ Currently, this domain includes the following benchmark tasks:
 * **[IMPT Dose Weight Optimization](./ProtonTherapyPlanning/README.md)**
   * **Background**: Optimizing proton therapy treatment plans using the Bragg peak effect of proton beams.
   * **Objective**: Optimize proton spot positions and weights under CTV coverage, OAR dose limits, and beam cost constraints.
+* **[PET Scanner Geometry and Cost Pareto Optimization](./PETScannerOptimization/README.md)**
+  * **Background**: PET detector ring design under scintillator budget and resolution constraints.
+  * **Objective**: Optimize 20 detector rings to balance sensitivity, parallax error, and crystal volume budget.

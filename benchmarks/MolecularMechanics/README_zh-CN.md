@@ -73,7 +73,7 @@ MolecularMechanics/
 
 推荐把框架运行环境和 benchmark 运行环境分开：
 
-- `.venvs/frontier-eval-driver`
+- `.venvs/frontier-v2-extra`
   - 用来运行 `python -m frontier_eval`
 - `openff-dev`
   - 一个单独 bootstrap 的运行时，用来执行 MolecularMechanics 的真实评测
@@ -83,14 +83,14 @@ MolecularMechanics/
 ```bash
 bash init.sh
 bash scripts/bootstrap/install_openff_dev.sh
-source .venvs/frontier-eval-driver/bin/activate
+source .venvs/frontier-v2-extra/bin/activate
 ```
 
 如果你已经有这两个运行时，直接在仓库根目录执行：
 
 ```bash
 bash init.sh
-source .venvs/frontier-eval-driver/bin/activate
+source .venvs/frontier-v2-extra/bin/activate
 .venvs/openff-dev/bin/python -m pip install -r benchmarks/MolecularMechanics/requirements.txt
 ./.venvs/openff-dev/bin/python scripts/bootstrap/verify_openff_dev.py --repo-root .
 ```
@@ -112,7 +112,7 @@ bash scripts/bootstrap/install_openff_dev.sh
 - 如果你只手工运行某个子任务
   - `.venvs/openff-dev` 就够了
 - 如果你通过 `frontier_eval` 运行
-  - 框架进程在 `frontier-eval-driver`
+  - 框架进程在 `frontier-v2-extra`
   - benchmark 评测进程会自动切到 `openff-dev`
 
 ## Frontier Eval（Unified）
@@ -129,7 +129,7 @@ bash scripts/bootstrap/install_openff_dev.sh
 
 上表耗时来自 `2026-03-16` 的实测，命令均为：
 
-- `.venvs/frontier-eval-driver/bin/python -m frontier_eval ...`
+- `.venvs/frontier-v2-extra/bin/python -m frontier_eval ...`
 - `algorithm=openevolve`
 - `algorithm.iterations=0`
 - benchmark runtime 环境为 `openff-dev`
@@ -137,17 +137,17 @@ bash scripts/bootstrap/install_openff_dev.sh
 快速运行：
 
 ```bash
-.venvs/frontier-eval-driver/bin/python -m frontier_eval \
+.venvs/frontier-v2-extra/bin/python -m frontier_eval \
   task=molecular_mechanics_weighted_parameter_coverage \
   algorithm=openevolve \
   algorithm.iterations=0
 
-.venvs/frontier-eval-driver/bin/python -m frontier_eval \
+.venvs/frontier-v2-extra/bin/python -m frontier_eval \
   task=molecular_mechanics_diverse_conformer_portfolio \
   algorithm=openevolve \
   algorithm.iterations=0
 
-.venvs/frontier-eval-driver/bin/python -m frontier_eval \
+.venvs/frontier-v2-extra/bin/python -m frontier_eval \
   task=molecular_mechanics_torsion_profile_fitting \
   algorithm=openevolve \
   algorithm.iterations=0
@@ -156,7 +156,7 @@ bash scripts/bootstrap/install_openff_dev.sh
 等价的显式 unified 命令示例：
 
 ```bash
-.venvs/frontier-eval-driver/bin/python -m frontier_eval \
+.venvs/frontier-v2-extra/bin/python -m frontier_eval \
   task=unified \
   task.benchmark=MolecularMechanics/torsion_profile_fitting \
   task.runtime.python_path=uv-env:openff-dev \

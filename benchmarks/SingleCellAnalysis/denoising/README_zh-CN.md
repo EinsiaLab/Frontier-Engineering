@@ -3,6 +3,63 @@
 
 此任务源自 https://openproblems.bio/benchmarks/denoising?version=v1.0.0
 
+## 仓库内推荐初始化方式
+
+本仓库里推荐先执行：
+
+```bash
+bash scripts/bootstrap/setup_denoising_task.sh
+source benchmarks/SingleCellAnalysis/denoising/env.sh
+```
+
+这会把本地工具安装到 `benchmarks/SingleCellAnalysis/denoising/.tools/`，
+把外部 `task_denoising` 仓库 clone 到
+`benchmarks/SingleCellAnalysis/denoising/task_denoising/`，并准备好
+`frontier_eval` 期望的 `submission` 模板方法。
+
+需要更重的前置步骤时，可额外执行：
+
+```bash
+bash scripts/bootstrap/setup_denoising_task.sh --sync-resources
+bash scripts/bootstrap/setup_denoising_task.sh --build-components --build-containers
+```
+
+### Docker 前提条件
+
+构建容器需要 Docker，且当前用户需在 `docker` 组中：
+
+```bash
+sudo usermod -aG docker $USER
+newgrp docker   # 无需重新登录即可生效
+```
+
+若 Docker Hub 无法访问（国内常见），需为 Docker daemon 配置 HTTP 代理。
+创建 `/etc/systemd/system/docker.service.d/http-proxy.conf`：
+
+```ini
+[Service]
+Environment="HTTP_PROXY=http://127.0.0.1:7890"
+Environment="HTTPS_PROXY=http://127.0.0.1:7890"
+Environment="NO_PROXY=localhost,127.0.0.1"
+```
+
+然后重载并重启 Docker：
+
+```bash
+sudo systemctl daemon-reload && sudo systemctl restart docker
+```
+
+### 已知兼容性修复（已应用到 `task_denoising`）
+
+`openproblems/base_python:1` 内置 Python 3.12。`scprep` 依赖 `pandas < 2.1`，
+而该版本 pandas 没有 Python 3.12 的二进制 wheel，且在 Python 3.12 上从源码构建会因
+`pkg_resources` / setuptools 不兼容而失败。
+
+受影响的三个组件（`methods/magic`、`metrics/mse`、`metrics/poisson`）已在
+`task_denoising` 内部打补丁，将基础镜像改为 `python:3.10`，并显式声明
+`anndata`/`scanpy` 依赖（原先从基础镜像继承）。
+`setup_denoising_task.sh` 会自动应用这些补丁。
+
 ## 运行方式
 ```
 cd benchmarks/SingleCellAnalysis/denoising

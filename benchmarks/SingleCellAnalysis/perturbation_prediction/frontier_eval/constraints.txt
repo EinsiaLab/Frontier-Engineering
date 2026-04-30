@@ -1,0 +1,6 @@
+UnifiedTask constraints:
+1) Only modify `scripts/init.py`.
+2) Preserve the output filename `prediction.h5ad` and the AnnData schema expected by the scorer.
+3) Do not modify benchmark assets, documentation, verification code, baseline code, or `frontier_eval/` metadata.
+4) Keep the public CLI flags `--output` and `--dataset-dir` working.
+5) Prioritize valid predictions and scorer compatibility before optimization.

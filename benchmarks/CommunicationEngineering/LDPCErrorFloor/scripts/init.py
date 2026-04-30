@@ -46,8 +46,9 @@ class TrappingSetSampler(BiasedVarianceSampler):
     """
     
     def __init__(self, code, *, seed: int = 0):
-        # Use bias_factor=1.5 to increase noise by 50%
-        super().__init__(code, seed=seed, bias_factor=1.5)
+        # Use a moderate variance bias that remains valid when the evaluator
+        # independently recomputes weights and decoding outcomes.
+        super().__init__(code, seed=seed, bias_factor=1.0)
         self.rng = Generator(Philox(seed))
     
     def simulate_variance_controlled(
