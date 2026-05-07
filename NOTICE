@@ -1,9 +1,18 @@
 Frontier-Engineering Third-Party Notice
 =======================================
 
-This repository contains benchmark material that is original to
-Frontier-Engineering and benchmark material that is copied, adapted, or derived
-from third-party sources.
+Original Frontier-Engineering code, documentation, and benchmark materials are
+licensed under the Apache License, Version 2.0, unless a file or directory says
+otherwise. See:
+
+  LICENSE
+
+Copyright 2026 Frontier-Engineering contributors.
+
+This repository also contains benchmark material that is copied, adapted, or
+derived from third-party sources. Those third-party portions remain under their
+upstream licenses and are not relicensed by the repository-level Apache-2.0
+license.
 
 The repository-level third-party audit is maintained in:
 
@@ -29,4 +38,3 @@ Important copyleft/share-alike notes:
 
 Publication PDFs and competition images with unclear redistribution rights are
 not bundled. Their folders contain citation or external-reference notes instead.
-

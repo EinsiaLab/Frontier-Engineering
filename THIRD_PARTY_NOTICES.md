@@ -5,8 +5,9 @@ Last audited: 2026-05-07.
 This file records third-party repositories, datasets, checkpoints, and task-defining
 open-source packages that are explicitly referenced by benchmark README/Task files
 or by the repository asset bootstrap manifest. It is a provenance and notice file;
-it does not replace the upstream license texts and it does not establish a license
-for Frontier-Engineering itself.
+it does not replace the upstream license texts. Original Frontier-Engineering
+contributions are licensed under Apache-2.0 via `LICENSE`; third-party portions
+remain governed by their upstream licenses.
 
 General handling rules:
 
@@ -20,6 +21,9 @@ General handling rules:
   repository unless noted below.
 - Copyleft or share-alike entries are called out explicitly because downstream
   redistribution of those benchmark portions may trigger additional obligations.
+- The repository-level Apache-2.0 license applies only to original
+  Frontier-Engineering contributions and does not override third-party license
+  terms listed below.
 
 ## Bundled or Derived Benchmark Sources
 

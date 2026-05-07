@@ -31,6 +31,9 @@ Third-party benchmark sources, data/checkpoint providers, and task-defining
 open-source package licenses are tracked in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
 Repository-level attribution guidance is in [`NOTICE`](NOTICE), with standard
 third-party license texts under [`LICENSES/third_party/`](LICENSES/third_party/).
+Original Frontier-Engineering contributions are licensed under
+[Apache-2.0](LICENSE); third-party materials remain under their upstream
+licenses as recorded in the notice files.
 
 If you want the task-by-task preparation details, including host-tool installation notes, read [`run.md`](run.md) before launching the full `v1` problem set.
 
