@@ -66,7 +66,7 @@
     "max_evaluations": 200000
   },
   "section_database": {
-    "description": "37 pipe section database for ISCSO 2023. Section ID 1-37 maps to cross-sectional area (cm² converted to mm²). Data extracted from official Sections-list.pdf",
+    "description": "37 pipe section database for ISCSO 2023. Section ID 1-37 maps to cross-sectional area (cm² converted to mm²). Data extracted from the official ISCSO section list; the source PDF is not bundled.",
     "sections": [
       {"id": 1, "name": "PIPE1/2STD", "area_cm2": 1.6129, "area_mm2": 161.29},
       {"id": 2, "name": "PIPE1/2XS", "area_cm2": 2.0645, "area_mm2": 206.45},
@@ -108,4 +108,3 @@
     ]
   }
 }
-

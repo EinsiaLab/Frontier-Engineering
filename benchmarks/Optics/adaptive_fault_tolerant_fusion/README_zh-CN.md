@@ -29,7 +29,7 @@ task4_fault_tolerant_fusion/
 
 - Python：`3.10+`（已验证解释器：`python`）
 - Baseline 候选实现运行依赖：`numpy`
-- Verification 评测依赖：`numpy`、`matplotlib`、仓库内本地 `aotools` 包
+- Verification 评测依赖：`numpy`、`matplotlib`、外部 `aotools` 包
 - 任务特定 oracle 依赖：`scikit-learn`（`verification/reference_controller.py` 使用 `sklearn.ensemble.IsolationForest`）
 - 建议在仓库根目录一次安装：`python -m pip install -r benchmarks/Optics/requirements.txt`
 

@@ -33,7 +33,7 @@ task2_temporal_smooth_control/
 
 - Python: `3.10+` (tested with `python`)
 - Baseline candidate runtime: `numpy`
-- Verification runtime: `numpy`, `matplotlib`, local `aotools` package (this repository)
+- Verification runtime: `numpy`, `matplotlib`, and the external `aotools` package
 - Task-specific oracle dependency: none (reference is analytical and does not require extra third-party solver)
 - Recommended one-shot install from repo root: `python -m pip install -r benchmarks/Optics/requirements.txt`
 

@@ -182,6 +182,11 @@ Setup and validation helpers:
 ## Optional third-party repos
 
 Some algorithms and benchmarks still depend on local checkouts under `third_party/`.
+Before cloning or vendoring them, check the repository-level license audit in
+[`../THIRD_PARTY_NOTICES.md`](../THIRD_PARTY_NOTICES.md).
+Repository-level attribution guidance is in [`../NOTICE`](../NOTICE), with
+standard third-party license texts under
+[`../LICENSES/third_party/`](../LICENSES/third_party/).
 
 Use the bootstrap helper to provision them:
 

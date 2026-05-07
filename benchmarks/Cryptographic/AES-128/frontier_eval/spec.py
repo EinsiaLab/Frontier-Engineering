@@ -10,6 +10,7 @@ class CryptographicSpec:
     baseline_source: str
     custom_binary: str
     reference_pdf: str
+    reference_url: str
 
     def benchmark_dir(self, repo_root: Path) -> Path:
         return (repo_root / "benchmarks" / "Cryptographic" / self.benchmark_subdir).resolve()
@@ -20,6 +21,7 @@ CRYPTO_AES128_SPEC = CryptographicSpec(
     baseline_source="AES-128.cpp",
     custom_binary="custom_aes",
     reference_pdf="AES.pdf",
+    reference_url="https://doi.org/10.6028/NIST.FIPS.197-upd1",
 )
 
 CRYPTO_SHA256_SPEC = CryptographicSpec(
@@ -27,6 +29,7 @@ CRYPTO_SHA256_SPEC = CryptographicSpec(
     baseline_source="SHA-256.cpp",
     custom_binary="custom_sha",
     reference_pdf="SHA-256.pdf",
+    reference_url="https://doi.org/10.6028/NIST.FIPS.180-4",
 )
 
 CRYPTO_SHA3_256_SPEC = CryptographicSpec(
@@ -34,5 +37,5 @@ CRYPTO_SHA3_256_SPEC = CryptographicSpec(
     baseline_source="SHA3-256.cpp",
     custom_binary="custom_sha3",
     reference_pdf="SHA3-256.pdf",
+    reference_url="https://doi.org/10.6028/NIST.FIPS.202",
 )
-

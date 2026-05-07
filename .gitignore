@@ -27,6 +27,8 @@ rerun_batch_tasks.sh
 old_runs_0318
 runs_old_2
 third_party
+!/LICENSES/third_party/
+!/LICENSES/third_party/*
 SKILL.md
 SKILL_zh-CN.md
 /benchmarks/SustainableDataCenterControl/hand_written_control/sustaindc/

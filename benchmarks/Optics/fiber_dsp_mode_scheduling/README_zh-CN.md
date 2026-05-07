@@ -34,7 +34,7 @@ python -m pip install -r benchmarks/Optics/requirements.txt
 - 推荐解释器：`python`
 - `numpy`
 - `matplotlib`
-- `optic`（本仓库内 OptiCommPy 包，verification 通过它调用 `theoryBER`）
+- `optic`（外部 OptiCommPy 包，verification 通过它调用 `theoryBER`）
 
 可选依赖（更强 oracle 模式）：
 

@@ -11,7 +11,7 @@ Each task provides:
 - baseline C++ implementation (`baseline/*.cpp`)
 - correctness verification (`verification/validate.cpp`)
 - throughput benchmark (`verification/evaluate.cpp`)
-- reference PDF (`references/*.pdf`)
+- official reference URL note (`references/README.md`)
 
 ## Run with frontier_eval (unified)
 
@@ -28,7 +28,9 @@ python -m frontier_eval task=unified task.benchmark=Cryptographic/SHA3-256 algor
 
 Backwards-compatible aliases (route to the same unified benchmark via config): `task=crypto_aes128`, `task=crypto_sha256`, `task=crypto_sha3_256`.
 
-Optional reference injection for agents (default: disabled):
+Optional reference injection for agents (default: disabled). The repository no
+longer bundles local standard PDFs; this emits the official reference URL and
+only extracts local PDF text if a user has supplied a permitted local copy:
 
 ```bash
 python -m frontier_eval task=crypto_sha256 task.include_pdf_reference=true

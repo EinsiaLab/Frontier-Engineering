@@ -34,7 +34,7 @@ Required (baseline + verification):
 - Recommended interpreter: `python`
 - `numpy`
 - `matplotlib`
-- `optic` (OptiCommPy package in this repository, used by verification for `theoryBER`)
+- `optic` (external OptiCommPy package, used by verification for `theoryBER`)
 
 Optional (stronger oracle mode):
 

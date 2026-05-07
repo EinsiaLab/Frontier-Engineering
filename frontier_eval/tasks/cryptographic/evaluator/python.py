@@ -296,6 +296,7 @@ def evaluate(
     deadline_s = start + max(1.0, evaluator_timeout_s - 5.0)
     if include_pdf_reference:
         artifacts["reference_pdf_path"] = str(reference_pdf_path)
+        artifacts["reference_url"] = spec.reference_url
         if reference_pdf_path.is_file():
             pdf_text, pdf_error = _extract_pdf_text(reference_pdf_path, deadline_s=deadline_s)
             if pdf_text:
@@ -303,7 +304,10 @@ def evaluate(
             elif pdf_error:
                 artifacts["reference_pdf_error"] = pdf_error
         else:
-            artifacts["reference_pdf_error"] = f"reference PDF not found: {reference_pdf_path}"
+            artifacts["reference_pdf_error"] = (
+                f"reference PDF not bundled for license hygiene: {reference_pdf_path}. "
+                f"Use the official reference URL instead: {spec.reference_url}"
+            )
 
     if not benchmark_dir.is_dir() or not baseline_dir.is_dir() or not verification_dir.is_dir():
         artifacts["error_message"] = (

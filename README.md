@@ -27,6 +27,11 @@ The repository-owned Python environments are automated, but a full `v1` baseline
 | Octave | `Astrodynamics/MannedLunarLanding` | host-level tool, not installed by `uv` |
 | Extra datasets / checkpoints / third-party repos | selected tasks such as `SustainableDataCenterControl`, `CarAerodynamicsSensing`, `MolecularMechanics` | see task README files for exact paths |
 
+Third-party benchmark sources, data/checkpoint providers, and task-defining
+open-source package licenses are tracked in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
+Repository-level attribution guidance is in [`NOTICE`](NOTICE), with standard
+third-party license texts under [`LICENSES/third_party/`](LICENSES/third_party/).
+
 If you want the task-by-task preparation details, including host-tool installation notes, read [`run.md`](run.md) before launching the full `v1` problem set.
 
 ## Quickstart

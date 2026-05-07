@@ -1,0 +1,32 @@
+Frontier-Engineering Third-Party Notice
+=======================================
+
+This repository contains benchmark material that is original to
+Frontier-Engineering and benchmark material that is copied, adapted, or derived
+from third-party sources.
+
+The repository-level third-party audit is maintained in:
+
+  THIRD_PARTY_NOTICES.md
+
+Standard third-party license texts used by the audit are stored in:
+
+  LICENSES/third_party/
+
+Before vendoring a new external repository, dataset, checkpoint, paper, or
+competition asset, add its source, license, and required attribution to
+THIRD_PARTY_NOTICES.md and place any required license text under
+LICENSES/third_party/ or next to the vendored asset.
+
+Important copyleft/share-alike notes:
+
+- Robotics/CoFlyersVasarhelyiTuning contains GPL-3.0-derived benchmark material
+  from micros-uav/CoFlyers.
+- ComputerSystems/MallocLab contains CC-BY-SA-4.0-attributed teaching materials
+  from PKUanonym/REKCARC-TSC-UHT.
+- Optics tasks use GPL-3.0 packages such as OptiCommPy and diffractio as runtime
+  dependencies; those packages are not vendored here.
+
+Publication PDFs and competition images with unclear redistribution rights are
+not bundled. Their folders contain citation or external-reference notes instead.
+

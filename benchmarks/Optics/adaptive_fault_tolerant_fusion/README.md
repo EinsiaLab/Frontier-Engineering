@@ -29,7 +29,7 @@ task4_fault_tolerant_fusion/
 
 - Python: `3.10+` (tested with `python`)
 - Baseline candidate runtime: `numpy`
-- Verification runtime: `numpy`, `matplotlib`, local `aotools` package (this repository)
+- Verification runtime: `numpy`, `matplotlib`, and the external `aotools` package
 - Task-specific oracle dependency: `scikit-learn` (used by `verification/reference_controller.py`, `sklearn.ensemble.IsolationForest`)
 - Recommended one-shot install from repo root: `python -m pip install -r benchmarks/Optics/requirements.txt`
 

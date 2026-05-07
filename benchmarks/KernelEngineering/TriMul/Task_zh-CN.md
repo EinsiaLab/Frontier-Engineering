@@ -6,7 +6,7 @@ TriMul 算子作用于形状为 [B, N, N, C] 的 4D 张量。
 
 你的任务：
 
-- 实现 [AlphaFold3](references/Accurate%20structure%20prediction%20of%20biomolecular%20interactions%20with%20AlphaFold%203.pdf) 论文中 TriMul 运算符的“输出”版本。
+- 实现 [AlphaFold3](https://doi.org/10.1038/s41586-024-07487-w) 论文中 TriMul 运算符的“输出”版本。本仓库不再随附该论文 PDF；参考说明见 `references/README.md`。
 - 在这个版本中，你不需要计算或存储梯度。你只需要实现前向传播即可。
 
 输入：

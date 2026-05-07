@@ -2,7 +2,9 @@
 
 We provide a basic C++ implementation `baseline/AES-128.cpp` that does not use third-party libraries. You need to modify this file to improve the algorithm's throughput while maintaining correctness.
 
-`references/AES.pdf` is a detailed description of the algorithm.
+The detailed algorithm reference is the official NIST FIPS 197 update:
+https://doi.org/10.6028/NIST.FIPS.197-upd1. A local PDF is not bundled; see
+`references/README.md`.
 
 Running `verification/valid.sh` will generate random data to verify the algorithm's correctness (using OpenSSL).
 

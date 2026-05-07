@@ -50,7 +50,7 @@ Basically, your input tensor will be split into two paths (through the same tran
 
 Given a tensor $\bold{Z} \in \mathbb{R}^{B \times N \times N \times c_z}$, compute $\bold{\tilde{Z}} \in \mathbb{R}^{B \times N \times N \times c_z}$ based on the expressions below (where $B$ is the batch dimension, so it’s ignored in the notation below), where the **LayerNorm** and **LinearNoBias** (just a weight matrix) act over the channel dimension.
 
-![Screenshot 2025-02-25 at 11.15.42 PM.png](assets/Screenshot_2025-02-25_at_11.15.42_PM.png)
+![Screenshot 2025-02-25 at 11.15.42 PM.png](assets/Screenshot%202025-02-25%20at%2011.15.42%E2%80%AFPM.png)
 
 **Code Version:**
 

@@ -32,7 +32,7 @@ task2_temporal_smooth_control/
 
 - Python：`3.10+`（已验证解释器：`python`）
 - Baseline 候选实现运行依赖：`numpy`
-- Verification 评测依赖：`numpy`、`matplotlib`、仓库内本地 `aotools` 包
+- Verification 评测依赖：`numpy`、`matplotlib`、外部 `aotools` 包
 - 任务特定 oracle 依赖：无（reference 为解析控制器，不依赖额外第三方求解器）
 - 建议在仓库根目录一次安装：`python -m pip install -r benchmarks/Optics/requirements.txt`
 

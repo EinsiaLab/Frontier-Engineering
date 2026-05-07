@@ -21,9 +21,9 @@ task03_dammann_uniform_orders/
 ## 环境依赖
 - 使用统一依赖文件：`benchmarks/Optics/requirements.txt`
 - Task03 运行依赖：
-  - baseline：`numpy` + 本仓库里的本地 `diffractio` 源码
+  - baseline：`numpy` + 外部 `diffractio` 包
   - verification/oracle：`scipy`、`matplotlib`
-  - 本地 `diffractio` 标量模块还会间接依赖 `pandas`、`psutil`
+  - `diffractio` 标量模块还会间接依赖 `pandas`、`psutil`
 - 在仓库根目录执行：
 
 ```bash

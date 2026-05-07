@@ -21,9 +21,9 @@ task03_dammann_uniform_orders/
 ## Environment Dependencies
 - Use the shared environment file: `benchmarks/Optics/requirements.txt`
 - Task03 runtime deps:
-  - baseline: `numpy` + local `diffractio` source code in this repository
+  - baseline: `numpy` + the external `diffractio` package
   - verification/oracle: `scipy`, `matplotlib`
-  - local `diffractio` scalar modules additionally need `pandas`, `psutil`
+  - `diffractio` scalar modules additionally need `pandas`, `psutil`
 - From repository root:
 
 ```bash

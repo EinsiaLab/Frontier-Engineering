@@ -180,6 +180,10 @@ bash scripts/bootstrap/install_openff_dev.sh
 ## 可选 `third_party/` 仓库
 
 有些算法或 benchmark 仍然依赖本地 checkout：
+在 clone 或 vendor 这些内容之前，请先查看仓库级 license 审计：
+[`../THIRD_PARTY_NOTICES.md`](../THIRD_PARTY_NOTICES.md)。
+仓库级归因说明见 [`../NOTICE`](../NOTICE)，标准第三方 license 文本放在
+[`../LICENSES/third_party/`](../LICENSES/third_party/)。
 
 可以直接用统一的 bootstrap 入口准备：
 
