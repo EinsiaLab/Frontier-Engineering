@@ -15,6 +15,8 @@ If you want the repository to prepare the default code/data/checkpoint layout fo
 python scripts/bootstrap/fetch_task_assets.py --target car-aero
 ```
 
+From a full v1 setup, `python scripts/bootstrap/fetch_task_assets.py --target v1-baseline-assets` also includes this bundle.
+
 0) Ensure the PhySense repo (model code) is available (required for evaluation):
 - Recommended:
   - `git clone https://github.com/thuml/PhySense.git third_party/PhySense`
@@ -72,6 +74,6 @@ Unified benchmark: `task=unified task.benchmark=Aerodynamics/CarAerodynamicsSens
 .venvs/frontier-eval-driver/bin/python -m frontier_eval task=unified task.benchmark=Aerodynamics/CarAerodynamicsSensing task.runtime.env_name=frontier-v1-kernel algorithm.iterations=0
 ```
 
-The same PhySense code, dataset, checkpoint, and reference point prerequisites above are still required before unified evaluation can run successfully.
+The same PhySense code, dataset, checkpoint, and reference point prerequisites above are still required before unified evaluation can run successfully. The recommended reproducible path is to run `python scripts/bootstrap/fetch_task_assets.py --target car-aero` from the repository root first.
 
 Backwards-compatible alias (routes to the same unified benchmark via config): `task=car_aerodynamics_sensing`.

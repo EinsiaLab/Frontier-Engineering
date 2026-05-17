@@ -6,6 +6,7 @@ from statistics import mean
 from typing import Any
 
 from qiskit import transpile
+from qiskit.circuit import QuantumCircuit
 
 TASK_DIR = Path(__file__).resolve().parent.parent
 
@@ -21,6 +22,8 @@ from utils import (
 from mqt.bench import BenchmarkLevel, get_benchmark
 from mqt.bench.targets.gatesets import get_target_for_gateset
 
+CLIFFORD_T_BASIS = ["cx", "h", "x", "y", "z", "s", "sdg", "t", "tdg"]
+
 
 def synthesis_cost(depth: int, two_qubit_count: int, t_count: int, tdg_count: int) -> float:
     t_total = t_count + tdg_count
@@ -33,6 +36,29 @@ def normalize_score_0_to_3(cost: float, opt0_cost: float, opt3_cost: float) -> f
     return 3.0 * (opt0_cost - cost) / (opt0_cost - opt3_cost)
 
 
+def _strip_non_unitary_ops(qc: QuantumCircuit) -> QuantumCircuit:
+    """Drop artifacts that target-gateset synthesis cannot translate."""
+    cleaned = QuantumCircuit(qc.num_qubits, name=qc.name)
+    cleaned.global_phase = qc.global_phase
+    for instruction in qc.data:
+        operation = instruction.operation
+        if operation.name in {"barrier", "measure"}:
+            continue
+        qubits = [qc.find_bit(qubit).index for qubit in instruction.qubits]
+        cleaned.append(operation.copy(), qubits, [])
+    return cleaned
+
+
+def transpile_to_clifford_t(qc: QuantumCircuit, opt_level: int) -> QuantumCircuit:
+    transpiled = transpile(
+        _strip_non_unitary_ops(qc),
+        basis_gates=CLIFFORD_T_BASIS,
+        optimization_level=opt_level,
+        seed_transpiler=10,
+    )
+    return _strip_non_unitary_ops(transpiled)
+
+
 def evaluate_case(case: dict[str, Any], solver: Any, artifact_root: Path) -> dict[str, Any]:
     benchmark = case["benchmark"]
     num_qubits = case["num_qubits"]
@@ -40,22 +66,20 @@ def evaluate_case(case: dict[str, Any], solver: Any, artifact_root: Path) -> dic
     case_dir = artifact_root / case["case_id"]
     case_dir.mkdir(parents=True, exist_ok=True)
 
-    input_qc = get_benchmark(
+    input_qc = _strip_non_unitary_ops(get_benchmark(
         benchmark=benchmark,
         level=BenchmarkLevel.ALG,
         circuit_size=num_qubits,
-    )
+    ))
     save_circuit_artifacts(input_qc, case_dir, "input")
 
     candidate_raw, solve_time = timed_call(solver, input_qc.copy(), target, case)
     save_circuit_artifacts(candidate_raw, case_dir, "candidate_raw")
 
     candidate_canon, canon_time = timed_call(
-        transpile,
+        transpile_to_clifford_t,
         candidate_raw,
-        target=target,
-        optimization_level=0,
-        seed_transpiler=10,
+        0,
     )
     save_circuit_artifacts(candidate_canon, case_dir, "candidate_canonical", save_image=False)
 
@@ -70,12 +94,9 @@ def evaluate_case(case: dict[str, Any], solver: Any, artifact_root: Path) -> dic
     bench_rows: dict[str, Any] = {}
     for opt_level in (0, 1, 2, 3):
         bench_qc, bench_time = timed_call(
-            get_benchmark,
-            benchmark,
-            BenchmarkLevel.NATIVEGATES,
-            num_qubits,
-            target=target,
-            opt_level=opt_level,
+            transpile_to_clifford_t,
+            input_qc.copy(),
+            opt_level,
         )
         save_circuit_artifacts(bench_qc, case_dir, f"reference_opt_{opt_level}", save_image=False)
         metrics = compute_metrics(bench_qc)

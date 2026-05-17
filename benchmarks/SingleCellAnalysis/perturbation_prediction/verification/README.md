@@ -29,7 +29,13 @@ python benchmarks/SingleCellAnalysis/perturbation_prediction/verification/evalua
 
 ## Data download / cache
 
-The first run will download OpenProblems files into:
+Recommended setup from the repository root:
+
+```bash
+python scripts/bootstrap/fetch_task_assets.py --target perturbation-prediction
+```
+
+The first baseline/scorer run will also download missing OpenProblems files lazily into:
 
 `benchmarks/SingleCellAnalysis/perturbation_prediction/resources_cache/neurips-2023-data/`
 
@@ -38,4 +44,3 @@ Approximate sizes:
 - `de_train.h5ad`: ~175 MB
 - `de_test.h5ad`: ~105 MB
 - `id_map.csv`: ~4 KB
-

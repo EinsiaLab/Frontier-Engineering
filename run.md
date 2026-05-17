@@ -75,12 +75,13 @@ python scripts/bootstrap/fetch_task_assets.py --target shinkaevolve
 python scripts/bootstrap/fetch_task_assets.py --target abmcts
 ```
 
-`v1-baseline-assets` covers the currently automated benchmark-side bundles, such as PhySense assets for `Aerodynamics/CarAerodynamicsSensing` and the upstream `dc-rl` checkout path for `SustainableDataCenterControl` when that vendored tree is absent.
+`v1-baseline-assets` covers the currently automated benchmark-side bundles, such as PhySense assets for `Aerodynamics/CarAerodynamicsSensing`, the OpenProblems cache for `SingleCellAnalysis/perturbation_prediction`, and the upstream `dc-rl` checkout path for `SustainableDataCenterControl` when that vendored tree is absent.
 
 | Requirement | Affected tasks | Where to look |
 |---|---|---|
 | `dc-rl` checkout and SustainDC assets | `SustainableDataCenterControl` | `benchmarks/SustainableDataCenterControl/README.md` and `hand_written_control/README.md` |
 | PhySense dataset, checkpoints, and reference points | `Aerodynamics/CarAerodynamicsSensing` | `benchmarks/Aerodynamics/CarAerodynamicsSensing/README.md` |
+| OpenProblems NeurIPS 2023 data cache | `SingleCellAnalysis/perturbation_prediction` | `benchmarks/SingleCellAnalysis/perturbation_prediction/README.md` |
 | `openff-dev` runtime | `MolecularMechanics/*` | `bash scripts/bootstrap/install_openff_dev.sh`, then see `benchmarks/MolecularMechanics/README.md` |
 
 ## 1. Prepare the environments

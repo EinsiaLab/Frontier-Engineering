@@ -25,6 +25,12 @@ build_from_spec() {
 }
 
 build_from_spec "${SPECS_DIR}/frontier-eval-driver.json"
+
+if [[ "${AUTO_FETCH_V1_ASSETS}" == "1" ]]; then
+  echo "[assets] fetch SustainDC checkout required by frontier-v1-sustaindc"
+  python3 "$ROOT/scripts/bootstrap/fetch_task_assets.py" --target sustaindc
+fi
+
 build_from_spec "${SPECS_DIR}/frontier-v1-main.json"
 build_from_spec "${SPECS_DIR}/frontier-v1-summit.json"
 build_from_spec "${SPECS_DIR}/frontier-v1-sustaindc.json"

@@ -15,6 +15,8 @@
 python scripts/bootstrap/fetch_task_assets.py --target car-aero
 ```
 
+如果执行完整 v1 设置，`python scripts/bootstrap/fetch_task_assets.py --target v1-baseline-assets` 也会包含这一组资源。
+
 0) 准备 PhySense 代码（评测必需）：
 - 推荐：
   - `git clone https://github.com/thuml/PhySense.git third_party/PhySense`
@@ -72,6 +74,6 @@ unified benchmark：`task=unified task.benchmark=Aerodynamics/CarAerodynamicsSen
 .venvs/frontier-eval-driver/bin/python -m frontier_eval task=unified task.benchmark=Aerodynamics/CarAerodynamicsSensing task.runtime.env_name=frontier-v1-kernel algorithm.iterations=0
 ```
 
-运行 unified 评测前，仍需先准备上面列出的 PhySense 代码、数据集、模型权重以及参考点文件。
+运行 unified 评测前，仍需先准备上面列出的 PhySense 代码、数据集、模型权重以及参考点文件。推荐的可复现路径是在仓库根目录先运行 `python scripts/bootstrap/fetch_task_assets.py --target car-aero`。
 
 兼容别名（通过配置路由到相同 unified benchmark）：`task=car_aerodynamics_sensing`。

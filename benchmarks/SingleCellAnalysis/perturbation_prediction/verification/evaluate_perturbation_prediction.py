@@ -23,6 +23,10 @@ BASE_URL = (
     "https://openproblems-data.s3.amazonaws.com/"
     "resources/task_perturbation_prediction/datasets/neurips-2023-data/"
 )
+BOOTSTRAP_HINT = (
+    "You can prefetch the dataset from the repository root with: "
+    "python scripts/bootstrap/fetch_task_assets.py --target perturbation-prediction"
+)
 
 
 def _repo_root(start: Path) -> Path:
@@ -50,7 +54,7 @@ def _download(url: str, dest: Path, *, retries: int = 3) -> None:
             except Exception:
                 pass
             time.sleep(1.0)
-    raise RuntimeError(f"Failed to download {url} -> {dest}: {last_err}")
+    raise RuntimeError(f"Failed to download {url} -> {dest}: {last_err}. {BOOTSTRAP_HINT}")
 
 
 def _ensure_dataset(dataset_dir: Path) -> dict[str, Path]:

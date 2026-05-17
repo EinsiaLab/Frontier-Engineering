@@ -30,6 +30,11 @@ CASE_END = 100
 SAMPLE_K = 10
 SAMPLE_SEED = 2025
 
+ASSET_HELP = (
+    "Prepare CarAerodynamicsSensing assets from the repository root with: "
+    "python scripts/bootstrap/fetch_task_assets.py --target car-aero"
+)
+
 SIGMA_CLIP = 3.0
 P_MIN = -844.3360
 P_MAX = 602.6890
@@ -85,7 +90,7 @@ def find_physense_car_dir(repo_root: Path) -> Path:
 def load_case(case_id: int, data_dir: Path) -> tuple[np.ndarray, np.ndarray]:
     pressure_path = data_dir / "pressure_files" / f"case_{case_id}_p_car_patch.raw"
     if not pressure_path.exists():
-        raise FileNotFoundError(f"Missing pressure file: {pressure_path}")
+        raise FileNotFoundError(f"Missing pressure file: {pressure_path}. {ASSET_HELP}")
 
     arr = np.loadtxt(pressure_path, comments="#", dtype=np.float32)
     coords = arr[:, :3]
@@ -237,7 +242,7 @@ def load_model(device: torch.device):
     ).to(device)
 
     if not CKPT_PATH.exists():
-        raise FileNotFoundError(f"Missing checkpoint: {CKPT_PATH}")
+        raise FileNotFoundError(f"Missing checkpoint: {CKPT_PATH}. {ASSET_HELP}")
     state = torch.load(CKPT_PATH, map_location=device)
     model.load_state_dict(state)
     model.eval()

@@ -31,7 +31,13 @@ In a terminal, run:
 
 ### 3. Build the Docker Image
 
-Run the following command in the root directory of this project:
+Run the following command from the Frontier-Engineering repository root:
+
+   ```bash
+   docker build -t engdesign-sim -f benchmarks/EngDesign/Dockerfile benchmarks/EngDesign
+   ```
+
+Equivalently, from this `benchmarks/EngDesign` directory:
 
    ```bash
    docker build -t engdesign-sim .
@@ -51,3 +57,7 @@ export ENGDESIGN_EVAL_MODE=docker
 export ENGDESIGN_DOCKER_IMAGE=engdesign-sim
 python -m frontier_eval task=engdesign algorithm=openevolve algorithm.iterations=10
 ```
+
+`task=engdesign` loads `frontier_eval/conf/task/engdesign.yaml`, which maps to
+the case-sensitive benchmark path `benchmarks/EngDesign`. If you use the generic
+unified task directly, write `task.benchmark=EngDesign`, not `engdesign`.

@@ -223,6 +223,35 @@ def download_public_gdrive_file(file_id: str, dest: Path, *, dry_run: bool) -> N
     temp_path.replace(dest)
 
 
+def download_http_file(url: str, dest: Path, *, dry_run: bool, expected_size: int | None = None) -> None:
+    print(f"[run] http-file {url} -> {dest}")
+    if dry_run:
+        return
+
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    if dest.exists():
+        if dest.is_dir():
+            raise RuntimeError(f"Cannot download file into directory path: {dest}")
+        local_size = dest.stat().st_size
+        if expected_size is not None and local_size == expected_size:
+            print(f"[skip] File already present: {dest}")
+            return
+        if expected_size is None and local_size > 0:
+            print(f"[skip] File already present (size unchecked): {dest}")
+            return
+
+    request = urllib.request.Request(url, headers={"User-Agent": HTTP_USER_AGENT})
+    temp_path = dest.with_name(dest.name + ".tmp")
+    with urllib.request.urlopen(request, timeout=120) as response, temp_path.open("wb") as handle:
+        shutil.copyfileobj(response, handle, length=1024 * 1024)
+
+    if expected_size is not None and temp_path.stat().st_size != expected_size:
+        temp_path.unlink(missing_ok=True)
+        raise RuntimeError(f"Incomplete download for {dest}: expected {expected_size} bytes")
+
+    temp_path.replace(dest)
+
+
 def download_public_gdrive_folder(url: str, dest: Path, *, dry_run: bool) -> None:
     def recurse(folder_id: str, current_dest: Path) -> None:
         if not dry_run:
@@ -258,6 +287,7 @@ def apply_patch(repo_dir: Path, patch_path: Path, *, dry_run: bool) -> None:
 
 def handle_git_clone(step: dict[str, Any], *, dry_run: bool) -> None:
     repo_url = str(step["repo"])
+    repo_urls = [repo_url, *[str(url) for url in step.get("fallback_repos", [])]]
     dest = resolve_relpath(str(step["dest"]))
     checkout = str(step.get("checkout", "") or "").strip()
     patch_rel = str(step.get("patch", "") or "").strip()
@@ -268,7 +298,21 @@ def handle_git_clone(step: dict[str, Any], *, dry_run: bool) -> None:
 
     if not dest.exists():
         dest.parent.mkdir(parents=True, exist_ok=True)
-        run_cmd(["git", "clone", repo_url, str(dest)], dry_run=dry_run)
+        last_error: subprocess.CalledProcessError | None = None
+        for index, url in enumerate(repo_urls):
+            try:
+                run_cmd(["git", "clone", url, str(dest)], dry_run=dry_run)
+                break
+            except subprocess.CalledProcessError as exc:
+                if dest.exists() and not any(dest.iterdir()):
+                    dest.rmdir()
+                last_error = exc
+                if index + 1 < len(repo_urls):
+                    print(f"[warn] git clone failed for {url}; trying fallback.")
+                    continue
+                raise
+        if last_error is not None and not dest.exists():
+            raise last_error
     else:
         print(f"[skip] Repo already present: {dest}")
 
@@ -319,6 +363,15 @@ def handle_gdrive_folder(step: dict[str, Any], *, dry_run: bool) -> None:
         normalize_single_child(dest, expected_paths, expected_any)
         if not ensure_expected(dest, expected_paths, expected_any):
             raise RuntimeError(f"Downloaded folder does not contain the expected files: {dest}")
+
+
+def handle_http_file(step: dict[str, Any], *, dry_run: bool) -> None:
+    url = str(step["url"])
+    dest = resolve_relpath(str(step["dest"]))
+    expected_size = step.get("expected_size")
+    if expected_size is not None:
+        expected_size = int(expected_size)
+    download_http_file(url, dest, dry_run=dry_run, expected_size=expected_size)
 
 
 def handle_command(step: dict[str, Any], *, dry_run: bool, force: bool) -> None:
@@ -411,6 +464,8 @@ def execute_bundle(bundle: dict[str, Any], *, dry_run: bool, force: bool) -> Non
           handle_editable_install(step, dry_run=dry_run)
         elif step_type == "gdrive_folder":
           handle_gdrive_folder(step, dry_run=dry_run)
+        elif step_type == "http_file":
+          handle_http_file(step, dry_run=dry_run)
         elif step_type == "command":
           handle_command(step, dry_run=dry_run, force=force)
         elif step_type == "shinkaevolve_patch":

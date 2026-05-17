@@ -61,9 +61,38 @@
         {
           "type": "git_clone",
           "repo": "https://github.com/HewlettPackard/dc-rl.git",
+          "fallback_repos": [
+            "https://githubfast.com/HewlettPackard/dc-rl.git"
+          ],
           "dest": "benchmarks/SustainableDataCenterControl/hand_written_control/sustaindc",
           "checkout": "a92b475",
           "patch": "benchmarks/SustainableDataCenterControl/hand_written_control/patches/sustaindc_optional_runtime.patch"
+        }
+      ]
+    },
+    {
+      "id": "perturbation_prediction",
+      "description": "OpenProblems NeurIPS 2023 data cache for SingleCellAnalysis/perturbation_prediction.",
+      "tags": [
+        "SingleCellAnalysis/perturbation_prediction",
+        "perturbation-prediction",
+        "v1-baseline-assets"
+      ],
+      "steps": [
+        {
+          "type": "http_file",
+          "url": "https://openproblems-data.s3.amazonaws.com/resources/task_perturbation_prediction/datasets/neurips-2023-data/de_train.h5ad",
+          "dest": "benchmarks/SingleCellAnalysis/perturbation_prediction/resources_cache/neurips-2023-data/de_train.h5ad"
+        },
+        {
+          "type": "http_file",
+          "url": "https://openproblems-data.s3.amazonaws.com/resources/task_perturbation_prediction/datasets/neurips-2023-data/de_test.h5ad",
+          "dest": "benchmarks/SingleCellAnalysis/perturbation_prediction/resources_cache/neurips-2023-data/de_test.h5ad"
+        },
+        {
+          "type": "http_file",
+          "url": "https://openproblems-data.s3.amazonaws.com/resources/task_perturbation_prediction/datasets/neurips-2023-data/id_map.csv",
+          "dest": "benchmarks/SingleCellAnalysis/perturbation_prediction/resources_cache/neurips-2023-data/id_map.csv"
         }
       ]
     },

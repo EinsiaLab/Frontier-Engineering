@@ -28,7 +28,13 @@
 
 ### 3. 构建 Docker 镜像
 
-在该项目的根目录下运行以下命令：
+在 Frontier-Engineering 仓库根目录下运行以下命令：
+
+   ```bash
+   docker build -t engdesign-sim -f benchmarks/EngDesign/Dockerfile benchmarks/EngDesign
+   ```
+
+或者在当前 `benchmarks/EngDesign` 目录下运行：
 
    ```bash
    docker build -t engdesign-sim .
@@ -48,3 +54,7 @@ export ENGDESIGN_EVAL_MODE=docker
 export ENGDESIGN_DOCKER_IMAGE=engdesign-sim
 python -m frontier_eval task=engdesign algorithm=openevolve algorithm.iterations=10
 ```
+
+`task=engdesign` 会加载 `frontier_eval/conf/task/engdesign.yaml`，并映射到大小写敏感的
+`benchmarks/EngDesign`。如果直接使用通用 unified 任务，应写
+`task.benchmark=EngDesign`，不要写成 `engdesign`。

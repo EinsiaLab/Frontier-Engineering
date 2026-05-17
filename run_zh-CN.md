@@ -75,12 +75,13 @@ python scripts/bootstrap/fetch_task_assets.py --target shinkaevolve
 python scripts/bootstrap/fetch_task_assets.py --target abmcts
 ```
 
-其中 `v1-baseline-assets` 会覆盖目前已经自动化的 benchmark 资产 bundle，例如 `Aerodynamics/CarAerodynamicsSensing` 的 PhySense 代码/数据/权重，以及在 vendored tree 缺失时补 `SustainableDataCenterControl` 的 `dc-rl` checkout。
+其中 `v1-baseline-assets` 会覆盖目前已经自动化的 benchmark 资产 bundle，例如 `Aerodynamics/CarAerodynamicsSensing` 的 PhySense 代码/数据/权重、`SingleCellAnalysis/perturbation_prediction` 的 OpenProblems 数据缓存，以及在 vendored tree 缺失时补 `SustainableDataCenterControl` 的 `dc-rl` checkout。
 
 | 条件 | 受影响任务 | 去哪里看 |
 |---|---|---|
 | `dc-rl` checkout 和 SustainDC 资产 | `SustainableDataCenterControl` | `benchmarks/SustainableDataCenterControl/README_zh-CN.md` 和 `hand_written_control/README_zh-CN.md` |
 | PhySense 数据、checkpoint 和参考点 | `Aerodynamics/CarAerodynamicsSensing` | `benchmarks/Aerodynamics/CarAerodynamicsSensing/README_zh-CN.md` |
+| OpenProblems NeurIPS 2023 数据缓存 | `SingleCellAnalysis/perturbation_prediction` | `benchmarks/SingleCellAnalysis/perturbation_prediction/README.md` |
 | `openff-dev` runtime | `MolecularMechanics/*` | 先执行 `bash scripts/bootstrap/install_openff_dev.sh`，再看 `benchmarks/MolecularMechanics/README_zh-CN.md` |
 
 ## 一、先把环境准备好

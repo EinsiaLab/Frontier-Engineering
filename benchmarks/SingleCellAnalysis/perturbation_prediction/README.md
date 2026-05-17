@@ -16,6 +16,14 @@ It uses the public OpenProblems dataset hosted on `openproblems-data` (S3) and r
 
 ## Quick start
 
+Prepare the public OpenProblems data cache up front:
+
+```bash
+python scripts/bootstrap/fetch_task_assets.py --target perturbation-prediction
+```
+
+The baseline and scorer can still download missing files lazily, but the bootstrap command is the recommended reproducible setup path.
+
 Generate a baseline prediction:
 
 ```bash
@@ -29,4 +37,3 @@ Evaluate a prediction:
 python benchmarks/SingleCellAnalysis/perturbation_prediction/verification/evaluate_perturbation_prediction.py \
   --prediction prediction.h5ad
 ```
-
