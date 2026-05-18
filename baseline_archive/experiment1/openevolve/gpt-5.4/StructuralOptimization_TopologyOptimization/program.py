@@ -11,7 +11,7 @@ import json
 from pathlib import Path
 
 import numpy as np
-from scipy.sparse import coo_matrix
+from scipy.sparse import coo_matrix, lil_matrix
 from scipy.sparse.linalg import spsolve
 
 
@@ -174,69 +174,51 @@ def apply_density_filter(nelx, nely, rmin, x, dc):
 # ============================================================================
 
 def optimize_topology(nelx, nely, config, max_iter=50):
-    """Pure OC with staged penalization and late black-white polishing."""
-    volfrac, rmin = config["volfrac"], config["rmin"]
-    rho_min, penal0, eps = 1e-3, config["penal"], 1e-6
+    """OC method for topology optimization. ALLOWED TO MODIFY."""
+    volfrac = config["volfrac"]
+    rmin = config["rmin"]
+    rho_min = 1e-3
 
-    yy = np.linspace(0.0, 1.0, nely)[:, None]
-    xx = np.linspace(0.0, 1.0, nelx)[None, :]
-    arch = 1.0 - np.abs(yy - 0.5) / 0.5
-    left = 1.0 - xx
-    seed = 0.35 + 0.35 * left + 0.20 * arch + 0.25 * left * arch
-    x = np.clip(seed, rho_min, 1.0)
-    x *= (volfrac - eps) / x.mean()
-    x = np.clip(x, rho_min, 1.0)
+    # Initialize uniform density
+    x = np.full((nely, nelx), volfrac)
+    move = 0.2
 
-    best_x, best_c = x.copy(), np.inf
-
-    for it in range(max_iter + 15):
-        if it < 10:
-            pen, move = 1.5, 0.18
-        elif it < 25:
-            pen, move = 2.2, 0.12
-        elif it < max_iter:
-            pen, move = 2.8, 0.08
-        else:
-            pen, move = penal0, 0.04
-        config["penal"] = pen
-
+    for iteration in range(max_iter):
+        # FEM solve
         u = fem_solve_2d_quad(nelx, nely, x, config)
-        c, dc = compute_compliance(nelx, nely, x, u, config)
-        dc = np.minimum(apply_density_filter(nelx, nely, rmin, x, dc), -1e-12)
 
-        if it >= max_iter:
-            thresh = np.quantile(x, 1.0 - volfrac)
-            x = np.where(x >= thresh, np.minimum(1.0, x + move), np.maximum(rho_min, x - move))
-            x *= (volfrac - eps) / x.mean()
-            x = np.clip(x, rho_min, 1.0)
-            ch = move
-        else:
-            l1, l2 = 0.0, 1e9
-            while (l2 - l1) / (l1 + l2 + 1e-30) > 1e-4:
-                lm = 0.5 * (l1 + l2)
-                x_new = np.clip(x * np.sqrt(-dc / lm), x - move, x + move)
-                x_new = np.clip(x_new, rho_min, 1.0)
-                if x_new.mean() > volfrac - eps:
-                    l1 = lm
-                else:
-                    l2 = lm
-            ch = np.max(np.abs(x_new - x))
-            x = x_new
+        # Compliance and sensitivities
+        compliance, dc = compute_compliance(nelx, nely, x, u, config)
 
-        config["penal"] = penal0
-        u_eval = fem_solve_2d_quad(nelx, nely, x, config)
-        c_eval, _ = compute_compliance(nelx, nely, x, u_eval, config)
+        # Filter sensitivities
+        dc = apply_density_filter(nelx, nely, rmin, x, dc)
 
-        if x.mean() <= volfrac and c_eval < best_c:
-            best_c, best_x = c_eval, x.copy()
+        # OC update with bisection on Lagrange multiplier
+        l1, l2 = 0.0, 1e9
+        while (l2 - l1) / (l1 + l2 + 1e-30) > 1e-3:
+            lmid = 0.5 * (l2 + l1)
+            # OC update formula
+            Be = np.sqrt(-dc / (lmid + 1e-30))
+            x_new = np.maximum(rho_min,
+                        np.maximum(x - move,
+                            np.minimum(1.0,
+                                np.minimum(x + move, x * Be))))
+            if np.mean(x_new) - volfrac > 0:
+                l1 = lmid
+            else:
+                l2 = lmid
 
-        print(f"  Iter {it+1:3d}: compliance = {c_eval:.4f}, vol = {x.mean():.4f}, change = {ch:.4f}")
-        if it > 20 and ch < 0.002:
-            print(f"  Converged at iteration {it+1}")
+        change = np.max(np.abs(x_new - x))
+        x = x_new
+
+        print(f"  Iter {iteration+1:3d}: compliance = {compliance:.4f}, "
+              f"vol = {np.mean(x):.4f}, change = {change:.4f}")
+
+        if change < 0.01 and iteration > 5:
+            print(f"  Converged at iteration {iteration+1}")
             break
 
-    config["penal"] = penal0
-    return best_x
+    return x
 
 
 # ============================================================================

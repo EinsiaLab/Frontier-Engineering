@@ -47,38 +47,49 @@ def _dynamic_obstacle_position(obstacle: dict[str, Any], t: float) -> np.ndarray
 
 def _clip_norm(vec: np.ndarray, max_norm: float) -> np.ndarray:
     n = float(np.linalg.norm(vec))
-    return vec if n <= max_norm or n < 1e-12 else vec * (max_norm / n)
+    if n <= max_norm or n < 1e-12:
+        return vec
+    return vec * (max_norm / n)
 
 
-def _box_repel(pos: np.ndarray, pmin: np.ndarray, pmax: np.ndarray, influence: float, gain: float) -> np.ndarray:
-    closest = np.clip(pos, pmin, pmax)
-    d = pos - closest
-    dist = float(np.linalg.norm(d))
-    if dist >= influence:
-        return np.zeros(3)
-    if dist < 1e-9:
-        c = 0.5 * (pmin + pmax)
-        d = pos - c
-        n = float(np.linalg.norm(d))
-        d = np.array([1.0, 0.0, 0.0]) if n < 1e-9 else d / n
-    else:
-        d /= dist
-    return gain * (influence - dist) * d
+def _segment_hits_box(
+    p: np.ndarray, q: np.ndarray, bmin: np.ndarray, bmax: np.ndarray, pad: float = 0.0
+) -> bool:
+    lo, hi = bmin - pad, bmax + pad
+    d = q - p
+    t0, t1 = 0.0, 1.0
+    for i in range(3):
+        if abs(float(d[i])) < 1e-12:
+            if p[i] < lo[i] or p[i] > hi[i]:
+                return False
+            continue
+        a = float((lo[i] - p[i]) / d[i])
+        b = float((hi[i] - p[i]) / d[i])
+        if a > b:
+            a, b = b, a
+        t0, t1 = max(t0, a), min(t1, b)
+        if t0 > t1:
+            return False
+    return True
 
 
-def _select_target(points: np.ndarray, visited: np.ndarray, pos: np.ndarray, vel: np.ndarray) -> np.ndarray:
-    d = np.linalg.norm(points - pos, axis=1)
-    idx = np.where(~visited)[0]
-    if not len(idx):
-        return points[int(np.argmin(d))]
-    s = float(np.linalg.norm(vel))
-    if s < 1e-9:
-        return points[int(idx[np.argmin(d[idx])])]
-    heading = vel / s
-    dirs = points[idx] - pos
-    dn = np.linalg.norm(dirs, axis=1)
-    align = np.array([0.0 if n < 1e-9 else float(dirs[i] @ heading) / float(n) for i, n in enumerate(dn)])
-    return points[int(idx[np.argmin(d[idx] - 0.35 * align)])]
+def _choose_target(
+    points: np.ndarray,
+    visited: np.ndarray,
+    pos: np.ndarray,
+    vel: np.ndarray,
+    wind_v: np.ndarray,
+    coverage_radius: float,
+    boxes: list[tuple[np.ndarray, np.ndarray]],
+    current: int,
+) -> int:
+    # Simpler and safer: nearest-unvisited was feasible, while the more
+    # aggressive scoring tends to pick routes that flirt with no-fly zones.
+    dists = np.linalg.norm(points - pos, axis=1)
+    unvisited = np.where(~visited)[0]
+    if len(unvisited) > 0:
+        return int(unvisited[np.argmin(dists[unvisited])])
+    return int(np.argmin(dists))
 
 
 def build_submission_for_scene(scene: dict[str, Any], dt: float, coverage_radius: float) -> dict[str, Any]:
@@ -87,13 +98,13 @@ def build_submission_for_scene(scene: dict[str, Any], dt: float, coverage_radius
     a_max = float(scene["uav"]["a_max"])
     points = np.array(scene["inspection_points"], dtype=float)
     visited = np.zeros(len(points), dtype=bool)
+    boxes = [
+        (np.array(zone["min"], dtype=float), np.array(zone["max"], dtype=float))
+        for zone in scene.get("no_fly_zones", [])
+        if zone.get("type") == "box"
+    ]
     bounds = scene["bounds"]
     xmin, xmax, ymin, ymax, zmin, zmax = bounds
-    zones = [
-        (np.array(z["min"], dtype=float), np.array(z["max"], dtype=float))
-        for z in scene.get("no_fly_zones", []) if z.get("type") == "box"
-    ]
-    dyn_obs = [(o, float(o.get("radius", 0.0))) for o in scene.get("dynamic_obstacles", [])]
 
     state = np.array(scene["start"], dtype=float)
     pos = state[:3].copy()
@@ -103,45 +114,97 @@ def build_submission_for_scene(scene: dict[str, Any], dt: float, coverage_radius
     controls: list[list[float]] = [[0.0, 0.0, 0.0]]
 
     t = 0.0
+    target_idx = -1
 
     while t + dt <= t_max + 1e-12:
         # Update coverage
         dists = np.linalg.norm(points - pos, axis=1)
         visited |= dists <= coverage_radius
-
         wind_v = _wind_velocity(scene, t)
-        target = _select_target(points, visited, pos, vel)
 
-        # Compute base desired velocity toward target
+        # Pick a target with persistence, turn/headwind awareness, and no-fly crossing penalty.
+        target_idx = _choose_target(points, visited, pos, vel, wind_v, coverage_radius, boxes, target_idx)
+        target = points[target_idx]
+
+        # Use the simpler velocity target from the feasible baseline.
         to_target = target - pos
         dist_target = float(np.linalg.norm(to_target))
 
-        # Adaptive speed
         speed_factor = 0.7 if dist_target > 3.0 else (0.5 if dist_target > 1.5 else 0.35)
         desired_vel = _clip_norm(to_target * 1.5, speed_factor * v_max)
 
+        # Strong boundary avoidance
         margin = 2.5
-        repel = np.array([
-            6.0 * max(0.0, xmin + margin - pos[0]) - 6.0 * max(0.0, pos[0] - (xmax - margin)),
-            6.0 * max(0.0, ymin + margin - pos[1]) - 6.0 * max(0.0, pos[1] - (ymax - margin)),
-            6.0 * max(0.0, zmin + 0.8 * margin - pos[2]) - 6.0 * max(0.0, pos[2] - (zmax - 0.8 * margin)),
-        ])
-        for pmin, pmax in zones:
-            repel += _box_repel(pos, pmin, pmax, 3.0, 6.0)
-        for obs, radius in dyn_obs:
+        repel = np.zeros(3, dtype=float)
+
+        # X boundary
+        if pos[0] < xmin + margin:
+            repel[0] += 6.0 * (xmin + margin - pos[0])
+        elif pos[0] > xmax - margin:
+            repel[0] -= 6.0 * (pos[0] - (xmax - margin))
+
+        # Y boundary
+        if pos[1] < ymin + margin:
+            repel[1] += 6.0 * (ymin + margin - pos[1])
+        elif pos[1] > ymax - margin:
+            repel[1] -= 6.0 * (pos[1] - (ymax - margin))
+
+        # Z boundary
+        z_margin = margin * 0.8
+        if pos[2] < zmin + z_margin:
+            repel[2] += 6.0 * (zmin + z_margin - pos[2])
+        elif pos[2] > zmax - z_margin:
+            repel[2] -= 6.0 * (pos[2] - (zmax - z_margin))
+
+        # No-fly zone avoidance: repel from the nearest box surface, not its center.
+        for pmin, pmax in boxes:
+            closest = np.clip(pos, pmin, pmax)
+            delta = pos - closest
+            dist = float(np.linalg.norm(delta))
+            influence = 3.0
+            if dist < influence:
+                if dist < 1e-8:
+                    gaps = np.array(
+                        [
+                            pos[0] - pmin[0], pmax[0] - pos[0],
+                            pos[1] - pmin[1], pmax[1] - pos[1],
+                            pos[2] - pmin[2], pmax[2] - pos[2],
+                        ],
+                        dtype=float,
+                    )
+                    face = int(np.argmin(gaps))
+                    delta = np.zeros(3, dtype=float)
+                    delta[face // 2] = -1.0 if face % 2 == 0 else 1.0
+                else:
+                    delta = delta / dist
+                repel += 7.5 * (influence - dist) * delta
+
+        # Dynamic obstacle avoidance
+        for obs in scene.get("dynamic_obstacles", []):
+            radius = float(obs.get("radius", 0.0))
             if radius <= 0.0:
                 continue
-            for lookahead in range(6):
-                center = _dynamic_obstacle_position(obs, t + lookahead * dt)
-                d = pos - center
-                dist = float(np.linalg.norm(d))
-                influence = radius + 2.0 + 0.1 * lookahead
-                if dist < influence:
-                    d = np.array([1.0, 0.0, 0.0]) if dist < 1e-8 else d / dist
-                    repel += 6.0 * (influence - dist) * (1.0 - 0.12 * lookahead) * d
 
-        # Combine attraction and repulsion
-        a_cmd = 1.45 * (desired_vel - vel) - 0.8 * wind_v + repel
+            for lookahead in range(6):
+                future_t = t + lookahead * dt
+                center = _dynamic_obstacle_position(obs, future_t)
+                influence = radius + 2.0 + lookahead * 0.1
+
+                delta = pos - center
+                dist = float(np.linalg.norm(delta))
+
+                if dist < influence:
+                    if dist < 1e-8:
+                        delta = np.array([1.0, 0.0, 0.0], dtype=float)
+                        dist = 0.0
+                    else:
+                        delta = delta / dist
+
+                    strength = 6.0 * (influence - dist) * (1.0 - lookahead * 0.12)
+                    repel += strength * delta
+
+        # Restore the more conservative feasible controller.
+        a_cmd = 1.5 * (desired_vel - vel) - 0.8 * wind_v + repel
         a_cmd = _clip_norm(a_cmd, 0.82 * a_max)
 
         # Simulate step
@@ -155,20 +218,46 @@ def build_submission_for_scene(scene: dict[str, Any], dt: float, coverage_radius
                      ymin + safety_margin <= pos_new[1] <= ymax - safety_margin and
                      zmin + safety_margin <= pos_new[2] <= zmax - safety_margin)
 
-        in_no_fly = any(np.all(pos_new >= pmin) and np.all(pos_new <= pmax) for pmin, pmax in zones)
-        dyn_collision = any(
-            radius > 0.0 and float(np.linalg.norm(pos_new - _dynamic_obstacle_position(obs, t + dt))) < radius + 0.3
-            for obs, radius in dyn_obs
+        in_no_fly = any(
+            ((np.all(pos_new >= pmin) and np.all(pos_new <= pmax)) or
+             _segment_hits_box(pos, pos_new, pmin, pmax, pad=0.02))
+            for pmin, pmax in boxes
         )
 
+        dyn_collision = False
+        for obs in scene.get("dynamic_obstacles", []):
+            radius = float(obs.get("radius", 0.0))
+            center = _dynamic_obstacle_position(obs, t + dt)
+            if float(np.linalg.norm(pos_new - center)) < radius + 0.3:
+                dyn_collision = True
+                break
+
         if not in_bounds or in_no_fly or dyn_collision:
-            # Reduce speed significantly
+            # First fall back to the safer baseline-style damped command.
             a_cmd = _clip_norm(0.3 * a_cmd, 0.4 * a_max)
             vel_new = vel + a_cmd * dt
             vel_new = _clip_norm(vel_new, 0.5 * v_max)
+            pos_new = pos + (vel_new + wind_v) * dt
+
+            still_in_no_fly = any(
+                ((np.all(pos_new >= pmin) and np.all(pos_new <= pmax)) or
+                 _segment_hits_box(pos, pos_new, pmin, pmax, pad=0.02))
+                for pmin, pmax in boxes
+            )
+            still_out = not (
+                xmin + safety_margin <= pos_new[0] <= xmax - safety_margin and
+                ymin + safety_margin <= pos_new[1] <= ymax - safety_margin and
+                zmin + safety_margin <= pos_new[2] <= zmax - safety_margin
+            )
+
+            if still_out or still_in_no_fly:
+                a_cmd = _clip_norm(1.6 * repel - 2.0 * vel - 0.8 * wind_v, 0.55 * a_max)
+                vel_new = vel + a_cmd * dt
+                vel_new = _clip_norm(vel_new, 0.4 * v_max)
+                pos_new = pos + (vel_new + wind_v) * dt
 
         vel = vel_new
-        pos = pos + (vel + wind_v) * dt
+        pos = pos_new
         t = round(t + dt, 10)
 
         timestamps.append(float(t))

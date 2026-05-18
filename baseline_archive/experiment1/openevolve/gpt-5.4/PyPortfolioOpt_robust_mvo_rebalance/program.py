@@ -1,4 +1,5 @@
 # EVOLVE-BLOCK-START
+import cvxpy as cp
 import numpy as np
 
 
@@ -24,22 +25,21 @@ def _enforce_bounds(w: np.ndarray, lower: np.ndarray, upper: np.ndarray) -> np.n
 
 
 def _enforce_sum_and_bounds(w: np.ndarray, lower: np.ndarray, upper: np.ndarray) -> np.ndarray:
-    w = _enforce_bounds(w, lower, upper)
-    for _ in range(20):
-        gap = 1.0 - w.sum()
-        if abs(gap) < 1e-10:
-            break
-        free = (w > lower + 1e-12) & (w < upper - 1e-12)
-        if not np.any(free):
-            w = _project_to_simplex(w)
-            w = _enforce_bounds(w, lower, upper)
-            continue
-        w[free] += gap / free.sum()
+    w = np.asarray(w, dtype=float)
+    if lower.sum() > 1.0 + 1e-12 or upper.sum() < 1.0 - 1e-12:
         w = _enforce_bounds(w, lower, upper)
-    s = w.sum()
-    if s <= 0:
-        return np.ones_like(w) / w.size
-    return w / s
+        s = w.sum()
+        return w / s if s > 0 else np.ones_like(w) / w.size
+    lo = np.min(w - upper)
+    hi = np.max(w - lower)
+    for _ in range(60):
+        mid = 0.5 * (lo + hi)
+        x = np.minimum(np.maximum(w - mid, lower), upper)
+        if x.sum() > 1.0:
+            lo = mid
+        else:
+            hi = mid
+    return np.minimum(np.maximum(w - hi, lower), upper)
 
 
 def _enforce_turnover(w: np.ndarray, w_prev: np.ndarray, turnover_limit: float) -> np.ndarray:
@@ -53,30 +53,36 @@ def _enforce_turnover(w: np.ndarray, w_prev: np.ndarray, turnover_limit: float) 
 
 def _enforce_sector_bounds(
     w: np.ndarray,
-    sector_data,
+    sector_ids: np.ndarray,
     sector_lower: dict,
     sector_upper: dict,
     lower: np.ndarray,
     upper: np.ndarray,
 ) -> np.ndarray:
     w = w.copy()
-    for _ in range(4):
+    sectors = np.unique(sector_ids)
+    for _ in range(5):
         changed = False
-        for s, idx in sector_data:
+        for s in sectors:
+            idx = np.where(sector_ids == s)[0]
             total = w[idx].sum()
-            lo = sector_lower.get(s, 0.0)
-            hi = sector_upper.get(s, 1.0)
+            lo = sector_lower.get(int(s), 0.0)
+            hi = sector_upper.get(int(s), 1.0)
             if total > hi + 1e-10:
+                excess = total - hi
                 room = w[idx] - lower[idx]
                 cap = room.sum()
                 if cap > 1e-12:
-                    w[idx] -= np.minimum(room, (total - hi) * room / cap)
+                    take = np.minimum(room, excess * room / cap)
+                    w[idx] -= take
                     changed = True
             elif total < lo - 1e-10:
+                need = lo - total
                 room = upper[idx] - w[idx]
                 cap = room.sum()
                 if cap > 1e-12:
-                    w[idx] += np.minimum(room, (lo - total) * room / cap)
+                    add = np.minimum(room, need * room / cap)
+                    w[idx] += add
                     changed = True
         w = _enforce_sum_and_bounds(w, lower, upper)
         if not changed:
@@ -84,124 +90,182 @@ def _enforce_sector_bounds(
     return w
 
 
-def _enforce_factor_bounds(w, F, fl, fu, lower, upper):
-    if F.size == 0:
-        return w
-    w = w.copy()
-    for _ in range(6):
-        e = F.T @ w
-        bad = False
-        for k, x in enumerate(e):
-            a = F[:, k]
-            if x < fl[k] - 1e-10:
-                need = fl[k] - x
-                up = a > 1e-12
-                dn = a < -1e-12
-                ru = upper[up] - w[up]
-                rd = w[dn] - lower[dn]
-                zu = a[up] * ru
-                zd = (-a[dn]) * rd
-                su, sd = zu.sum(), zd.sum()
-                tot = su + sd
-                if tot > 1e-12:
-                    if su > 1e-12:
-                        w[up] += np.minimum(ru, 0.8 * need * zu / tot)
-                    if sd > 1e-12:
-                        w[dn] -= np.minimum(rd, 0.8 * need * zd / tot)
-                    bad = True
-            elif x > fu[k] + 1e-10:
-                need = x - fu[k]
-                dn = a > 1e-12
-                up = a < -1e-12
-                rd = w[dn] - lower[dn]
-                ru = upper[up] - w[up]
-                zd = a[dn] * rd
-                zu = (-a[up]) * ru
-                sd, su = zd.sum(), zu.sum()
-                tot = su + sd
-                if tot > 1e-12:
-                    if sd > 1e-12:
-                        w[dn] -= np.minimum(rd, 0.8 * need * zd / tot)
-                    if su > 1e-12:
-                        w[up] += np.minimum(ru, 0.8 * need * zu / tot)
-                    bad = True
-        w = _enforce_sum_and_bounds(w, lower, upper)
-        if not bad:
-            break
-    return w
-
-
 def solve_instance(instance: dict) -> dict:
-    mu = np.asarray(instance["mu"], float)
-    cov = np.asarray(instance["cov"], float)
-    w_prev = np.asarray(instance["w_prev"], float)
-    lower = np.asarray(instance["lower"], float)
-    upper = np.asarray(instance["upper"], float)
-    sector_ids = np.asarray(instance["sector_ids"], int)
+    mu = np.asarray(instance["mu"], dtype=float)
+    cov = 0.5 * (
+        np.asarray(instance["cov"], dtype=float)
+        + np.asarray(instance["cov"], dtype=float).T
+    )
+    w_prev = np.asarray(instance["w_prev"], dtype=float)
+    lower = np.asarray(instance["lower"], dtype=float)
+    upper = np.asarray(instance["upper"], dtype=float)
+    sector_ids = np.asarray(instance["sector_ids"], dtype=int)
     sector_lower = instance["sector_lower"]
     sector_upper = instance["sector_upper"]
-    F = np.asarray(instance["factor_loadings"], float)
-    fl = np.asarray(instance["factor_lower"], float)
-    fu = np.asarray(instance["factor_upper"], float)
+    factor_loadings = np.asarray(instance["factor_loadings"], dtype=float)
+    factor_lower = np.asarray(instance["factor_lower"], dtype=float)
+    factor_upper = np.asarray(instance["factor_upper"], dtype=float)
     risk_aversion = float(instance["risk_aversion"])
     transaction_penalty = float(instance["transaction_penalty"])
     turnover_limit = float(instance["turnover_limit"])
 
-    groups = [(int(s), np.where(sector_ids == s)[0]) for s in np.unique(sector_ids)]
+    n = mu.size
+    diag = np.maximum(np.diag(cov), 1e-8)
 
-    ivar = 1.0 / (np.diag(cov) + 1e-8)
-    tilt = mu * ivar
-    tilt = tilt / (np.abs(tilt).sum() + 1e-12)
-    base = np.clip(0.7 * w_prev + 0.3 * _enforce_sum_and_bounds(np.maximum(tilt, 0), lower, upper), lower, upper)
-    w = _enforce_sector_bounds(base, groups, sector_lower, sector_upper, lower, upper)
-    w = _enforce_factor_bounds(w, F, fl, fu, lower, upper)
-    w = _enforce_turnover(w, w_prev, turnover_limit)
-    w = _enforce_sum_and_bounds(w, lower, upper)
-    w = _enforce_turnover(w, w_prev, turnover_limit)
-
-    def obj(x):
+    def score(x: np.ndarray) -> float:
         d = x - w_prev
-        return mu @ x - risk_aversion * (x @ (cov @ x)) - transaction_penalty * np.abs(d).sum()
+        return float(
+            mu @ x
+            - risk_aversion * (x @ (cov @ x))
+            - transaction_penalty * np.abs(d).sum()
+        )
 
-    best_w = w.copy()
-    best_obj = obj(w)
-    eps = 1e-4
-    for t in range(120):
-        step = 0.22 / np.sqrt(t + 5.0)
-        d = w - w_prev
-        grad = mu - 2.0 * risk_aversion * (cov @ w) - transaction_penalty * d / np.sqrt(d * d + eps)
-        trial_best, trial_obj = w, obj(w)
-        for a in (0.4, 0.8, 1.2, 1.8):
-            cand = w + a * step * grad
-            cand = _enforce_turnover(cand, w_prev, turnover_limit)
-            cand = _enforce_sector_bounds(cand, groups, sector_lower, sector_upper, lower, upper)
-            cand = _enforce_factor_bounds(cand, F, fl, fu, lower, upper)
-            cand = _enforce_sum_and_bounds(cand, lower, upper)
-            cand = _enforce_turnover(cand, w_prev, turnover_limit)
-            cand = _enforce_sector_bounds(cand, groups, sector_lower, sector_upper, lower, upper)
-            cand = _enforce_factor_bounds(cand, F, fl, fu, lower, upper)
-            cand = _enforce_sum_and_bounds(cand, lower, upper)
-            val = obj(cand)
-            if val > trial_obj:
-                trial_obj, trial_best = val, cand
-        if trial_obj >= best_obj:
-            best_obj, best_w, w = trial_obj, trial_best.copy(), trial_best
-        else:
-            w = 0.7 * w + 0.3 * best_w
-            w = _enforce_turnover(w, w_prev, turnover_limit)
-            w = _enforce_sector_bounds(w, groups, sector_lower, sector_upper, lower, upper)
-            w = _enforce_factor_bounds(w, F, fl, fu, lower, upper)
-            w = _enforce_sum_and_bounds(w, lower, upper)
+    def viol(x: np.ndarray) -> float:
+        x = np.asarray(x, dtype=float).reshape(-1)
+        v = abs(float(x.sum()) - 1.0)
+        v = max(v, float(np.max(lower - x)), float(np.max(x - upper)))
+        v = max(v, float(np.abs(x - w_prev).sum() - turnover_limit))
+        if factor_lower.size:
+            e = factor_loadings.T @ x
+            v = max(v, float(np.max(factor_lower - e)), float(np.max(e - factor_upper)))
+        for s, lo in sector_lower.items():
+            v = max(v, float(lo - x[sector_ids == int(s)].sum()))
+        for s, hi in sector_upper.items():
+            v = max(v, float(x[sector_ids == int(s)].sum() - hi))
+        return max(0.0, v)
 
-    for _ in range(2):
-        best_w = _enforce_sector_bounds(best_w, groups, sector_lower, sector_upper, lower, upper)
-        best_w = _enforce_factor_bounds(best_w, F, fl, fu, lower, upper)
-        best_w = _enforce_turnover(best_w, w_prev, turnover_limit)
-        best_w = _enforce_sum_and_bounds(best_w, lower, upper)
-        best_w = _enforce_turnover(best_w, w_prev, turnover_limit)
+    def tighten(x: np.ndarray) -> np.ndarray:
+        x = _enforce_sum_and_bounds(np.asarray(x, dtype=float).reshape(-1), lower, upper)
+        if viol(x) <= 1e-8:
+            return x
+        d = x - w_prev
+        lo, hi = 0.0, 1.0
+        for _ in range(60):
+            mid = 0.5 * (lo + hi)
+            y = w_prev + mid * d
+            if viol(y) <= 1e-8:
+                lo = mid
+            else:
+                hi = mid
+        return w_prev + lo * d
 
-    if obj(w_prev) > best_obj:
-        best_w = w_prev.copy()
+    try:
+        w = cp.Variable(n)
+        cons = [
+            cp.sum(w) == 1,
+            w >= lower,
+            w <= upper,
+            cp.norm1(w - w_prev) <= turnover_limit,
+            factor_loadings.T @ w >= factor_lower,
+            factor_loadings.T @ w <= factor_upper,
+        ]
+        for s, lo in sector_lower.items():
+            idx = np.where(sector_ids == int(s))[0]
+            cons.append(cp.sum(w[idx]) >= float(lo))
+        for s, hi in sector_upper.items():
+            idx = np.where(sector_ids == int(s))[0]
+            cons.append(cp.sum(w[idx]) <= float(hi))
 
-    return {"weights": best_w}
+        prob = cp.Problem(
+            cp.Maximize(
+                mu @ w
+                - risk_aversion * cp.quad_form(w, cp.psd_wrap(cov))
+                - transaction_penalty * cp.norm1(w - w_prev)
+            ),
+            cons,
+        )
+
+        for solver, opts in (
+            (cp.ECOS, {"abstol": 1e-10, "reltol": 1e-10, "feastol": 1e-10}),
+            (cp.OSQP, {"eps_abs": 1e-9, "eps_rel": 1e-9, "max_iter": 200000, "polish": True}),
+            (cp.SCS, {"eps": 1e-7, "max_iters": 20000}),
+        ):
+            try:
+                prob.solve(solver=solver, warm_start=True, verbose=False, **opts)
+                if prob.status in {"optimal", "optimal_inaccurate"} and w.value is not None:
+                    x = tighten(np.asarray(w.value, dtype=float).reshape(-1))
+                    if np.all(np.isfinite(x)) and viol(x) <= 1e-7:
+                        return {"weights": x}
+            except Exception:
+                pass
+    except Exception:
+        pass
+
+    def repair(x: np.ndarray) -> np.ndarray:
+        x = _enforce_sum_and_bounds(np.asarray(x, dtype=float), lower, upper)
+        for _ in range(3):
+            old = x.copy()
+            x = _enforce_sector_bounds(
+                x, sector_ids, sector_lower, sector_upper, lower, upper
+            )
+            x = _enforce_turnover(x, w_prev, turnover_limit)
+            x = _enforce_sum_and_bounds(x, lower, upper)
+            if np.max(np.abs(x - old)) < 1e-11:
+                break
+        return tighten(x)
+
+    w0 = repair(w_prev.copy())
+    grad0 = mu - 2.0 * risk_aversion * (cov @ w0)
+    scale = 1.0 / (1.0 + 2.0 * risk_aversion * diag)
+    rem = max(1.0 - float(lower.sum()), 0.0)
+
+    seeds = [w0, repair(w0 + 0.5 * scale * grad0), repair(w0 + scale * grad0)]
+
+    pos = np.maximum(mu, 0.0)
+    if rem > 0 and pos.sum() > 1e-12:
+        seeds.append(repair(lower + rem * pos / pos.sum()))
+
+    if rem > 0 and n <= 250:
+        try:
+            signal = np.linalg.lstsq(cov + 1e-6 * np.eye(n), mu, rcond=None)[0]
+            signal = np.maximum(signal, 0.0)
+            if signal.sum() > 1e-12:
+                seeds.append(repair(lower + rem * signal / signal.sum()))
+        except np.linalg.LinAlgError:
+            pass
+
+    seeds.append(repair(0.5 * (seeds[0] + seeds[-1])))
+
+    best_w = w0
+    best_val = score(best_w)
+
+    for seed in seeds:
+        w = repair(seed)
+        prev = w.copy()
+        val = score(w)
+        if val > best_val:
+            best_w, best_val = w.copy(), val
+        fail = 0
+
+        for t in range(120):
+            delta = w - w_prev
+            grad = mu - 2.0 * risk_aversion * (cov @ w)
+            grad -= transaction_penalty * delta / np.sqrt(delta * delta + 1e-8)
+            direction = scale * grad + 0.35 * (w - prev)
+            prev = w.copy()
+            base = 0.6 / np.sqrt(t + 2.0)
+
+            cand_best = None
+            cand_val = val
+            for step in (1.5 * base, base, 0.5 * base):
+                cand = repair(w + step * direction)
+                s = score(cand)
+                if s > cand_val + 1e-12:
+                    cand_best, cand_val = cand, s
+
+            if cand_best is None:
+                fail += 1
+                if fail >= 8:
+                    break
+                w = repair(0.7 * w + 0.3 * w0)
+                prev = w.copy()
+                val = score(w)
+                continue
+
+            fail = 0
+            w, val = cand_best, cand_val
+            if val > best_val:
+                best_w, best_val = w.copy(), val
+
+    return {"weights": repair(best_w)}
 # EVOLVE-BLOCK-END

@@ -9,12 +9,13 @@ def compute_dm_commands(
     prev_commands: np.ndarray,
     max_voltage: float = 0.25,
 ) -> np.ndarray:
-    u = reconstructor @ slopes
-    g = float(control_model.get("gain", 0.7))
-    a = max(0.0, float(control_model.get("adaptive_alpha", 0.15)))
-    sr = float(control_model.get("slew_rate", 0.02))
-    d = float(control_model.get("damping", 0.0))
-    g /= 1.0 + a * float(np.mean(slopes * slopes))
-    du = np.clip(g * (u - prev_commands) - d * prev_commands, -sr, sr)
-    return np.clip(prev_commands + du, -max_voltage, max_voltage)
+    """Low-pass the reconstructed command and cap unreachable per-step jumps."""
+    model = control_model or {}
+    s = np.nan_to_num(np.asarray(slopes, dtype=float))
+    prev = np.nan_to_num(np.asarray(prev_commands, dtype=float))
+    target = np.nan_to_num(np.asarray(model.get("reconstructor", reconstructor) @ s, dtype=float))
+    alpha = np.clip(np.asarray(model.get("gain", model.get("alpha", 0.35)), dtype=float), 0.0, 1.0)
+    step = np.minimum(np.asarray(model.get("slew_rate", model.get("max_delta", 0.055)), dtype=float), 0.055)
+    u = prev + np.clip(alpha * (target - prev), -step, step)
+    return np.clip(u, -max_voltage, max_voltage)
 # EVOLVE-BLOCK-END

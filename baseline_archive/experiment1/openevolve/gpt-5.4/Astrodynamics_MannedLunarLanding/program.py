@@ -7,7 +7,7 @@
 
 import numpy as np
 from scipy.integrate import solve_ivp
-from scipy.optimize import minimize, minimize_scalar
+from scipy.optimize import minimize_scalar, brentq
 
 # ==================== 常数定义 ====================
 class CONST:
@@ -34,7 +34,7 @@ class CONST:
     # 质量参数
     M_dry = 10000.0      # kg (干重)
     M_fuel_max = 15000.0 # kg (燃料上限)
-    M_return_fuel = 100.0 # kg (返回燃料)
+    M_return_fuel = 0.0   # kg (约束只要求返回时剩余燃料 <= 100 kg)
 
 CONST = CONST()
 VEC_RE = np.array([-CONST.mu, 0])
@@ -53,11 +53,24 @@ def all_dynamics(t, y):
 
 # ==================== 补给飞船（L1 Lyapunov轨道）====================
 class SupplyShip:
-    """轻量占位补给飞船"""
-    available = False
+    """L1附近Lyapunov周期轨道上的补给飞船"""
+    # TODO
 
 # ==================== 轨道传播工具 ====================
-
+def propagate_LEO(state_old, dt, t_old):
+    """在LEO上传播（简化为圆轨道）"""
+    pos_E = VEC_RE
+    dr = state_old[0:2] - pos_E
+    r_mag = np.linalg.norm(dr)
+    v_iner = state_old[2:4] + np.array([-dr[1], dr[0]])
+    n = np.sqrt((1 - CONST.mu) / r_mag**3)
+    d_theta = n * dt
+    R = np.array([[np.cos(d_theta), -np.sin(d_theta)],
+                  [np.sin(d_theta), np.cos(d_theta)]])
+    dr_new = R @ dr
+    v_new = R @ v_iner
+    state_new = np.concatenate([dr_new + pos_E, v_new - np.array([-dr_new[1], dr_new[0]])])
+    return state_new, t_old + dt
 
 def propagate_LLO(state_old, dt, t_old):
     """在LLO上传播"""
@@ -76,6 +89,21 @@ def propagate_LLO(state_old, dt, t_old):
     state_new = np.concatenate([dr_new + pos_M, v_new - np.array([-dr_new[1], dr_new[0]])])
     return state_new, t_old + dt
 
+def earth_state(th, speed):
+    """给定LEO相位和相对地球惯性速度，返回旋转系状态"""
+    r = CONST.Re_norm + CONST.h_LEO
+    dr = np.array([r * np.cos(th), r * np.sin(th)])
+    pos = VEC_RE + dr
+    u_tan = np.array([-np.sin(th), np.cos(th)])
+    # 相对地球的惯性速度转到旋转系时，应减去 Ω×dr，而不是 Ω×pos
+    vel = speed * u_tan - np.array([-dr[1], dr[0]])
+    return pos, vel, dr, u_tan
+
+def earth_rel_vel(pos, vel):
+    """旋转系速度转换为相对地球的惯性速度"""
+    dr = pos - VEC_RE
+    return vel + np.array([-dr[1], dr[0]])
+
 # ==================== 主程序 ====================
 
 print("=" * 60)
@@ -93,24 +121,91 @@ except Exception as e:
 # ==================== TLI参数优化 ====================
 print("\n[1/6] 优化TLI参数...")
 
+# 联合搜索 dv1 与出发相位：直接以“LOI后可保留质量”作为代理目标
 dt1 = 3.2
 target_moon = CONST.Rm_norm + CONST.h_LLO
-r_leo = CONST.h_LEO + CONST.Re_norm
-v_circ = np.sqrt((1 - CONST.mu) / r_leo)
 
-def flyby_error(x):
-    th, dv = np.asarray(x).ravel()
-    pos = VEC_RE + r_leo * np.array([np.cos(th), np.sin(th)])
-    vel = (v_circ + dv) * np.array([-np.sin(th), np.cos(th)]) - np.array([-pos[1], pos[0]])
-    sol = solve_ivp(all_dynamics, [0, dt1 * 1.5], np.r_[pos, vel], method='RK45', rtol=1e-9, atol=1e-9)
-    d = np.hypot(sol.y[0] - VEC_RM[0], sol.y[1] - VEC_RM[1])
-    return abs(d.min() - target_moon)
+def flyby_error(th, dv, T_max, r_target):
+    if hasattr(th, '__iter__'):
+        th = th[0]
+    r_leo = CONST.h_LEO + CONST.Re_norm
+    v_circ = np.sqrt((1 - CONST.mu) / r_leo)
+    v_dep = v_circ + dv
+    pos, vel, _, _ = earth_state(th, v_dep)
+    sol = solve_ivp(all_dynamics, [0, T_max], np.concatenate([pos, vel]),
+                    method='DOP853', rtol=1e-9, atol=1e-9)
+    pos_M = VEC_RM
+    dists = np.sqrt((sol.y[0, :] - pos_M[0])**2 + (sol.y[1, :] - pos_M[1])**2)
+    return abs(np.min(dists) - r_target)
 
-grid = [(th, dv) for dv in np.linspace(3.075, 3.09, 7) for th in np.linspace(-2.6, -2.2, 13)]
-th1, dv1 = min(grid, key=flyby_error)
-th1, dv1 = minimize(flyby_error, [th1, dv1], method='Nelder-Mead',
-                    options={'xatol': 1e-12, 'fatol': 1e-12}).x
-print(f"  dv1={dv1:.6f} VU, th1={th1:.6f} rad")
+def tli_score(dv, th):
+    r_leo = CONST.h_LEO + CONST.Re_norm
+    v_circ = np.sqrt((1 - CONST.mu) / r_leo)
+    v_dep = v_circ + dv
+    pos, vel_post, earth_dr, _ = earth_state(th, v_dep)
+
+    def event_hit_moon(t, y):
+        return np.linalg.norm(y[0:2] - VEC_RM) - target_moon
+    event_hit_moon.terminal = True
+    event_hit_moon.direction = -1
+
+    sol = solve_ivp(all_dynamics, [0, dt1*1.5], np.concatenate([pos, vel_post]),
+                    method='DOP853', rtol=1e-11, atol=1e-11, events=event_hit_moon)
+    if sol.t_events[0].size == 0:
+        return -1e30
+
+    state_arr = sol.y_events[0][0]
+    moon_dr = state_arr[0:2] - VEC_RM
+    r_act = np.linalg.norm(moon_dr)
+    v_circ_m = np.sqrt(CONST.mu / r_act)
+    u_rad = moon_dr / r_act
+    u_tan_m = np.array([-u_rad[1], u_rad[0]])
+    if np.dot(state_arr[2:4] + np.array([-moon_dr[1], moon_dr[0]]), u_tan_m) < 0:
+        u_tan_m = -u_tan_m
+    vel_loi = v_circ_m * u_tan_m - np.array([-moon_dr[1], moon_dr[0]])
+    dv2 = np.linalg.norm(vel_loi - state_arr[2:4])
+
+    v_rel_vec = earth_rel_vel(pos, vel_post)
+    C3 = np.dot(v_rel_vec, v_rel_vec) * CONST.VU**2 - 2 * CONST.mu_e / (np.linalg.norm(earth_dr) * CONST.LU)
+    M0 = 25000 - 1000 * C3
+    return M0 * np.exp(-(dv2 * CONST.VU) / CONST.Ce_km_s)
+
+def best_phase_for_dv(dv):
+    seed = min(np.linspace(-2.66, -2.16, 25),
+               key=lambda th: flyby_error(th, dv, dt1 * 1.5, target_moon))
+    return float(minimize_scalar(
+        lambda x: flyby_error(x, dv, dt1 * 1.5, target_moon),
+        bounds=(seed - 0.05, seed + 0.05),
+        method='bounded',
+        options={'xatol': 1e-5}
+    ).x)
+
+best_score, dv1, th1 = -1e30, 3.06, -2.35
+dv_cache = {}
+
+def eval_tli(dv):
+    dv = float(dv)
+    key = round(dv, 6)
+    if key not in dv_cache:
+        th = best_phase_for_dv(dv)
+        dv_cache[key] = (tli_score(dv, th), th)
+    return dv_cache[key]
+
+for dv_cand in np.linspace(3.015, 3.090, 31):
+    score, th_cand = eval_tli(dv_cand)
+    if score > best_score:
+        best_score, dv1, th1 = score, float(dv_cand), th_cand
+
+for width, xtol in ((0.010, 2e-4), (0.004, 5e-5)):
+    dv_lo = max(3.015, dv1 - width)
+    dv_hi = min(3.090, dv1 + width)
+    dv1 = float(minimize_scalar(lambda x: -eval_tli(x)[0],
+                                bounds=(dv_lo, dv_hi),
+                                method='bounded',
+                                options={'xatol': xtol}).x)
+    best_score, th1 = eval_tli(dv1)
+
+print(f"  dv1={dv1:.6f} VU, th1={th1:.6f} rad, 代理得分={best_score:.2f}")
 
 # ==================== TLI执行 ====================
 print("\n[2/6] 执行TLI并进行地月转移...")
@@ -120,11 +215,8 @@ r_leo = CONST.h_LEO + CONST.Re_norm
 v_circ = np.sqrt((1 - CONST.mu) / r_leo)
 v_dep = v_circ + dv1
 
-pos_E = VEC_RE
-pos_1 = pos_E + np.array([r_leo * np.cos(th1), r_leo * np.sin(th1)])
-u_tan = np.array([-np.sin(th1), np.cos(th1)])
-vel_pre = v_circ * u_tan - np.array([-pos_1[1], pos_1[0]])
-vel_post = v_dep * u_tan - np.array([-pos_1[1], pos_1[0]])
+pos_1, vel_pre, dr_1, u_tan = earth_state(th1, v_circ)
+_, vel_post, _, _ = earth_state(th1, v_dep)
 dv1_vec = vel_post - vel_pre
 
 # 地月转移
@@ -132,9 +224,10 @@ def event_moon_arrival(t, y):
     r = np.linalg.norm(y[0:2] - VEC_RM)
     return r - target_moon
 event_moon_arrival.terminal = True
+event_moon_arrival.direction = -1
 
 sol_tli = solve_ivp(all_dynamics, [0, dt1*1.5], np.concatenate([pos_1, vel_post]),
-                   method='RK45', rtol=1e-13, atol=1e-13,
+                   method='DOP853', rtol=1e-13, atol=1e-13,
                    events=event_moon_arrival)
 
 if sol_tli.t_events[0].size == 0:
@@ -178,29 +271,58 @@ print(f"  停留时间: {dt_stay_days:.2f}天")
 # ==================== TEI优化 ====================
 print("\n[5/6] 优化TEI参数...")
 
-dr_dep = state_pre_tei[0:2] - pos_M
-u_tan_dep = np.array([-dr_dep[1], dr_dep[0]]) / np.linalg.norm(dr_dep)
-if np.dot(state_pre_tei[2:4] + np.array([-dr_dep[1], dr_dep[0]]), u_tan_dep) < 0:
-    u_tan_dep = -u_tan_dep
-
 def compute_return_altitude(dv3):
-    state_post = state_pre_tei.copy()
-    state_post[2:4] += dv3 * u_tan_dep
-    sol = solve_ivp(all_dynamics, [0, 6.0], state_post,
-                    method='DOP853', rtol=1e-13, atol=1e-13, dense_output=True)
-    ts = np.linspace(0, sol.t[-1], 8000)
-    xy = sol.sol(ts)[:2]
-    ds = np.hypot(xy[0] - VEC_RE[0], xy[1] - VEC_RE[1])
-    tg = ts[ds.argmin()]
-    def dist(t): return 1e10 if t < 0 or t > sol.t[-1] else np.linalg.norm(sol.sol(t)[:2] - VEC_RE)
-    res = minimize_scalar(dist,
-                          bounds=(max(0, tg - 0.3), min(sol.t[-1], tg + 0.3)),
-                          method='bounded', options={'xatol': 1e-12})
-    return (res.fun - CONST.Re_norm) * CONST.LU, res.x, sol
+    """计算给定dv3下的返回高度"""
+    dr_dep = state_pre_tei[0:2] - pos_M
+    u_tan_dep = np.array([-dr_dep[1], dr_dep[0]]) / np.linalg.norm(dr_dep)
 
-b0 = 0.79 + 0.02 * np.tanh((dv1 - 3.082) * 80)
-dv3_optimal = minimize_scalar(lambda dv: abs(compute_return_altitude(dv)[0]),
-                              bounds=(b0 - 0.04, b0 + 0.04), method='bounded').x
+    if np.dot(state_pre_tei[2:4] + np.array([-dr_dep[1], dr_dep[0]]), u_tan_dep) < 0:
+        u_tan_dep = -u_tan_dep
+
+    dv3_vec = dv3 * u_tan_dep
+    state_post = state_pre_tei.copy()
+    state_post[2:4] = state_post[2:4] + dv3_vec
+
+    sol = solve_ivp(all_dynamics, [0, 6.0], state_post,
+                   method='DOP853', rtol=1e-13, atol=1e-13, dense_output=True)
+
+    # 搜索近地点
+    t_samples = np.linspace(0, sol.t[-1], 8000)
+    dists = np.array([np.linalg.norm(sol.sol(t)[0:2] - VEC_RE) for t in t_samples])
+    idx_min = np.argmin(dists)
+    t_guess = t_samples[idx_min]
+
+    def dist_func(t):
+        if t < 0 or t > sol.t[-1]:
+            return 1e10
+        return np.linalg.norm(sol.sol(t)[0:2] - VEC_RE)
+
+    result = minimize_scalar(dist_func,
+                            bounds=(max(0, t_guess-0.3), min(sol.t[-1], t_guess+0.3)),
+                            method='bounded', options={'xatol': 1e-12})
+
+    alt = (result.fun - CONST.Re_norm) * CONST.LU
+    return alt, result.x, sol
+
+# 搜索最优dv3：优先找高度符号变化并求根，失败时再最小化绝对误差
+dv_grid = np.linspace(0.74, 0.86, 25)
+alt_grid = [compute_return_altitude(dv)[0] for dv in dv_grid]
+dv3_optimal = None
+
+for a, b, ha, hb in zip(dv_grid[:-1], dv_grid[1:], alt_grid[:-1], alt_grid[1:]):
+    if abs(ha) < 1e-8:
+        dv3_optimal = a
+        break
+    if ha * hb < 0:
+        dv3_optimal = brentq(lambda x: compute_return_altitude(x)[0], a, b,
+                             xtol=1e-10, rtol=1e-10)
+        break
+
+if dv3_optimal is None:
+    dv3_optimal = minimize_scalar(lambda x: abs(compute_return_altitude(x)[0]),
+                                  bounds=(0.75, 0.85), method='bounded',
+                                  options={'xatol': 1e-10}).x
+
 alt_final, t_peri, sol_tei = compute_return_altitude(dv3_optimal)
 
 print(f"  最优dv3={dv3_optimal:.6f} VU, 返回高度={alt_final:.2f} km")
@@ -208,17 +330,14 @@ print(f"  最优dv3={dv3_optimal:.6f} VU, 返回高度={alt_final:.2f} km")
 # ==================== 质量计算 ====================
 print("\n[6/6] 计算质量预算...")
 
-# 计算C3
-x_rel = pos_1[0] + CONST.mu
-y_rel = pos_1[1]
-v_ix = vel_post[0] - y_rel
-v_iy = vel_post[1] + x_rel
-C3 = ((v_ix**2 + v_iy**2) * CONST.VU**2) - 2*CONST.mu_e / (np.sqrt(x_rel**2 + y_rel**2) * CONST.LU)
+# 计算C3（使用相对地球惯性速度）
+v_rel_vec = earth_rel_vel(pos_1, vel_post)
+C3 = np.dot(v_rel_vec, v_rel_vec) * CONST.VU**2 - 2 * CONST.mu_e / (np.linalg.norm(dr_1) * CONST.LU)
 M0 = 25000 - 1000 * C3
 
 # 质量比
 ratio_loi = np.exp(-(dv2_mag * CONST.VU) / CONST.Ce_km_s)
-ratio_tei = np.exp(-(dv3_optimal * CONST.VU) / CONST.Ce_km_s)
+ratio_tei = np.exp(-(np.linalg.norm([0, dv3_optimal]) * CONST.VU) / CONST.Ce_km_s)
 
 # Payload计算
 M_return_wet = CONST.M_dry + CONST.M_return_fuel
@@ -247,11 +366,10 @@ print("\n生成results.txt...")
 data = []
 
 # Event 1: 出发前（标准LEO）
-theta_check = 0.0
+theta_check = th1
 r_init_norm = CONST.Re_norm + CONST.h_LEO
-pos_check = r_init_norm * np.array([np.cos(theta_check), np.sin(theta_check)]) + VEC_RE
-v_init = np.sqrt((1 - CONST.mu) / r_init_norm)
-vel_check = (v_init - r_init_norm) * np.array([-np.sin(theta_check), np.cos(theta_check)])
+pos_check = pos_1.copy()
+vel_check = vel_pre.copy()
 
 data.append([1, t0, pos_check[0], pos_check[1], vel_check[0], vel_check[1],
             0, 0, Fuel_launch, Payload])
@@ -280,17 +398,21 @@ data.append([3, t_dep, state_pre_tei[0], state_pre_tei[1], state_pre_tei[2], sta
             0, 0, Fuel_after_loi, 0.0])
 
 # Event -1: TEI
+dr_dep = state_pre_tei[0:2] - pos_M
+u_tan_dep = np.array([-dr_dep[1], dr_dep[0]]) / np.linalg.norm(dr_dep)
+if np.dot(state_pre_tei[2:4] + np.array([-dr_dep[1], dr_dep[0]]), u_tan_dep) < 0:
+    u_tan_dep = -u_tan_dep
 dv3_vec = dv3_optimal * u_tan_dep
 state_post_tei = state_pre_tei.copy()
-state_post_tei[2:4] += dv3_vec
+state_post_tei[2:4] = state_post_tei[2:4] + dv3_vec
 
 data.append([-1, t_dep, state_pre_tei[0], state_pre_tei[1], state_pre_tei[2], state_pre_tei[3],
             0, 0, Fuel_after_loi, 0.0])
 data.append([-1, t_dep, state_post_tei[0], state_post_tei[1], state_post_tei[2], state_post_tei[3],
             dv3_vec[0], dv3_vec[1], CONST.M_return_fuel, 0.0])
 
-# Event 0: 月地转移（早期段，确保高度>400km）
-t_safe = 0.1
+# Event 0: 月地转移（早期段，确保时间严格早于Event 4）
+t_safe = max(1e-6, min(0.1, 0.5 * t_peri))
 state_safe = sol_tei.sol(t_safe)
 data.append([0, t_dep, state_post_tei[0], state_post_tei[1], state_post_tei[2], state_post_tei[3],
             0, 0, CONST.M_return_fuel, 0.0])

@@ -292,158 +292,70 @@ def compute_weight(section_ids, problem, nodes, elements, section_db):
 # ============================================================================
 
 def get_initial_design(problem, nodes, elements, section_db, id_min, id_max):
-    """Random but geometry-aware heavy start."""
-    rng = np.random.default_rng()
-    lens = np.array([np.linalg.norm(nodes[j] - nodes[i]) for i, j in elements])
-    zc = np.array([(nodes[i, 2] + nodes[j, 2]) * 0.5 for i, j in elements])
-    H = max(1.0, problem["tower_parameters"]["total_height_mm"])
-    q1, q2 = np.quantile(lens, [0.33, 0.66])
-    x = np.empty(problem["dimension"], dtype=int)
-    for k, (L, z) in enumerate(zip(lens, zc)):
-        band = 0 if z < 0.33 * H else (1 if z < 0.66 * H else 2)
-        lo = id_max - (1 if band == 0 or L >= q2 else 4 if L >= q1 else 7)
-        x[k] = rng.integers(max(id_min, lo), id_max + 1)
-    return x
+    """
+    Generate initial design.
+    
+    ALLOWED TO MODIFY: You can change the initial design strategy. However,
+    note that the problem requires starting from a random initial point.
+    """
+    dim = problem["dimension"]
+    mid_id = (id_min + id_max) // 2
+    section_ids = np.full(dim, mid_id, dtype=int)
+    return section_ids
 
 
 def optimize_discrete_stress_ratio(problem, nodes, elements, section_db, max_eval=200000):
-    """Feasible-first search with focused repair and conservative reduction."""
-    b = problem["variable_bounds"]
-    id_min, id_max = b["section_id_min"], b["section_id_max"]
-    dim = problem["dimension"]
-    rng = np.random.default_rng()
+    """
+    Discrete stress ratio method optimization algorithm.
+    
+    ALLOWED TO MODIFY: This is the optimization algorithm. You can completely
+    rewrite this function or replace it with your own optimization method.
+    
+    The function should return:
+    - section_ids: Array of 284 integers (section IDs 1-37)
+    - num_eval: Number of FEM evaluations used (must be ≤ max_eval)
+    
+    Important constraints:
+    - Must start from a random initial point
+    - Must track and report num_evaluations
+    - num_evaluations must be ≤ 200,000
+    """
+    bounds_cfg = problem["variable_bounds"]
+    id_min = bounds_cfg["section_id_min"]
+    id_max = bounds_cfg["section_id_max"]
+    sigma_limit = problem["constraints"]["stress_limit"]
+    disp_limit = problem["constraints"]["displacement_limit"]
+
+    section_ids = get_initial_design(problem, nodes, elements, section_db, id_min, id_max)
     num_eval = 0
-    best = None
-    best_w = float("inf")
-    cache = {}
 
-    lens = np.array([np.linalg.norm(nodes[j] - nodes[i]) for i, j in elements])
-    zc = np.array([(nodes[i, 2] + nodes[j, 2]) * 0.5 for i, j in elements])
-    H = max(1.0, problem["tower_parameters"]["total_height_mm"])
-    q = np.quantile(lens, [0.25, 0.5, 0.75])
-
-    groups = {}
-    coarse = {}
-    band_tag = np.zeros(dim, dtype=int)
-    for e, (i, j) in enumerate(elements):
-        dz = abs(nodes[j, 2] - nodes[i, 2])
-        role = 0 if dz > 1000 else (1 if dz < 1e-9 and abs(i - j) in (1, 3) else 2)
-        lvl = int(round(10 * zc[e] / H))
-        lbin = int(np.digitize(lens[e], q))
-        band = min(2, int(3 * zc[e] / H))
-        band_tag[e] = band
-        groups.setdefault((role, lvl, lbin), []).append(e)
-        coarse.setdefault((role, band), []).append(e)
-    group_list = sorted(groups.values(), key=lambda g: -np.sum(lens[g]))
-    coarse_list = sorted(coarse.values(), key=lambda g: (-np.mean(lens[g]), -len(g)))
-    order = np.argsort(-(lens * (4 - band_tag)))
-
-    def eval_design(x):
-        nonlocal num_eval, best, best_w
-        key = tuple(int(v) for v in x)
-        if key in cache:
-            return cache[key]
+    for iteration in range(100):
         if num_eval >= max_eval:
-            return None
-        r = analyze_design(x, problem, nodes, elements, section_db)
-        num_eval += 1
-        out = None if r is None else dict(r)
-        if out and out["feasible"]:
-            w = compute_weight(x, problem, nodes, elements, section_db)
-            out["weight"] = w
-            if w < best_w:
-                best_w, best = w, x.copy()
-        cache[key] = out
-        return out
-
-    seeds = []
-    for base in (id_max, id_max - 1, id_max - 2, id_max - 4):
-        if base < id_min:
-            continue
-        x = np.full(dim, base, dtype=int)
-        x[band_tag == 1] = np.maximum(id_min, base - 3)
-        x[band_tag == 2] = np.maximum(id_min, base - 6)
-        seeds.append(np.clip(x, id_min, id_max))
-    for _ in range(6):
-        seeds.append(get_initial_design(problem, nodes, elements, section_db, id_min, id_max))
-
-    for x in seeds:
-        for _ in range(12):
-            r = eval_design(x)
-            if r is None or r["feasible"] or num_eval >= max_eval:
-                break
-            ratio = max(
-                r["max_stress"] / problem["constraints"]["stress_limit"],
-                r["max_disp"] / problem["constraints"]["displacement_limit"],
-            )
-            y = x.copy()
-            if ratio > 2.0:
-                hot = rng.random(dim) < 0.35
-                y[hot] = np.minimum(id_max, y[hot] + 2)
-            else:
-                hot = band_tag == 0
-                if ratio < 1.15:
-                    hot = hot | (lens >= np.quantile(lens, 0.75))
-                y[hot] = np.minimum(id_max, y[hot] + 1)
-            x = y
-        if best is not None:
             break
 
-    if best is None:
-        x = np.full(dim, id_max, dtype=int)
-        r = eval_design(x)
-        if r and r["feasible"]:
-            best = x.copy()
-            best_w = r.get("weight", compute_weight(x, problem, nodes, elements, section_db))
+        result = analyze_design(section_ids, problem, nodes, elements, section_db)
+        num_eval += 1
 
-    if best is None:
-        return np.full(dim, id_max, dtype=int), num_eval
+        if result is None:
+            section_ids = np.clip(section_ids + 1, id_min, id_max)
+            continue
 
-    x = best.copy()
-    for step in (8, 4, 2, 1):
-        improved = True
-        while improved and num_eval < max_eval:
-            improved = False
-            for packs in (coarse_list, group_list):
-                for g in packs:
-                    if num_eval >= max_eval:
-                        break
-                    idx = np.array(g, dtype=int)
-                    if np.all(x[idx] <= id_min):
-                        continue
-                    y = x.copy()
-                    y[idx] = np.maximum(id_min, y[idx] - step)
-                    r = eval_design(y)
-                    if r and r["feasible"]:
-                        x = y
-                        improved = True
+        if result["feasible"]:
+            break
 
-    changed = True
-    while changed and num_eval < max_eval:
-        changed = False
-        for i in order:
-            if num_eval >= max_eval:
-                break
-            if x[i] <= id_min:
-                continue
-            y = x.copy()
-            y[i] -= 1
-            r = eval_design(y)
-            if r and r["feasible"]:
-                x = y
-                changed = True
-        for frac in (0.08, 0.04):
-            if num_eval >= max_eval:
-                break
-            y = x.copy()
-            idx = rng.choice(order[: max(8, dim // 3)], max(1, int(dim * frac)), replace=False)
-            y[idx] = np.maximum(id_min, y[idx] - 1)
-            r = eval_design(y)
-            if r and r["feasible"]:
-                x = y
-                changed = True
+        max_stress = result["max_stress"]
+        max_disp = result["max_disp"]
+        
+        scale = 1.0
+        if max_stress > 1e-6:
+            scale = max(scale, max_stress / sigma_limit * 1.05)
+        if max_disp > 1e-6:
+            scale = max(scale, max_disp / disp_limit * 1.05)
+        
+        new_ids = np.round(section_ids * scale).astype(int)
+        section_ids = np.clip(new_ids, id_min, id_max)
 
-    return x, num_eval
+    return section_ids, num_eval
 
 
 # ============================================================================

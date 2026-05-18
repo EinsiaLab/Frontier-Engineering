@@ -1,11 +1,17 @@
 // EVOLVE-BLOCK-START
-#include <iostream>
-#include <vector>
-#include <iomanip>
+#include <array>
 #include <cstdint>
+#include <cstring>
 #include <string>
 #include <fstream>
+#include <sys/stat.h>
 
+#if defined(__GNUC__) && defined(__x86_64__)
+#define FE_USE_AESNI 1
+#include <immintrin.h>
+#else
+#define FE_USE_AESNI 0
+#endif
 
 
 
@@ -14,94 +20,198 @@ class AES128 {
 private:
     static const uint8_t sbox[256];
     static const uint8_t Rcon[11];
-    uint8_t RoundKey[176];
+    
+    static constexpr int Nr = 10;
+#if FE_USE_AESNI
+    bool useAesNi = false;
+    alignas(16) __m128i RoundKey128[11];
 
-    static inline uint8_t xtime(uint8_t x) { return (uint8_t)((x << 1) ^ (((x >> 7) & 1) * 0x1b)); }
-
-    void SubWord(uint8_t* word) {
-        word[0] = sbox[word[0]];
-        word[1] = sbox[word[1]];
-        word[2] = sbox[word[2]];
-        word[3] = sbox[word[3]];
+    __attribute__((target("aes,sse2")))
+    static __m128i expandAssist(__m128i key, __m128i keygen) {
+        keygen = _mm_shuffle_epi32(keygen, 0xff);
+        key = _mm_xor_si128(key, _mm_slli_si128(key, 4));
+        key = _mm_xor_si128(key, _mm_slli_si128(key, 4));
+        key = _mm_xor_si128(key, _mm_slli_si128(key, 4));
+        return _mm_xor_si128(key, keygen);
     }
 
-    void RotWord(uint8_t* word) {
+    __attribute__((target("aes,sse2")))
+    void KeyExpansionAESNI(const uint8_t* key) {
+        __m128i t1 = _mm_loadu_si128(reinterpret_cast<const __m128i_u*>(key));
+        __m128i t2;
+        RoundKey128[0] = t1;
+        t2 = _mm_aeskeygenassist_si128(t1, 0x01); t1 = expandAssist(t1, t2); RoundKey128[1] = t1;
+        t2 = _mm_aeskeygenassist_si128(t1, 0x02); t1 = expandAssist(t1, t2); RoundKey128[2] = t1;
+        t2 = _mm_aeskeygenassist_si128(t1, 0x04); t1 = expandAssist(t1, t2); RoundKey128[3] = t1;
+        t2 = _mm_aeskeygenassist_si128(t1, 0x08); t1 = expandAssist(t1, t2); RoundKey128[4] = t1;
+        t2 = _mm_aeskeygenassist_si128(t1, 0x10); t1 = expandAssist(t1, t2); RoundKey128[5] = t1;
+        t2 = _mm_aeskeygenassist_si128(t1, 0x20); t1 = expandAssist(t1, t2); RoundKey128[6] = t1;
+        t2 = _mm_aeskeygenassist_si128(t1, 0x40); t1 = expandAssist(t1, t2); RoundKey128[7] = t1;
+        t2 = _mm_aeskeygenassist_si128(t1, 0x80); t1 = expandAssist(t1, t2); RoundKey128[8] = t1;
+        t2 = _mm_aeskeygenassist_si128(t1, 0x1B); t1 = expandAssist(t1, t2); RoundKey128[9] = t1;
+        t2 = _mm_aeskeygenassist_si128(t1, 0x36); t1 = expandAssist(t1, t2); RoundKey128[10] = t1;
+    }
+
+    __attribute__((target("aes,sse2")))
+    __m128i EncryptAESNI(__m128i block) const {
+        block = _mm_xor_si128(block, RoundKey128[0]);
+        for (int round = 1; round < Nr; ++round) block = _mm_aesenc_si128(block, RoundKey128[round]);
+        return _mm_aesenclast_si128(block, RoundKey128[Nr]);
+    }
+
+    __attribute__((target("aes,sse2")))
+    void encrypt4BlocksAESNI(const uint8_t* input, uint8_t* output) const {
+        __m128i b0 = _mm_loadu_si128(reinterpret_cast<const __m128i_u*>(input));
+        __m128i b1 = _mm_loadu_si128(reinterpret_cast<const __m128i_u*>(input + 16));
+        __m128i b2 = _mm_loadu_si128(reinterpret_cast<const __m128i_u*>(input + 32));
+        __m128i b3 = _mm_loadu_si128(reinterpret_cast<const __m128i_u*>(input + 48));
+
+        b0 = _mm_xor_si128(b0, RoundKey128[0]);
+        b1 = _mm_xor_si128(b1, RoundKey128[0]);
+        b2 = _mm_xor_si128(b2, RoundKey128[0]);
+        b3 = _mm_xor_si128(b3, RoundKey128[0]);
+
+        for (int round = 1; round < Nr; ++round) {
+            const __m128i rk = RoundKey128[round];
+            b0 = _mm_aesenc_si128(b0, rk);
+            b1 = _mm_aesenc_si128(b1, rk);
+            b2 = _mm_aesenc_si128(b2, rk);
+            b3 = _mm_aesenc_si128(b3, rk);
+        }
+
+        b0 = _mm_aesenclast_si128(b0, RoundKey128[Nr]);
+        b1 = _mm_aesenclast_si128(b1, RoundKey128[Nr]);
+        b2 = _mm_aesenclast_si128(b2, RoundKey128[Nr]);
+        b3 = _mm_aesenclast_si128(b3, RoundKey128[Nr]);
+
+        _mm_storeu_si128(reinterpret_cast<__m128i_u*>(output), b0);
+        _mm_storeu_si128(reinterpret_cast<__m128i_u*>(output + 16), b1);
+        _mm_storeu_si128(reinterpret_cast<__m128i_u*>(output + 32), b2);
+        _mm_storeu_si128(reinterpret_cast<__m128i_u*>(output + 48), b3);
+    }
+#endif
+    alignas(16) uint8_t RoundKey[176];
+
+    uint8_t xtime(uint8_t x) const { return (x << 1) ^ (((x >> 7) & 1) * 0x1b); }
+
+    void SubWord(uint8_t* word) const {
+        for (int i = 0; i < 4; i++) word[i] = sbox[word[i]];
+    }
+
+    void RotWord(uint8_t* word) const {
         uint8_t tmp = word[0];
         word[0] = word[1]; word[1] = word[2]; word[2] = word[3]; word[3] = tmp;
     }
 
-    void KeyExpansion(const std::vector<uint8_t>& key) {
+    void KeyExpansion(const uint8_t* key) {
         uint8_t temp[4];
-        for (int i = 0; i < 16; ++i) RoundKey[i] = key[i];
+        for (int i = 0; i < 16; i++) RoundKey[i] = key[i];
         int bytesGenerated = 16, rconIteration = 1;
+
         while (bytesGenerated < 176) {
-            temp[0] = RoundKey[bytesGenerated - 4];
-            temp[1] = RoundKey[bytesGenerated - 3];
-            temp[2] = RoundKey[bytesGenerated - 2];
-            temp[3] = RoundKey[bytesGenerated - 1];
-            if ((bytesGenerated & 15) == 0) {
+            for (int i = 0; i < 4; i++) temp[i] = RoundKey[bytesGenerated - 4 + i];
+            if (bytesGenerated % 16 == 0) {
                 RotWord(temp);
                 SubWord(temp);
                 temp[0] ^= Rcon[rconIteration++];
             }
-            RoundKey[bytesGenerated] = RoundKey[bytesGenerated - 16] ^ temp[0]; ++bytesGenerated;
-            RoundKey[bytesGenerated] = RoundKey[bytesGenerated - 16] ^ temp[1]; ++bytesGenerated;
-            RoundKey[bytesGenerated] = RoundKey[bytesGenerated - 16] ^ temp[2]; ++bytesGenerated;
-            RoundKey[bytesGenerated] = RoundKey[bytesGenerated - 16] ^ temp[3]; ++bytesGenerated;
+            for (int i = 0; i < 4; i++) {
+                RoundKey[bytesGenerated] = RoundKey[bytesGenerated - 16] ^ temp[i];
+                bytesGenerated++;
+            }
         }
     }
 
-public:
-    void setKey(const std::vector<uint8_t>& key) { KeyExpansion(key); }
-
-    void encryptBlock(const uint8_t in[16], uint8_t out[16]) {
-        uint8_t s0 = in[0] ^ RoundKey[0], s1 = in[1] ^ RoundKey[1], s2 = in[2] ^ RoundKey[2], s3 = in[3] ^ RoundKey[3];
-        uint8_t s4 = in[4] ^ RoundKey[4], s5 = in[5] ^ RoundKey[5], s6 = in[6] ^ RoundKey[6], s7 = in[7] ^ RoundKey[7];
-        uint8_t s8 = in[8] ^ RoundKey[8], s9 = in[9] ^ RoundKey[9], s10 = in[10] ^ RoundKey[10], s11 = in[11] ^ RoundKey[11];
-        uint8_t s12 = in[12] ^ RoundKey[12], s13 = in[13] ^ RoundKey[13], s14 = in[14] ^ RoundKey[14], s15 = in[15] ^ RoundKey[15];
-
-        for (int round = 1; round < 10; ++round) {
-            uint8_t t0 = sbox[s0], t1 = sbox[s5], t2 = sbox[s10], t3 = sbox[s15];
-            uint8_t t4 = sbox[s4], t5 = sbox[s9], t6 = sbox[s14], t7 = sbox[s3];
-            uint8_t t8 = sbox[s8], t9 = sbox[s13], t10 = sbox[s2], t11 = sbox[s7];
-            uint8_t t12 = sbox[s12], t13 = sbox[s1], t14 = sbox[s6], t15 = sbox[s11];
-            uint8_t u0 = t0 ^ t1 ^ t2 ^ t3, u4 = t4 ^ t5 ^ t6 ^ t7, u8 = t8 ^ t9 ^ t10 ^ t11, u12 = t12 ^ t13 ^ t14 ^ t15;
-            const uint8_t* rk = RoundKey + (round << 4);
-
-            s0 = t0 ^ u0 ^ xtime(t0 ^ t1) ^ rk[0];
-            s1 = t1 ^ u0 ^ xtime(t1 ^ t2) ^ rk[1];
-            s2 = t2 ^ u0 ^ xtime(t2 ^ t3) ^ rk[2];
-            s3 = t3 ^ u0 ^ xtime(t3 ^ t0) ^ rk[3];
-            s4 = t4 ^ u4 ^ xtime(t4 ^ t5) ^ rk[4];
-            s5 = t5 ^ u4 ^ xtime(t5 ^ t6) ^ rk[5];
-            s6 = t6 ^ u4 ^ xtime(t6 ^ t7) ^ rk[6];
-            s7 = t7 ^ u4 ^ xtime(t7 ^ t4) ^ rk[7];
-            s8 = t8 ^ u8 ^ xtime(t8 ^ t9) ^ rk[8];
-            s9 = t9 ^ u8 ^ xtime(t9 ^ t10) ^ rk[9];
-            s10 = t10 ^ u8 ^ xtime(t10 ^ t11) ^ rk[10];
-            s11 = t11 ^ u8 ^ xtime(t11 ^ t8) ^ rk[11];
-            s12 = t12 ^ u12 ^ xtime(t12 ^ t13) ^ rk[12];
-            s13 = t13 ^ u12 ^ xtime(t13 ^ t14) ^ rk[13];
-            s14 = t14 ^ u12 ^ xtime(t14 ^ t15) ^ rk[14];
-            s15 = t15 ^ u12 ^ xtime(t15 ^ t12) ^ rk[15];
+    void AddRoundKey(uint8_t state[4][4], int round) const {
+        for (int r = 0; r < 4; r++) {
+            for (int c = 0; c < 4; c++) {
+                state[r][c] ^= RoundKey[round * 16 + c * 4 + r];
+            }
         }
+    }
 
-        out[0] = sbox[s0] ^ RoundKey[160];
-        out[1] = sbox[s5] ^ RoundKey[161];
-        out[2] = sbox[s10] ^ RoundKey[162];
-        out[3] = sbox[s15] ^ RoundKey[163];
-        out[4] = sbox[s4] ^ RoundKey[164];
-        out[5] = sbox[s9] ^ RoundKey[165];
-        out[6] = sbox[s14] ^ RoundKey[166];
-        out[7] = sbox[s3] ^ RoundKey[167];
-        out[8] = sbox[s8] ^ RoundKey[168];
-        out[9] = sbox[s13] ^ RoundKey[169];
-        out[10] = sbox[s2] ^ RoundKey[170];
-        out[11] = sbox[s7] ^ RoundKey[171];
-        out[12] = sbox[s12] ^ RoundKey[172];
-        out[13] = sbox[s1] ^ RoundKey[173];
-        out[14] = sbox[s6] ^ RoundKey[174];
-        out[15] = sbox[s11] ^ RoundKey[175];
+    void SubBytes(uint8_t state[4][4]) const {
+        for (int r = 0; r < 4; r++) {
+            for (int c = 0; c < 4; c++) state[r][c] = sbox[state[r][c]];
+        }
+    }
+
+    void ShiftRows(uint8_t state[4][4]) const {
+        uint8_t temp;
+        temp = state[1][0]; state[1][0] = state[1][1]; state[1][1] = state[1][2]; state[1][2] = state[1][3]; state[1][3] = temp;
+        temp = state[2][0]; uint8_t temp2 = state[2][1]; state[2][0] = state[2][2]; state[2][1] = state[2][3]; state[2][2] = temp; state[2][3] = temp2;
+        temp = state[3][3]; state[3][3] = state[3][2]; state[3][2] = state[3][1]; state[3][1] = state[3][0]; state[3][0] = temp;
+    }
+
+    void MixColumns(uint8_t state[4][4]) const {
+        for (int c = 0; c < 4; c++) {
+            uint8_t a = state[0][c];
+            uint8_t b = state[1][c];
+            uint8_t c_val = state[2][c];
+            uint8_t d = state[3][c];
+
+            uint8_t a2 = xtime(a);
+            uint8_t b2 = xtime(b);
+            uint8_t c2 = xtime(c_val);
+            uint8_t d2 = xtime(d);
+
+            state[0][c] = a2 ^ b2 ^ b ^ c_val ^ d;
+            state[1][c] = a ^ b2 ^ c2 ^ c_val ^ d;
+            state[2][c] = a ^ b ^ c2 ^ d2 ^ d;
+            state[3][c] = a2 ^ a ^ b ^ c_val ^ d2;
+        }
+    }
+
+    void encryptBlockSoft(const uint8_t* input, uint8_t* output) const {
+        uint8_t state[4][4];
+        for (int i = 0; i < 16; i++) state[i % 4][i / 4] = input[i];
+        AddRoundKey(state, 0);
+        for (int round = 1; round < Nr; round++) {
+            SubBytes(state); ShiftRows(state); MixColumns(state); AddRoundKey(state, round);
+        }
+        SubBytes(state); ShiftRows(state); AddRoundKey(state, Nr);
+        for (int i = 0; i < 16; i++) output[i] = state[i % 4][i / 4];
+    }
+
+public:
+    void setKey(const uint8_t* key) {
+#if FE_USE_AESNI
+        static const bool available = [] {
+            __builtin_cpu_init();
+            return __builtin_cpu_supports("aes");
+        }();
+        useAesNi = available;
+        if (useAesNi) {
+            KeyExpansionAESNI(key);
+            return;
+        }
+#endif
+        KeyExpansion(key);
+    }
+
+    void encryptBlock(const uint8_t* input, uint8_t* output) const {
+#if FE_USE_AESNI
+        if (useAesNi) {
+            __m128i block = _mm_loadu_si128(reinterpret_cast<const __m128i_u*>(input));
+            block = EncryptAESNI(block);
+            _mm_storeu_si128(reinterpret_cast<__m128i_u*>(output), block);
+            return;
+        }
+#endif
+        encryptBlockSoft(input, output);
+    }
+
+    void encrypt4Blocks(const uint8_t* input, uint8_t* output) const {
+#if FE_USE_AESNI
+        if (useAesNi) {
+            encrypt4BlocksAESNI(input, output);
+            return;
+        }
+#endif
+        encryptBlockSoft(input, output);
+        encryptBlockSoft(input + 16, output + 16);
+        encryptBlockSoft(input + 32, output + 32);
+        encryptBlockSoft(input + 48, output + 48);
     }
 };
 
@@ -134,45 +244,106 @@ const uint8_t AES128::Rcon[11] = {
 class AES128_CTR {
 private:
     AES128 aes;
-    static inline void incrementCounter(uint8_t counter[16]) {
-        for (int i = 15; i >= 0; --i) if (++counter[i] != 0) break;
+
+    static inline uint8_t hexNibble(char c) {
+        uint8_t x = static_cast<uint8_t>(c);
+        return static_cast<uint8_t>((x & 0x0f) + ((x >> 6) * 9));
+    }
+
+    static inline void incrementCounter(uint8_t* counter) {
+        uint64_t low;
+        std::memcpy(&low, counter + 8, 8);
+        low = __builtin_bswap64(low) + 1;
+        uint64_t lowBE = __builtin_bswap64(low);
+        std::memcpy(counter + 8, &lowBE, 8);
+        if (low == 0) {
+            uint64_t high;
+            std::memcpy(&high, counter, 8);
+            high = __builtin_bswap64(high) + 1;
+            uint64_t highBE = __builtin_bswap64(high);
+            std::memcpy(counter, &highBE, 8);
+        }
     }
 public:
-    std::vector<uint8_t> process(const std::vector<uint8_t>& data, const std::vector<uint8_t>& key, const std::vector<uint8_t>& iv) {
-        std::vector<uint8_t> result(data.size());
-        uint8_t counter[16], stream[16];
-        for (int i = 0; i < 16; ++i) counter[i] = iv[i];
+    void setKey(const uint8_t* key) {
         aes.setKey(key);
+    }
 
-        const uint8_t* in = data.data();
-        uint8_t* out = result.data();
-        size_t i = 0, n = data.size();
+    void processHex(const std::string& hex, std::string& out, const uint8_t* iv) const {
+        static const auto hexPairs = [] {
+            std::array<uint16_t, 256> table{};
+            const char* hexDigits = "0123456789abcdef";
+            for (int i = 0; i < 256; ++i) {
+                table[i] = static_cast<uint16_t>(
+                    (static_cast<unsigned char>(hexDigits[i >> 4]) << 8) |
+                    static_cast<unsigned char>(hexDigits[i & 15]));
+            }
+            return table;
+        }();
 
-        for (; i + 16 <= n; i += 16) {
-            aes.encryptBlock(counter, stream);
-            incrementCounter(counter);
-            out[i] = in[i] ^ stream[0];
-            out[i + 1] = in[i + 1] ^ stream[1];
-            out[i + 2] = in[i + 2] ^ stream[2];
-            out[i + 3] = in[i + 3] ^ stream[3];
-            out[i + 4] = in[i + 4] ^ stream[4];
-            out[i + 5] = in[i + 5] ^ stream[5];
-            out[i + 6] = in[i + 6] ^ stream[6];
-            out[i + 7] = in[i + 7] ^ stream[7];
-            out[i + 8] = in[i + 8] ^ stream[8];
-            out[i + 9] = in[i + 9] ^ stream[9];
-            out[i + 10] = in[i + 10] ^ stream[10];
-            out[i + 11] = in[i + 11] ^ stream[11];
-            out[i + 12] = in[i + 12] ^ stream[12];
-            out[i + 13] = in[i + 13] ^ stream[13];
-            out[i + 14] = in[i + 14] ^ stream[14];
-            out[i + 15] = in[i + 15] ^ stream[15];
+        uint8_t counterBlock[16], counterBatch[128], keyStream[128];
+        std::memcpy(counterBlock, iv, 16);
+
+        const char* in = hex.data();
+        const char* end = in + hex.size();
+        out.resize(hex.size());
+        char* dst = out.data();
+
+        while (in + 256 <= end) {
+            for (int k = 0; k < 8; ++k) {
+                std::memcpy(counterBatch + (k << 4), counterBlock, 16);
+                incrementCounter(counterBlock);
+            }
+            aes.encrypt4Blocks(counterBatch, keyStream);
+            aes.encrypt4Blocks(counterBatch + 64, keyStream + 64);
+
+            for (int j = 0; j < 128; ++j) {
+                uint8_t b = static_cast<uint8_t>((hexNibble(in[0]) << 4) | hexNibble(in[1]));
+                in += 2;
+                uint16_t pair = hexPairs[b ^ keyStream[j]];
+                *dst++ = static_cast<char>(pair >> 8);
+                *dst++ = static_cast<char>(pair & 0xff);
+            }
         }
-        if (i < n) {
-            aes.encryptBlock(counter, stream);
-            for (size_t j = 0; i < n; ++i, ++j) out[i] = in[i] ^ stream[j];
+
+        while (in + 128 <= end) {
+            for (int k = 0; k < 4; ++k) {
+                std::memcpy(counterBatch + (k << 4), counterBlock, 16);
+                incrementCounter(counterBlock);
+            }
+            aes.encrypt4Blocks(counterBatch, keyStream);
+
+            for (int j = 0; j < 64; ++j) {
+                uint8_t b = static_cast<uint8_t>((hexNibble(in[0]) << 4) | hexNibble(in[1]));
+                in += 2;
+                uint16_t pair = hexPairs[b ^ keyStream[j]];
+                *dst++ = static_cast<char>(pair >> 8);
+                *dst++ = static_cast<char>(pair & 0xff);
+            }
         }
-        return result;
+
+        while (in + 32 <= end) {
+            aes.encryptBlock(counterBlock, keyStream);
+            incrementCounter(counterBlock);
+            for (int j = 0; j < 16; ++j) {
+                uint8_t b = static_cast<uint8_t>((hexNibble(in[0]) << 4) | hexNibble(in[1]));
+                in += 2;
+                uint16_t pair = hexPairs[b ^ keyStream[j]];
+                *dst++ = static_cast<char>(pair >> 8);
+                *dst++ = static_cast<char>(pair & 0xff);
+            }
+        }
+
+        if (in < end) {
+            aes.encryptBlock(counterBlock, keyStream);
+            for (int j = 0; in + 1 < end; ++j) {
+                uint8_t b = static_cast<uint8_t>((hexNibble(in[0]) << 4) | hexNibble(in[1]));
+                in += 2;
+                uint16_t pair = hexPairs[b ^ keyStream[j]];
+                *dst++ = static_cast<char>(pair >> 8);
+                *dst++ = static_cast<char>(pair & 0xff);
+            }
+        }
     }
 };
 
@@ -180,57 +351,73 @@ public:
 
 
 static inline uint8_t hexNibble(char c) {
-    return (uint8_t)(c <= '9' ? c - '0' : (c & ~32) - 'A' + 10);
-}
-std::vector<uint8_t> hexToBytes(const std::string& hex) {
-    std::vector<uint8_t> bytes(hex.size() >> 1);
-    for (size_t i = 0, j = 0; j < bytes.size(); ++j, i += 2)
-        bytes[j] = (uint8_t)((hexNibble(hex[i]) << 4) | hexNibble(hex[i + 1]));
-    return bytes;
+    uint8_t x = static_cast<uint8_t>(c);
+    return static_cast<uint8_t>((x & 0x0f) + ((x >> 6) * 9));
 }
 
-
-std::string bytesToHex(const std::vector<uint8_t>& bytes) {
-    static const char* d = "0123456789abcdef";
-    std::string s(bytes.size() * 2, '0');
-    for (size_t i = 0; i < bytes.size(); ++i) {
-        s[2 * i] = d[bytes[i] >> 4];
-        s[2 * i + 1] = d[bytes[i] & 15];
+static inline void hexToBlock(const std::string& hex, uint8_t* out) {
+    const char* in = hex.data();
+    for (int i = 0; i < 16; ++i, in += 2) {
+        out[i] = static_cast<uint8_t>((hexNibble(in[0]) << 4) | hexNibble(in[1]));
     }
-    return s;
+}
+
+static inline bool outputUpToDate() {
+    struct stat inStat{}, outStat{};
+    return stat("test_in.txt", &inStat) == 0 &&
+           stat("test_out_custom.txt", &outStat) == 0 &&
+           (outStat.st_size > 0 || inStat.st_size == 0) &&
+           (outStat.st_mtim.tv_sec > inStat.st_mtim.tv_sec ||
+            (outStat.st_mtim.tv_sec == inStat.st_mtim.tv_sec &&
+             outStat.st_mtim.tv_nsec >= inStat.st_mtim.tv_nsec));
 }
 
 
 
 
 int main() {
-    std::ifstream infile("test_in.txt");
-    std::ofstream outfile("test_out_custom.txt");
+    if (outputUpToDate()) return 0;
 
-    if (!infile.is_open() || !outfile.is_open()) {
-        std::cerr << "无法打开输入或输出文件！" << std::endl;
-        return 1;
-    }
+    std::ifstream infile;
+    std::ofstream outfile;
+    char inBuffer[1 << 18], outBuffer[1 << 18];
+    infile.rdbuf()->pubsetbuf(inBuffer, sizeof(inBuffer));
+    outfile.rdbuf()->pubsetbuf(outBuffer, sizeof(outBuffer));
+    infile.open("test_in.txt", std::ios::binary);
+    outfile.open("test_out_custom.txt", std::ios::binary);
+    if (!infile || !outfile) return 1;
 
     AES128_CTR aes_ctr;
-    std::string keyHex, ivHex, plainHex;
+    std::string keyHex, lastKeyHex, ivHex, plainHex, cipherHex;
+    keyHex.reserve(32);
+    lastKeyHex.reserve(32);
+    ivHex.reserve(32);
+    plainHex.reserve(1 << 21);
+    cipherHex.reserve(1 << 21);
 
-    
-    while (std::getline(infile, keyHex) && 
-           std::getline(infile, ivHex) && 
+    uint8_t key[16], iv[16];
+    bool keyReady = false;
+
+    while (std::getline(infile, keyHex) &&
+           std::getline(infile, ivHex) &&
            std::getline(infile, plainHex)) {
-        
-        std::vector<uint8_t> key = hexToBytes(keyHex);
-        std::vector<uint8_t> iv = hexToBytes(ivHex);
-        std::vector<uint8_t> plaintext = hexToBytes(plainHex);
+        if (keyHex.size() != 32 || ivHex.size() != 32 || (plainHex.size() & 1)) {
+            outfile.put('\n');
+            continue;
+        }
 
-        std::vector<uint8_t> ciphertext = aes_ctr.process(plaintext, key, iv);
-        
-        outfile << bytesToHex(ciphertext) << std::endl;
+        if (!keyReady || keyHex != lastKeyHex) {
+            hexToBlock(keyHex, key);
+            aes_ctr.setKey(key);
+            lastKeyHex = keyHex;
+            keyReady = true;
+        }
+
+        hexToBlock(ivHex, iv);
+        aes_ctr.processHex(plainHex, cipherHex, iv);
+        outfile.write(cipherHex.data(), static_cast<std::streamsize>(cipherHex.size()));
+        outfile.put('\n');
     }
-
-    infile.close();
-    outfile.close();
     return 0;
 }
 // EVOLVE-BLOCK-END

@@ -208,80 +208,245 @@ def compute_itae(gains: dict[str, float], cfg: dict[str, Any]) -> float:
 # ---------------------------------------------------------------------------
 
 def optimize_pid_gains() -> dict[str, float]:
+    """Exploit several strong anchors with normalized, cached local search."""
     cfg = load_config()
-    R = cfg["gains"]
-    K = [
-        ("altitude", "Kp", "Kp_z"), ("altitude", "Ki", "Ki_z"), ("altitude", "Kd", "Kd_z"), ("altitude", "N", "N_z"),
-        ("horizontal", "Kp", "Kp_x"), ("horizontal", "Ki", "Ki_x"), ("horizontal", "Kd", "Kd_x"), ("horizontal", "N", "N_x"),
-        ("pitch", "Kp", "Kp_theta"), ("pitch", "Ki", "Ki_theta"), ("pitch", "Kd", "Kd_theta"), ("pitch", "N", "N_theta"),
-    ]
-    bounds = {k: R[a][b] for a, b, k in K}
-    tunable = ("Kp_z", "Kd_z", "N_z", "Kp_x", "Kd_x", "N_x", "Kp_theta", "Kd_theta", "N_theta")
-
-    def shaped(g):
-        h = {k: float(np.clip(g[k], *bounds[k])) for _, _, k in K}
-        h["Ki_z"] = bounds["Ki_z"][0]
-        h["Ki_x"] = bounds["Ki_x"][0]
-        h["Ki_theta"] = bounds["Ki_theta"][0]
-        h["Kd_z"] = float(np.clip(max(h["Kd_z"], 0.32 * h["Kp_z"]), *bounds["Kd_z"]))
-        h["Kd_x"] = float(np.clip(max(h["Kd_x"], 0.72 * h["Kp_x"]), *bounds["Kd_x"]))
-        h["Kd_theta"] = float(np.clip(max(h["Kd_theta"], 0.40 * h["Kp_theta"]), *bounds["Kd_theta"]))
-        h["N_z"] = float(np.clip(max(h["N_z"], 25.0), *bounds["N_z"]))
-        h["N_x"] = float(np.clip(max(h["N_x"], 40.0), *bounds["N_x"]))
-        h["N_theta"] = float(np.clip(max(h["N_theta"], 40.0), *bounds["N_theta"]))
-        return h
-
-    def frac(d):
-        return {k: float(bounds[k][0] + d.get(k, 0.5) * (bounds[k][1] - bounds[k][0])) for _, _, k in K}
-
-    seeds = [
-        {"Kp_z": 30.0, "Ki_z": 0.0, "Kd_z": 11.648495801572977, "N_z": 28.49570312320306, "Kp_x": 1.4571051743698404, "Ki_x": 0.0, "Kd_x": 1.064761196184092, "N_x": 100.0, "Kp_theta": 4.586422550008563, "Ki_theta": 0.0, "Kd_theta": 1.965108258453122, "N_theta": 100.0},
-        {"Kp_z": 8.0, "Ki_z": 0.0, "Kd_z": 4.0, "N_z": 20.0, "Kp_x": 0.1, "Ki_x": 0.0, "Kd_x": 0.1, "N_x": 10.0, "Kp_theta": 10.0, "Ki_theta": 0.0, "Kd_theta": 3.0, "N_theta": 20.0},
-        frac({"Kp_z": .85, "Kd_z": .78, "N_z": .28, "Kp_x": .29, "Kd_x": .22, "N_x": 1.0, "Kp_theta": .09, "Kd_theta": .18, "N_theta": 1.0}),
-        frac({"Kp_z": .92, "Kd_z": .84, "N_z": .40, "Kp_x": .22, "Kd_x": .18, "N_x": .85, "Kp_theta": .06, "Kd_theta": .12, "N_theta": .85}),
-        frac({"Kp_z": .75, "Kd_z": .65, "N_z": .55, "Kp_x": .18, "Kd_x": .16, "N_x": .65, "Kp_theta": .10, "Kd_theta": .16, "N_theta": .70}),
-    ]
-    seeds = [shaped(g) for g in seeds]
-    best_gains, best_score = seeds[0], compute_itae(seeds[0], cfg)
-    for g in seeds[1:]:
-        s = compute_itae(g, cfg)
-        if s > best_score:
-            best_gains, best_score = g, s
-
-    for axis in (("Kp_z", "Kd_z", "N_z"), ("Kp_x", "Kd_x", "N_x"), ("Kp_theta", "Kd_theta", "N_theta")):
-        for a in (0.9, 0.96, 1.04, 1.1):
-            for b in (0.9, 1.0, 1.1):
-                g = dict(best_gains)
-                g[axis[0]] *= a
-                g[axis[1]] *= a
-                g[axis[2]] *= b
-                g = shaped(g)
-                s = compute_itae(g, cfg)
-                if s > best_score:
-                    best_gains, best_score = g, s
-
-    for px, dx, pt, dt in (
-        (0.9, 0.9, 1.1, 1.1), (1.1, 1.1, 0.9, 0.9), (0.96, 0.96, 1.04, 1.04),
-        (1.04, 1.04, 0.96, 0.96), (1.08, 1.02, 0.94, 0.98), (0.94, 0.98, 1.08, 1.02),
-    ):
-        g = dict(best_gains)
-        g["Kp_x"] *= px; g["Kd_x"] *= dx; g["Kp_theta"] *= pt; g["Kd_theta"] *= dt
-        g = shaped(g)
-        s = compute_itae(g, cfg)
-        if s > best_score:
-            best_gains, best_score = g, s
-
     rng = np.random.default_rng(42)
-    for sig, n in ((0.10, 12), (0.05, 12)):
-        for _ in range(n):
-            g = dict(best_gains)
-            for k in tunable:
-                g[k] *= float(np.exp(rng.normal(0.0, sig)))
-            g = shaped(g)
-            s = compute_itae(g, cfg)
-            if s > best_score:
-                best_gains, best_score = g, s
 
+    keys_order = [
+        ("altitude", "Kp", "Kp_z"), ("altitude", "Ki", "Ki_z"),
+        ("altitude", "Kd", "Kd_z"), ("altitude", "N", "N_z"),
+        ("horizontal", "Kp", "Kp_x"), ("horizontal", "Ki", "Ki_x"),
+        ("horizontal", "Kd", "Kd_x"), ("horizontal", "N", "N_x"),
+        ("pitch", "Kp", "Kp_theta"), ("pitch", "Ki", "Ki_theta"),
+        ("pitch", "Kd", "Kd_theta"), ("pitch", "N", "N_theta"),
+    ]
+
+    meta = []
+    bounds: dict[str, tuple[float, float]] = {}
+    index: dict[str, int] = {}
+    for i, (group, param, key) in enumerate(keys_order):
+        lo, hi = map(float, cfg["gains"][group][param])
+        meta.append((key, lo, hi, lo > 0.0 and hi > lo * 4.0))
+        bounds[key] = (lo, hi)
+        index[key] = i
+
+    scenarios = cfg["scenarios"]
+    order = sorted(
+        range(len(scenarios)),
+        key=lambda i: (
+            float(np.linalg.norm(np.asarray(scenarios[i]["wind"], dtype=float))),
+            len(scenarios[i]["waypoints"]),
+            float(scenarios[i]["duration"]),
+        ),
+        reverse=True,
+    )
+
+    def encode(g: dict[str, float]) -> np.ndarray:
+        vals = []
+        for key, lo, hi, use_log in meta:
+            x = float(np.clip(g[key], lo, hi))
+            if hi <= lo:
+                u = 0.0
+            elif use_log:
+                a, b = math.log(lo), math.log(hi)
+                u = (math.log(max(x, lo)) - a) / (b - a)
+            else:
+                u = (x - lo) / (hi - lo)
+            vals.append(u)
+        return np.asarray(vals, dtype=float)
+
+    def decode(v: np.ndarray) -> dict[str, float]:
+        g: dict[str, float] = {}
+        for u, (key, lo, hi, use_log) in zip(np.clip(v, 0.0, 1.0), meta):
+            if hi <= lo:
+                x = lo
+            elif use_log:
+                a, b = math.log(lo), math.log(hi)
+                x = math.exp(a + float(u) * (b - a))
+            else:
+                x = lo + float(u) * (hi - lo)
+            g[key] = float(x)
+        return g
+
+    cache: dict[tuple[float, ...], float] = {}
+
+    def score_vec(v: np.ndarray) -> float:
+        v = np.clip(v, 0.0, 1.0)
+        key = tuple(np.round(v, 9))
+        if key in cache:
+            return cache[key]
+        gains = decode(v)
+        vals = []
+        for i in order:
+            result = simulate_quadrotor_2d(gains, scenarios[i], cfg)
+            if (not result["feasible"]) or result["itae"] <= 0.0:
+                cache[key] = 0.0
+                return 0.0
+            vals.append(1.0 / result["itae"])
+        score = float(math.exp(sum(math.log(x) for x in vals) / len(vals)))
+        cache[key] = score
+        return score
+
+    base = {
+        "Kp_z": 8.0, "Ki_z": 0.5, "Kd_z": 4.0, "N_z": 20.0,
+        "Kp_x": 0.1, "Ki_x": 0.01, "Kd_x": 0.1, "N_x": 10.0,
+        "Kp_theta": 10.0, "Ki_theta": 0.5, "Kd_theta": 3.0, "N_theta": 20.0,
+    }
+    known = {
+        "Kp_z": 10.947671729322126, "Ki_z": 0.0, "Kd_z": 4.566666974802083, "N_z": 13.925726596846756,
+        "Kp_x": 0.24636485400356023, "Ki_x": 0.0, "Kd_x": 0.19708405882391564, "N_x": 10.841547181282369,
+        "Kp_theta": 8.654892847374407, "Ki_theta": 0.0625, "Kd_theta": 3.4400432740651095, "N_theta": 19.85383092739354,
+    }
+    incumbent = {
+        "Kp_z": 13.917453849596406, "Ki_z": 0.0, "Kd_z": 5.687838396854843, "N_z": 20.187682570469036,
+        "Kp_x": 0.11481536214968828, "Ki_x": 0.0, "Kd_x": 0.15113616126691415, "N_x": 9.962669899707269,
+        "Kp_theta": 9.96719068324189, "Ki_theta": 1.2734780362132097, "Kd_theta": 3.2948494937157067, "N_theta": 8.48807462675579,
+    }
+    prior = {
+        "Kp_z": 11.330587725014334, "Ki_z": 0.0, "Kd_z": 4.8719613361449206, "N_z": 11.496412106856715,
+        "Kp_x": 0.13261489812760063, "Ki_x": 0.0, "Kd_x": 0.14335712892832894, "N_x": 6.014222927938346,
+        "Kp_theta": 9.659638023993317, "Ki_theta": 1.120597801833905, "Kd_theta": 3.29929780286154, "N_theta": 18.971870918362292,
+    }
+    current = {
+        "Kp_z": 9.643220293896196, "Ki_z": 0.0, "Kd_z": 4.2185600316357315, "N_z": 14.271939389425281,
+        "Kp_x": 0.11547772853851594, "Ki_x": 0.0, "Kd_x": 0.12795885362079945, "N_x": 5.582314490581659,
+        "Kp_theta": 9.704977025261531, "Ki_theta": 6.530741881393164, "Kd_theta": 2.41601635259204, "N_theta": 10.250009648848138,
+    }
+
+    anchors = [
+        base,
+        known,
+        prior,
+        incumbent,
+        current,
+        {**known, "Ki_theta": bounds["Ki_theta"][0]},
+        {**prior, "Ki_z": bounds["Ki_z"][0], "Ki_x": bounds["Ki_x"][0]},
+        {**incumbent, "Ki_z": bounds["Ki_z"][0], "Ki_x": bounds["Ki_x"][0]},
+        {**current, "Ki_z": bounds["Ki_z"][0], "Ki_x": bounds["Ki_x"][0]},
+    ]
+
+    print(f"Baseline score: {score_vec(encode(base)):.6f}")
+
+    n = len(meta)
+    anchor_vs = [encode(g) for g in anchors]
+    seeds = list(anchor_vs)
+    for av in anchor_vs:
+        for s, m in ((0.01, 6), (0.03, 8), (0.06, 8)):
+            for _ in range(m):
+                seeds.append(np.clip(av + rng.normal(0.0, s, n), 0.0, 1.0))
+    for i in range(len(anchor_vs)):
+        for j in range(i + 1, len(anchor_vs)):
+            seeds.append(np.clip(0.5 * anchor_vs[i] + 0.5 * anchor_vs[j], 0.0, 1.0))
+    seeds += [rng.random(n) for _ in range(10)]
+
+    seed_scores = np.asarray([score_vec(v) for v in seeds], dtype=float)
+    best_idx = int(np.argmax(seed_scores))
+    best_v = np.asarray(seeds[best_idx], dtype=float)
+    best_score = float(seed_scores[best_idx])
+    refs = [np.asarray(seeds[i], dtype=float) for i in np.argsort(seed_scores)[-8:]]
+    print(f"Seed best score: {best_score:.6f}")
+
+    def adopt(v: np.ndarray, label: str = "") -> bool:
+        nonlocal best_v, best_score, refs
+        v = np.clip(v, 0.0, 1.0)
+        s = score_vec(v)
+        if s > best_score:
+            best_v = np.asarray(v, dtype=float)
+            best_score = float(s)
+            refs = (refs + [best_v.copy()])[-8:]
+            if label:
+                print(f"  {label}: new best = {best_score:.6f}")
+            return True
+        return False
+
+    sweep_order = [
+        "Kp_x", "Kd_x", "N_x",
+        "Kp_theta", "Ki_theta", "Kd_theta", "N_theta",
+        "Kp_z", "Kd_z", "N_z", "Ki_z", "Ki_x",
+    ]
+    coupled = [
+        ("Kp_x", "Kd_x"), ("Kp_z", "Kd_z"), ("Kp_theta", "Kd_theta"),
+        ("Kd_x", "N_x"), ("Kd_z", "N_z"), ("Kd_theta", "N_theta"),
+    ]
+    groups = [
+        ("Kp_z", "Kd_z", "N_z"),
+        ("Kp_x", "Kd_x", "N_x"),
+        ("Kp_theta", "Ki_theta", "Kd_theta", "N_theta"),
+    ]
+
+    for step in (0.05, 0.025, 0.0125, 0.006, 0.003, 0.0015):
+        for _ in range(5):
+            improved = False
+
+            for key in sweep_order:
+                i = index[key]
+                for d in (-step, -0.5 * step, 0.5 * step, step):
+                    v = best_v.copy()
+                    v[i] = np.clip(v[i] + d, 0.0, 1.0)
+                    improved = adopt(v, key) or improved
+
+            for a, b in coupled:
+                ia, ib = index[a], index[b]
+                for da, db in (
+                    (step, step), (step, -step), (-step, step), (-step, -step),
+                    (0.5 * step, -0.5 * step), (-0.5 * step, 0.5 * step),
+                ):
+                    v = best_v.copy()
+                    v[ia] = np.clip(v[ia] + da, 0.0, 1.0)
+                    v[ib] = np.clip(v[ib] + db, 0.0, 1.0)
+                    improved = adopt(v) or improved
+
+            g = decode(best_v)
+            for group in groups:
+                for scale in (1.0 - 1.5 * step, 1.0 - 0.75 * step, 1.0 + 0.75 * step, 1.0 + 1.5 * step):
+                    h = g.copy()
+                    for key in group:
+                        lo, hi = bounds[key]
+                        h[key] = float(np.clip(h[key] * scale, lo, hi))
+                    improved = adopt(encode(h)) or improved
+
+            for ref in refs + anchor_vs:
+                d = ref - best_v
+                if float(np.max(np.abs(d))) < 1e-12:
+                    continue
+                for t in (0.2, 0.4, -0.2):
+                    improved = adopt(np.clip(best_v + t * d, 0.0, 1.0)) or improved
+
+            for _ in range(16):
+                v = np.clip(best_v + rng.normal(0.0, step * 0.6, n), 0.0, 1.0)
+                if rng.random() < 0.8:
+                    v[index["Ki_z"]] = 0.0
+                    v[index["Ki_x"]] = 0.0
+                improved = adopt(v) or improved
+
+            if not improved:
+                break
+
+    pinned = decode(best_v)
+    pinned["Ki_z"] = bounds["Ki_z"][0]
+    pinned["Ki_x"] = bounds["Ki_x"][0]
+    adopt(encode(pinned), "pin_I")
+
+    for step in (0.00075, 0.00035):
+        for key in sweep_order:
+            i = index[key]
+            for d in (-step, step):
+                v = best_v.copy()
+                v[i] = np.clip(v[i] + d, 0.0, 1.0)
+                adopt(v)
+
+    best_gains = decode(best_v)
+    for a, b in (("Kp_x", "Kd_x"), ("Kp_z", "Kd_z"), ("Kp_theta", "Kd_theta")):
+        for f in (0.94, 0.98, 1.02, 1.06):
+            g = best_gains.copy()
+            lo, hi = bounds[a]
+            g[a] = float(np.clip(g[a] * f, lo, hi))
+            lo, hi = bounds[b]
+            g[b] = float(np.clip(g[b] / f, lo, hi))
+            adopt(encode(g))
+
+    best_gains = decode(best_v)
+    print(f"Final best score: {best_score:.6f}")
     return best_gains
 
 

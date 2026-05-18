@@ -105,6 +105,9 @@ and the return value is the attention output tensor with shape:
 
 - Numerical correctness is checked against `torch.nn.functional.scaled_dot_product_attention`.
 - Runtime is measured by `verification/eval.py` in nanoseconds.
+- Benchmark mode regenerates inputs and rechecks correctness inside the timed
+  loop, so implementations must compute each call rather than cache outputs for
+  repeated tensor objects.
 - Lower runtime is better.
 - In `frontier_eval`, feasible runs are converted to `combined_score = 1e9 / geom_mean_ns`, so higher is better there.
 
@@ -112,10 +115,14 @@ and the return value is the attention output tensor with shape:
 
 Unified benchmark: `task=unified task.benchmark=KernelEngineering/FlashAttention`
 
+Run this from the Frontier-Engineering repository root with the driver environment
+activated. `frontier_eval` is a repo-local package, so running this command from
+`verification/` requires setting `PYTHONPATH` manually.
+
 ```bash
 python -m frontier_eval \
 task=unified task.benchmark=KernelEngineering/FlashAttention \
-task.runtime.conda_env=kernel \
+task.runtime.env_name=frontier-v1-kernel \
 algorithm.iterations=10
 ```
 

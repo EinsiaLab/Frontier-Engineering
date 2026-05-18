@@ -82,7 +82,10 @@ def get_test_cases(file_name: str) -> list[TestCase]:
 
 
 def warm_up(test: TestCase):
-    config, Q, K, V = generate_input(**test.args)
+    args = dict(test.args)
+    if "seed" in args:
+        args["seed"] = int(args["seed"]) + 1_000_000
+    config, Q, K, V = generate_input(**args)
     start = time.perf_counter()
     while time.perf_counter() - start < 0.2:
         custom_kernel((config, Q, K, V))
@@ -141,6 +144,13 @@ def run_testing(logger: PopcornOutput, tests: list[TestCase]):
         return 112
 
 
+def _input_for_repeat(test: TestCase, repeat_idx: int):
+    args = dict(test.args)
+    if "seed" in args:
+        args["seed"] = int(args["seed"]) + repeat_idx + 1
+    return generate_input(**args)
+
+
 def benchmark(test: TestCase, recheck: bool, max_repeats: int, max_time_ns: float) -> Stats | str:
     durations = []
     config, Q, K, V = generate_input(**test.args)
@@ -155,7 +165,7 @@ def benchmark(test: TestCase, recheck: bool, max_repeats: int, max_time_ns: floa
     with torch.no_grad():
         for i in range(max_repeats):
             if recheck:
-                config, Q, K, V = generate_input(**test.args)
+                config, Q, K, V = _input_for_repeat(test, i)
 
             torch.cuda.synchronize()
             start = time.perf_counter_ns()
@@ -185,7 +195,7 @@ def run_benchmarking(logger: PopcornOutput, tests: list[TestCase]):
     logger.log("benchmark-count", len(tests))
     for idx, test in enumerate(tests):
         logger.log(f"benchmark.{idx}.spec", test.spec)
-        result = benchmark(test, False, 100, 10e9)
+        result = benchmark(test, True, 100, 10e9)
         if isinstance(result, Stats):
             for field in dataclasses.fields(Stats):
                 logger.log(f"benchmark.{idx}.{field.name}", getattr(result, field.name))

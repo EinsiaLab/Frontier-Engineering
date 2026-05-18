@@ -203,128 +203,48 @@ def compute_weight(x, problem, nodes_base, elements):
 # ============================================================================
 
 def optimize_stress_ratio(problem, nodes_base, elements, max_iter=15):
-    b = problem["variable_bounds"]
-    amin, amax = b["area_min"], b["area_max"]
-    ymin, ymax = b["y_min"], b["y_max"]
-    slim = problem["constraints"]["stress_limit"]
-    dlim = problem["constraints"]["displacement_limit"]
-    nb = problem["num_bars"]
-    y0 = np.array([nodes_base[n - 1, 1] for n in problem["shape_variable_node_ids"]], float)
-    cache = {}
+    """
+    Stress ratio method optimization algorithm.
+    
+    ALLOWED TO MODIFY: This is the optimization algorithm. You can completely
+    rewrite this function or replace it with your own optimization method.
+    
+    The function should return a solution vector x of length 54:
+    - First 45 elements: area variables A_1 to A_45
+    - Last 9 elements: shape variables y_2, y_4, y_6, y_8, y_10, y_12, y_14, y_16, y_18
+    """
+    bounds_cfg = problem["variable_bounds"]
+    area_min = bounds_cfg["area_min"]
+    area_max = bounds_cfg["area_max"]
+    sigma_limit = problem["constraints"]["stress_limit"]
+    disp_limit = problem["constraints"]["displacement_limit"]
+    num_bars = problem["num_bars"]
+    num_shape = len(problem["shape_variable_node_ids"])
 
-    def eva(a, y):
-        k = (tuple(np.round(a, 5)), tuple(np.round(y, 2)))
-        if k not in cache:
-            r = analyze_design(a, y, problem, nodes_base, elements)
-            cache[k] = (r, compute_weight(np.concatenate([a, y]), problem, nodes_base, elements))
-        return cache[k]
+    areas = np.full(num_bars, area_max * 0.3)
+    shape_vars = np.array([nodes_base[nid - 1, 1] for nid in problem["shape_variable_node_ids"]])
 
-    def make_feasible(a, y):
-        r, _ = eva(a, y)
-        for _ in range(max_iter):
-            if r and r["feasible"]:
-                return a
-            g = 1.2 if not r else 1.02 * max(1.0, r["max_stress"] / slim, r["max_disp"] / dlim)
-            a = np.clip(a * g, amin, amax)
-            r, _ = eva(a, y)
-        return a if r and r["feasible"] else None
+    for iteration in range(max_iter):
+        result = analyze_design(areas, shape_vars, problem, nodes_base, elements)
+        if result is None:
+            areas = np.clip(areas * 1.2, area_min, area_max)
+            continue
 
-    def reduce(a, y, fs=(0.8, 0.9, 0.95, 0.98), allow_equal=True):
-        for f in fs:
-            changed = True
-            while changed:
-                changed = False
-                _, w0 = eva(a, y)
-                for i in np.argsort(-a):
-                    if a[i] <= amin:
-                        continue
-                    t = a.copy()
-                    t[i] = max(amin, a[i] * f)
-                    r, w = eva(t, y)
-                    ok = w <= w0 if allow_equal else w < w0
-                    if r and r["feasible"] and ok:
-                        a, w0, changed = t, w, True
-        return a
+        if result["feasible"]:
+            break
 
-    def repair_reduce(a, y):
-        for f in (0.7, 0.85, 0.93):
-            for i in np.argsort(-a):
-                if a[i] <= amin:
-                    continue
-                t = a.copy()
-                t[i] = max(amin, a[i] * f)
-                t = make_feasible(t, y)
-                if t is None:
-                    continue
-                _, w0 = eva(a, y)
-                _, w1 = eva(t, y)
-                if w1 < w0:
-                    a = t
-        return a
+        max_stress = result["max_stress"]
+        max_disp = result["max_disp"]
+        
+        scale = 1.0
+        if max_stress > 1e-6:
+            scale = max(scale, max_stress / sigma_limit * 1.05)
+        if max_disp > 1e-6:
+            scale = max(scale, max_disp / disp_limit * 1.05)
+        
+        areas = np.clip(areas * scale, area_min, area_max)
 
-    def tune_shape(a, y, ds=(-600.0, -300.0, -150.0, -75.0, 75.0, 150.0, 300.0, 600.0)):
-        for d in ds:
-            improved = True
-            while improved:
-                improved = False
-                _, base = eva(a, y)
-                for i in range(len(y)):
-                    yt = y.copy()
-                    yt[i] = np.clip(y[i] + d, ymin, ymax)
-                    r, w = eva(a, yt)
-                    if r and r["feasible"] and w < base:
-                        y, base, improved = yt, w, True
-        return y
-
-    def polish(a, y):
-        return reduce(a, y, (0.985, 0.992), False)
-
-    def local_search(a, y):
-        best = compute_weight(np.concatenate([a, y]), problem, nodes_base, elements)
-        for s in (0.99, 0.995):
-            for i in np.argsort(-a):
-                if a[i] <= amin:
-                    continue
-                t = a.copy()
-                t[i] = max(amin, a[i] * s)
-                r, w = eva(t, y)
-                if r and r["feasible"] and w < best:
-                    a, best = t, w
-        for d in (-60.0, -30.0, 30.0, 60.0):
-            for i in range(len(y)):
-                yt = y.copy()
-                yt[i] = np.clip(y[i] + d, ymin, ymax)
-                at = make_feasible(a.copy(), yt)
-                if at is None:
-                    continue
-                at = polish(at, yt)
-                _, w = eva(at, yt)
-                if w < best:
-                    a, y, best = at, yt, w
-        return a, y
-
-    ys = [y0, np.clip(y0 * 0.9, ymin, ymax), np.clip(y0 * 1.1, ymin, ymax)]
-    ys += [np.clip(y0 + d, ymin, ymax) for d in (-1000.0, -500.0, 500.0, 1000.0)]
-    best_x, best_w = None, 1e99
-    for y in ys:
-        for af in (0.06, 0.08, 0.12, 0.16, 0.22, 0.26, 0.3):
-            a = make_feasible(np.full(nb, max(amin, amax * af)), y)
-            if a is None:
-                continue
-            y2 = y.copy()
-            for _ in range(2):
-                a = reduce(a, y2)
-                y2 = tune_shape(a, y2)
-                a = repair_reduce(a, y2)
-            a = polish(a, y2)
-            y2 = tune_shape(a, y2, (-150.0, -75.0, -30.0, 30.0, 75.0, 150.0))
-            a = repair_reduce(a, y2)
-            a = polish(a, y2)
-            a, y2 = local_search(a, y2)
-            _, w = eva(a, y2)
-            if w < best_w:
-                best_w, best_x = w, np.concatenate([a, y2])
-    return best_x if best_x is not None else np.concatenate([np.full(nb, amax), y0])
+    return np.concatenate([areas, shape_vars])
 
 
 # ============================================================================
@@ -362,7 +282,7 @@ def main():
     print()
 
     # ALLOWED TO MODIFY: Optimization algorithm call
-    print("Optimizing using repair-reduction + local search...")
+    print("Optimizing using stress ratio method...")
     x_best = optimize_stress_ratio(problem, nodes_base, elements, max_iter=15)
     w = compute_weight(x_best, problem, nodes_base, elements)
 

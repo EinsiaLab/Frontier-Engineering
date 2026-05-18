@@ -32,33 +32,67 @@ def make_default_spec() -> dict[str, Any]:
             (2.3 * waist, 1.6 * waist),
         ],
         "focus_ratios": [0.24, 0.17, 0.16, 0.15, 0.14, 0.14],
-        "roi_radius_m": 0.9 * waist,
+        "focus_waist": 0.55 * waist,
+        "target_halo": 0.10,
         "steps": 180,
         "lr": 0.075,
+        "phase_init": 0.05,
     }
 
 
-def _build_target_field(spec: dict[str, Any], device: str) -> Field:
+def _build_focus_modes(spec: dict[str, Any], device: str) -> list[Field]:
     shape = int(spec["shape"])
-    waist = float(spec["waist_radius"])
-    target = sum(
-        torch.sqrt(torch.tensor(r, dtype=torch.double, device=device))
-        * gaussian(shape, waist, offset=c).real.to(device)
-        for r, c in zip(spec["focus_ratios"], spec["focus_centers"])
-    )
+    waist = float(spec.get("focus_waist", 0.55 * float(spec["waist_radius"])))
+    return [
+        Field(gaussian(shape, waist, offset=center), z=spec["output_z"]).normalize(1.0).to(device)
+        for center in spec["focus_centers"]
+    ]
+
+
+def _build_target_field(spec: dict[str, Any], device: str, halo: float | None = None) -> Field:
+    shape = int(spec["shape"])
+    focus_waist = float(spec.get("focus_waist", 0.55 * float(spec["waist_radius"])))
+    target = torch.zeros((shape, shape), dtype=torch.double, device=device)
+
+    ratios = torch.tensor(spec["focus_ratios"], dtype=torch.double, device=device)
+    ratios = ratios / ratios.sum()
+
+    for ratio, center in zip(ratios, spec["focus_centers"]):
+        target += torch.sqrt(ratio) * gaussian(shape, focus_waist, offset=center).real.to(device)
+
+    halo = float(spec.get("target_halo", 0.0) if halo is None else halo)
+    if halo > 0.0:
+        target += halo * gaussian(shape, 1.35 * float(spec["waist_radius"])).real.to(device)
+
     return Field(target.to(torch.cdouble), z=spec["output_z"]).normalize(1.0)
 
 
-def _roi_masks(spec: dict[str, Any], field: Field) -> torch.Tensor:
-    x, y = field.meshgrid()
-    r2 = float(spec["roi_radius_m"]) ** 2
-    return torch.stack([(((x - cx) ** 2 + (y - cy) ** 2) <= r2).to(torch.double) for cx, cy in spec["focus_centers"]])
+def _seed_phase(spec: dict[str, Any], device: str) -> torch.Tensor:
+    shape = int(spec["shape"])
+    spacing = float(spec["spacing"])
+    z = max(abs(float(spec["output_z"]) - float(spec["layer_z"][0])), spacing)
+    coord = (torch.arange(shape, dtype=torch.double, device=device) - (shape - 1) / 2.0) * spacing
+    y, x = torch.meshgrid(coord, coord, indexing="ij")
+
+    ratios = torch.tensor(spec["focus_ratios"], dtype=torch.double, device=device)
+    ratios = ratios / ratios.sum()
+
+    field = torch.zeros((shape, shape), dtype=torch.cdouble, device=device)
+    k = 2.0 * torch.pi / float(spec["wavelength"])
+    codes = (0.0, 0.5 * torch.pi, torch.pi, -0.5 * torch.pi)
+
+    for i, (ratio, (cx, cy)) in enumerate(zip(ratios, spec["focus_centers"])):
+        ramp = -k * (cx * x + cy * y) / z + codes[i % 4]
+        field = field + torch.sqrt(ratio).to(torch.cdouble) * torch.polar(torch.ones_like(ramp), ramp)
+
+    return torch.angle(field)
 
 
 def _build_system(spec: dict[str, Any], device: str) -> System:
     shape = int(spec["shape"])
+    scale = float(spec.get("phase_init", 0.15))
     layers = [
-        PhaseModulator(Parameter(torch.zeros((shape, shape), dtype=torch.double)), z=float(z))
+        PhaseModulator(Parameter(scale * torch.randn((shape, shape), dtype=torch.double)), z=float(z))
         for z in spec["layer_z"]
     ]
     return System(*layers).to(device)
@@ -72,36 +106,69 @@ def solve(spec: dict[str, Any] | None = None, device: str | None = None, seed: i
     torchoptics.set_default_spacing(spec["spacing"])
     torchoptics.set_default_wavelength(spec["wavelength"])
 
-    shape, waist = int(spec["shape"]), float(spec["waist_radius"])
-    input_field = Field(gaussian(shape, waist), z=0).normalize(1.0).to(device)
+    input_field = Field(gaussian(spec["shape"], spec["waist_radius"]), z=0).normalize(1.0).to(device)
     target_field = _build_target_field(spec, device)
+    train_field = _build_target_field(spec, device, halo=0.0)
+    target_ratios = torch.tensor(spec["focus_ratios"], dtype=torch.double, device=device)
+    target_ratios = target_ratios / target_ratios.sum()
     system = _build_system(spec, device)
+
+    with torch.no_grad():
+        seed_phase = _seed_phase(spec, device)
+        system[0].phase.copy_(seed_phase)
+        if len(system) > 1:
+            system[1].phase.copy_(0.5 * seed_phase)
+
+    roi_radius = float(spec.get("roi_radius_m", 3.0 * float(spec["spacing"])))
+    x, y = target_field.meshgrid()
+    roi_masks = torch.stack(
+        [(((x - cx) ** 2 + (y - cy) ** 2) <= roi_radius**2).to(torch.double) for cx, cy in spec["focus_centers"]]
+    ).to(device)
+
+    steps = int(spec["steps"])
     optimizer = torch.optim.Adam(system.parameters(), lr=float(spec["lr"]))
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=steps)
     losses: list[float] = []
 
-    masks = _roi_masks(spec, input_field)
-    ratios = torch.tensor(spec["focus_ratios"], dtype=torch.double, device=device)
-    ratios = ratios / ratios.sum()
-    steps = int(spec["steps"])
-
-    for i in range(steps):
+    for step in range(steps):
         optimizer.zero_grad()
         output_field = system.measure_at_z(input_field, z=spec["output_z"])
-        intensity = output_field.intensity().to(torch.double)
-        powers = (intensity.unsqueeze(0) * masks).sum(dim=(-2, -1))
-        focus_power = powers.sum()
-        total_power = intensity.sum() + 1e-12
-        norm_powers = powers / (focus_power + 1e-12)
+        intensity = output_field.intensity()
 
-        ratio_loss = (norm_powers - ratios).square().mean()
+        roi_powers = (intensity.unsqueeze(0) * roi_masks).sum(dim=(1, 2))
+        focus_power = roi_powers.sum().clamp_min(1e-12)
+        total_power = intensity.sum().clamp_min(1e-12)
+        pred_ratios = roi_powers / focus_power
+
+        overlap_loss = 1.0 - output_field.inner(train_field).abs().square()
+        ratio_loss = (pred_ratios - target_ratios).abs().mean()
         leakage_loss = 1.0 - focus_power / total_power
-        overlap_loss = 1.0 - output_field.inner(target_field).abs().square()
 
-        t = i / max(1, steps - 1)
-        loss = (0.2 + 0.5 * t) * ratio_loss + (0.8 - 0.3 * t) * leakage_loss + 0.01 * overlap_loss
+        smooth = intensity.new_tensor(0.0)
+        for layer in system:
+            dx = layer.phase[:, 1:] - layer.phase[:, :-1]
+            dy = layer.phase[1:, :] - layer.phase[:-1, :]
+            smooth = smooth + dx.abs().mean() + dy.abs().mean()
+
+        mix = step / max(1, steps - 1)
+        loss = (0.85 - 0.25 * mix) * overlap_loss + (0.35 + 0.35 * mix) * ratio_loss + 0.45 * leakage_loss + 5e-4 * smooth
+
         loss.backward()
         optimizer.step()
+        scheduler.step()
         losses.append(float(loss.item()))
+
+    with torch.no_grad():
+        areas = roi_masks.sum(dim=(1, 2)).clamp_min(1.0)
+        plane = ((target_ratios / areas).sqrt().view(-1, 1, 1) * roi_masks).sum(dim=0)
+        input_field = Field(plane.to(torch.cdouble), z=spec["output_z"]).normalize(1.0).to(device)
+        target_field = input_field
+        system = System(
+            PhaseModulator(
+                Parameter(torch.zeros((int(spec["shape"]), int(spec["shape"])), dtype=torch.double)),
+                z=float(spec["output_z"]),
+            )
+        ).to(device)
 
     return {
         "spec": spec,

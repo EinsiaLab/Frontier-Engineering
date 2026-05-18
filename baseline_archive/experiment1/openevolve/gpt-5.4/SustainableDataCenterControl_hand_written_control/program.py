@@ -3,45 +3,33 @@ from __future__ import annotations
 
 from typing import Dict, Mapping, Sequence
 
-LS = {"ci": 2, "fci": 5, "age": 10, "fill": 12, "load": 13, "late": 25}
+LS = 2, 5, 10, 12, 13, 25
+BAT = 2, 5, 12
 
-def reset_policy() -> None:
-    """Reset any internal state between episodes.
-
-    This baseline is stateless, so there is nothing to reset. The function is
-    still provided so that users can add stateful logic later without changing
-    the evaluation script.
-    """
+def reset_policy() -> None: return None
 
 
 def _act_load_shifting(obs: Sequence[float]) -> int:
-    ci, fci = obs[2], obs[5]
-    age, fill, load, late = obs[10], obs[12], obs[13], obs[25]
-    if late > 0 or age > 0.75 or fill > 0.8:
+    c, f, a, q, w, o = (obs[i] for i in LS)
+    if o > 0.0 or a > 0.80 or q > 0.85:
         return 2
-    if ci < fci - 0.02 and fill > 0.05:
-        return 2
-    if ci > fci and fill < 0.95 and load < 0.9:
+    if c > f + 0.01 and w < 0.90:
         return 0
-    return 1
+    return 2 if c < f - 0.02 and q > 0.05 else 1
+
+
+
+
+
+def _act_battery(obs: Sequence[float]) -> int:
+    c, f, s = (obs[i] for i in BAT)
+    return 1 if s > 0.35 and (c > f + 0.03 or s > 0.65 and c > 0.45) else 2
 
 
 def decide_actions(observations: Mapping[str, Sequence[float]]) -> Dict[str, int]:
-    """Map raw SustainDC observations to discrete actions.
-
-    Args:
-        observations: A dictionary with three entries:
-            - observations["agent_ls"]: shape (26,)
-            - observations["agent_dc"]: shape (14,)
-            - observations["agent_bat"]: shape (13,)
-
-    Returns:
-        A dictionary with one discrete action per agent.
-    """
-
     return {
         "agent_ls": _act_load_shifting(observations["agent_ls"]),
         "agent_dc": 1,
-        "agent_bat": 2,
+        "agent_bat": _act_battery(observations["agent_bat"]),
     }
 # EVOLVE-BLOCK-END

@@ -105,6 +105,8 @@ def custom_kernel(data):
 
 - 数值正确性会与 `torch.nn.functional.scaled_dot_product_attention` 对比。
 - 运行时间由 `verification/eval.py` 以纳秒计量。
+- benchmark 模式会在计时循环内重新生成输入并复检正确性，因此实现必须在每次
+  调用时真实计算，不能依赖重复 Tensor 对象的输出缓存。
 - 运行时间越低越好。
 - 在 `frontier_eval` 中，可行运行会映射为 `combined_score = 1e9 / geom_mean_ns`，因此分数越高越好。
 
@@ -112,10 +114,14 @@ def custom_kernel(data):
 
 unified benchmark：`task=unified task.benchmark=KernelEngineering/FlashAttention`
 
+请在 Frontier-Engineering 仓库根目录、并激活 driver 环境后运行。`frontier_eval`
+是仓库内的本地包；如果在 `verification/` 子目录直接运行，需要手动设置
+`PYTHONPATH`。
+
 ```bash
 python -m frontier_eval \
 task=unified task.benchmark=KernelEngineering/FlashAttention \
-task.runtime.conda_env=kernel \
+task.runtime.env_name=frontier-v1-kernel \
 algorithm.iterations=10
 ```
 

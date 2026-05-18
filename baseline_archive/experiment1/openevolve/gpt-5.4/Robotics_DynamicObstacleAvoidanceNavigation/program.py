@@ -68,9 +68,11 @@ def _static_collision(pos: np.ndarray, scene: dict[str, Any], inflate: float) ->
 
 
 def _segment_in_collision(a: np.ndarray, b: np.ndarray, scene: dict[str, Any], inflate: float) -> bool:
-    n = max(2, int(np.ceil(float(np.linalg.norm(b - a)) / 0.08)))
-    for alpha in np.linspace(0.0, 1.0, n):
-        if _static_collision((1.0 - alpha) * a + alpha * b, scene, inflate):
+    length = float(np.linalg.norm(b - a))
+    samples = max(2, int(np.ceil(length / 0.05)))
+    for alpha in np.linspace(0.0, 1.0, samples):
+        p = (1.0 - alpha) * a + alpha * b
+        if _static_collision(p, scene, inflate):
             return True
     return False
 
@@ -94,10 +96,38 @@ def _nearest_index(value: float, grid_values: np.ndarray) -> int:
     return int(np.argmin(np.abs(grid_values - value)))
 
 
+def _rollout_is_clear(
+    scene: dict[str, Any],
+    pos: np.ndarray,
+    theta: float,
+    v: float,
+    w: float,
+    t0: float,
+    dt: float,
+    horizon: int = 8,
+) -> bool:
+    p = pos.copy()
+    ang = theta
+    robot_r = float(scene["robot"]["radius"])
+    for h in range(1, horizon + 1):
+        p = p + np.array([np.cos(ang), np.sin(ang)], dtype=float) * (v * dt)
+        ang = wrap_angle(ang + w * dt)
+        if _static_collision(p, scene, inflate=0.0):
+            return False
+        for obs in scene["dynamic_obstacles"]:
+            dyn = _interp_dynamic_position(obs["trajectory"], t0 + (h - 1) * dt)
+            if np.linalg.norm(p - dyn) <= robot_r + float(obs["radius"]) + 0.02:
+                return False
+    return True
+
+
 def _astar_path(scene: dict[str, Any], resolution: float = 0.20, inflate: float = 0.03) -> list[np.ndarray]:
-    xs, ys, occ = _build_grid(scene, resolution=resolution, inflate=inflate)
     start = np.array(scene["start"][:2], dtype=float)
     goal = np.array(scene["goal"], dtype=float)
+    if not _segment_in_collision(start, goal, scene, inflate=inflate):
+        return [start, goal]
+
+    xs, ys, occ = _build_grid(scene, resolution=resolution, inflate=inflate)
 
     sx = _nearest_index(start[0], xs)
     sy = _nearest_index(start[1], ys)
@@ -152,6 +182,8 @@ def _astar_path(scene: dict[str, Any], resolution: float = 0.20, inflate: float 
                 heapq.heappush(open_heap, (cand + heuristic(nx, ny), nx, ny))
 
     if (gx, gy) not in g_cost:
+        if resolution > 0.10:
+            return _astar_path(scene, resolution=0.75 * resolution, inflate=max(0.01, inflate - 0.01))
         return [start, goal]
 
     path_idx: list[tuple[int, int]] = []
@@ -189,50 +221,95 @@ def _track_control(
     v_prev: float,
     w_prev: float,
 ) -> tuple[float, float]:
-    robot = scene["robot"]
-    vmax = float(robot["v_max"])
-    wmax = float(robot["omega_max"])
-    amax = float(robot["a_max"])
-    rr = float(robot["radius"])
-    ct, st = float(np.cos(theta)), float(np.sin(theta))
-    fwd = np.array([ct, st])
+    vmax = float(scene["robot"]["v_max"])
+    wmax = float(scene["robot"]["omega_max"])
+    amax = float(scene["robot"]["a_max"])
 
-    if np.linalg.norm(goal - pos) < np.linalg.norm(target - pos) + 0.8 and not _segment_in_collision(pos, goal, scene, 0.0):
-        target = goal
-
-    d = target - pos
-    err = wrap_angle(float(np.arctan2(d[1], d[0])) - theta)
-    ae = abs(err)
+    heading = float(np.arctan2(target[1] - pos[1], target[0] - pos[0]))
+    err = wrap_angle(heading - theta)
+    dir_vec = np.array([np.cos(theta), np.sin(theta)], dtype=float)
+    dist_target = float(np.linalg.norm(target - pos))
     dist_goal = float(np.linalg.norm(goal - pos))
-    v_des = vmax * (0.22 if ae > 1.35 else 0.9 if ae > 0.45 else 1.0)
-    if dist_goal < 1.1:
-        v_des = min(v_des, 0.14 + 1.0 * dist_goal)
+    along_goal = float(np.dot(goal - pos, dir_vec))
+    turn_sign = 1.0 if err >= 0.0 else -1.0
 
-    avoid = 0.0
-    min_sep = 1e9
-    for obs in scene["dynamic_obstacles"]:
-        safe = rr + float(obs["radius"]) + 0.02
-        for h in (1, 2, 3):
-            dyn = _interp_dynamic_position(obs["trajectory"], t_next + h * dt)
-            rel = dyn - pos
-            dist = float(np.linalg.norm(rel))
-            min_sep = min(min_sep, dist)
-            side = np.sign(ct * rel[1] - st * rel[0]) or 1.0
-            if dist < safe + 0.1:
-                avoid -= 0.45 * side * (safe + 0.1 - dist)
-            if float(np.linalg.norm(pos + fwd * (v_des * dt * h) - dyn)) < safe:
-                v_des *= 0.86
+    if abs(err) > 1.35:
+        v_des = 0.18 * vmax
+    elif abs(err) > 0.80:
+        v_des = 0.78 * vmax
+    elif abs(err) > 0.35:
+        v_des = 0.97 * vmax
+    else:
+        v_des = vmax
 
-    w_des = float(np.clip(2.0 * wrap_angle(err + 0.45 * avoid), -wmax, wmax))
-    if min_sep < rr + 0.1:
-        v_des *= 0.96
+    if dist_target < 0.24:
+        v_des = min(v_des, 0.22 + 1.90 * dist_target)
 
-    v_lb, v_ub = max(-vmax, v_prev - amax * dt), min(vmax, v_prev + amax * dt)
-    w_lb, w_ub = max(-wmax, w_prev - amax * dt), min(wmax, w_prev + amax * dt)
-    v, w = float(np.clip(v_des, v_lb, v_ub)), float(np.clip(w_des, w_lb, w_ub))
+    if dist_goal < 0.40:
+        v_des = min(v_des, 0.22 + 1.30 * dist_goal)
+    if dist_goal < 0.16:
+        v_des = min(v_des, 0.05 + 1.05 * dist_goal)
+    if dist_goal < 0.90 and along_goal > 0.0 and abs(err) < 0.85:
+        v_des = min(v_des, (along_goal + 0.06) / dt)
 
-    if _static_collision(pos + fwd * (v * dt), scene, 0.0):
+    w_des = float(np.clip(6.2 * err + 0.15 * np.sin(2.0 * err), -wmax, wmax))
+
+    v_lb = max(-vmax, v_prev - amax * dt)
+    v_ub = min(vmax, v_prev + amax * dt)
+    w_lb = max(-wmax, w_prev - amax * dt)
+    w_ub = min(wmax, w_prev + amax * dt)
+    w_pref = float(np.clip(w_des, w_lb, w_ub))
+
+    if scene["dynamic_obstacles"]:
+        best: tuple[float, float, float] | None = None
+        w_candidates = list(
+            dict.fromkeys(
+                [
+                    w_pref,
+                    float(np.clip(1.35 * w_des, w_lb, w_ub)),
+                    float(np.clip(0.90 * w_des, w_lb, w_ub)),
+                    float(np.clip(0.45 * w_des, w_lb, w_ub)),
+                    float(np.clip(0.60 * turn_sign * wmax, w_lb, w_ub)),
+                    float(np.clip(-0.60 * turn_sign * wmax, w_lb, w_ub)),
+                    float(np.clip(0.0, w_lb, w_ub)),
+                    float(w_ub),
+                    float(w_lb),
+                ]
+            )
+        )
+        for w_try in w_candidates:
+            for scale in (1.0, 0.96, 0.88, 0.78, 0.64, 0.48, 0.30, 0.12, 0.0):
+                cand = float(np.clip(v_des * scale, v_lb, v_ub))
+                if not _rollout_is_clear(scene, pos, theta, cand, w_try, t_next, dt):
+                    continue
+                nxt = pos + dir_vec * (cand * dt)
+                ang = wrap_angle(theta + w_try * dt)
+                next_heading = float(np.arctan2(target[1] - nxt[1], target[0] - nxt[0]))
+                head_err = abs(wrap_angle(next_heading - ang))
+                goal_prog = dist_goal - float(np.linalg.norm(goal - nxt))
+                target_prog = dist_target - float(np.linalg.norm(target - nxt))
+                score = 3.5 * goal_prog + 1.5 * target_prog + 0.10 * cand
+                score -= 0.045 * head_err
+                score -= 0.015 * abs(w_try - w_des) / max(1e-9, wmax)
+                if dist_goal < 0.70:
+                    score -= 0.010 * abs(w_try) / max(1e-9, wmax)
+                if best is None or score > best[0]:
+                    best = (score, cand, w_try)
+                break
+        if best is None:
+            v = float(np.clip(0.0, v_lb, v_ub))
+            w = float(np.clip(turn_sign * max(abs(w_des), 0.60 * wmax), w_lb, w_ub))
+        else:
+            _, v, w = best
+    else:
+        v = float(np.clip(v_des, v_lb, v_ub))
+        w = w_pref
+
+    pred = pos + dir_vec * (v * dt)
+    if _static_collision(pred, scene, inflate=0.0):
         v = float(np.clip(0.0, v_lb, v_ub))
+        w = float(np.clip(turn_sign * max(abs(w), 0.45 * wmax), w_lb, w_ub))
+
     return v, w
 
 
@@ -244,7 +321,7 @@ def build_controls_for_scene(scene: dict[str, Any], dt: float, goal_tol: float) 
     vmax = float(scene["robot"]["v_max"])
     wmax = float(scene["robot"]["omega_max"])
 
-    path = _astar_path(scene, resolution=0.18, inflate=0.02)
+    path = _astar_path(scene, resolution=0.12, inflate=0.01)
     wp_idx = 1 if len(path) > 1 else 0
 
     timestamps: list[float] = []
@@ -265,25 +342,22 @@ def build_controls_for_scene(scene: dict[str, Any], dt: float, goal_tol: float) 
             v = float(np.clip(0.0, v_lb, v_ub))
             w = float(np.clip(0.0, w_lb, w_ub))
         else:
-            while wp_idx < len(path) - 1:
-                if float(np.linalg.norm(path[wp_idx] - pos)) < 0.45:
-                    wp_idx += 1
-                    continue
-                if float(np.linalg.norm(path[wp_idx + 1] - pos)) + 0.1 < float(np.linalg.norm(path[wp_idx] - pos)):
-                    wp_idx += 1
-                    continue
-                if float(np.linalg.norm(path[wp_idx + 1] - pos)) < 1.2 and not _segment_in_collision(pos, path[wp_idx + 1], scene, 0.0):
-                    wp_idx += 1
-                    continue
-                break
+            while wp_idx < len(path) - 1 and float(np.linalg.norm(path[wp_idx] - pos)) < 0.45:
+                wp_idx += 1
+            look_idx = wp_idx
+            while look_idx < len(path) - 1 and not _segment_in_collision(pos, path[look_idx + 1], scene, inflate=0.0):
+                look_idx += 1
+            wp_idx = look_idx
             target = path[wp_idx]
+
+            t_next = t + dt
             v, w = _track_control(
                 scene=scene,
                 pos=pos,
                 theta=theta,
                 target=target,
                 goal=goal,
-                t_next=t + dt,
+                t_next=t_next,
                 dt=dt,
                 v_prev=v_prev,
                 w_prev=w_prev,

@@ -29,27 +29,30 @@ class MySampler(SamplerBase):
 
     def __init__(self, code: HammingCode, *, seed: int = 0):
         super().__init__(code, seed=seed)
+        self.rng = Generator(Philox(seed))
         self.triples = code.get_nearest_neighbors_idx().astype(np.int64)
         self.i0, self.i1, self.i2 = self.triples.T
-        self.num_triples = len(self.triples)
+        self.num_triples = int(self.triples.shape[0])
         self._cache: dict[tuple[float, int], tuple[np.ndarray, np.ndarray]] = {}
 
     def _build_design(self, noise_std: float, batch_size: int) -> tuple[np.ndarray, np.ndarray]:
-        rng = Generator(Philox(self.DESIGN_SEED))
+        design_rng = Generator(Philox(self.DESIGN_SEED))
         half = (batch_size + 1) // 2
-        z = rng.normal(0.0, noise_std, size=(half, self.code.dim))
-        tri = self.triples[rng.integers(0, self.num_triples, size=half)]
-        rows = np.arange(half)[:, None]
+        z = design_rng.normal(0.0, noise_std, size=(half, self.code.dim))
+        comp = design_rng.integers(0, self.num_triples, size=half)
+        tri = self.triples[comp]
 
-        a = z.copy()
-        a[rows, tri] += self.SHIFT
-        b = (-z).copy()
-        b[rows, tri] += self.SHIFT
-        noise = np.vstack([a, b])[:batch_size]
+        part1 = z.copy()
+        part1[np.arange(half)[:, None], tri] += self.SHIFT
+        part2 = (-z).copy()
+        part2[np.arange(half)[:, None], tri] += self.SHIFT
+        noise = np.vstack([part1, part2])[:batch_size]
 
-        var = noise_std * noise_std
-        inv_var = 1.0 / var
-        base = -0.5 * inv_var * np.sum(np.square(noise), axis=1) - 0.5 * self.code.dim * np.log(2.0 * np.pi * var)
+        inv_var = 1.0 / (noise_std * noise_std)
+        base = (
+            -(np.sum(noise**2, axis=1)) * 0.5 * inv_var
+            - self.code.dim / 2.0 * np.log(2.0 * np.pi * noise_std**2)
+        )
         acc = np.full(batch_size, -np.inf)
         quad = -1.5 * self.SHIFT * self.SHIFT * inv_var
         for start in range(0, self.num_triples, self.CHUNK):
@@ -59,13 +62,15 @@ class MySampler(SamplerBase):
                 + noise[:, self.i1[start:end]]
                 + noise[:, self.i2[start:end]]
             )
-            acc = np.logaddexp(acc, logsumexp(self.SHIFT * inv_var * sums + quad, axis=1))
-        return noise, base + acc - math.log(self.num_triples)
+            zterm = self.SHIFT * inv_var * sums + quad
+            acc = np.logaddexp(acc, logsumexp(zterm, axis=1))
+        log_q = base + acc - math.log(self.num_triples)
+        return noise, log_q
 
     def sample(self, noise_std, tx_bin, batch_size, **kwargs):
         key = (float(noise_std), int(batch_size))
         if key not in self._cache:
-            self._cache[key] = self._build_design(*key)
+            self._cache[key] = self._build_design(key[0], key[1])
         noise, log_q = self._cache[key]
         return noise.copy(), log_q.copy()
 
@@ -80,6 +85,9 @@ class MySampler(SamplerBase):
         fix_tx: bool = True,
         min_errors: int = 5,
     ):
+        """
+        统一入口：固定调用方以该方法评测。
+        """
         return code.simulate_variance_controlled(
             noise_std=sigma,
             target_std=target_std,
